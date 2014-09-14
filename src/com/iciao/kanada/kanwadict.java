@@ -35,6 +35,9 @@ public class kanwadict {
     private static kanwadict kanwa = new kanwadict();
     private static boolean init_failed = false;
 
+    private HashMap<kanwa_key, ArrayList<yomi_kanji_data>> kanwa_map = new HashMap<kanwa_key, ArrayList<yomi_kanji_data>>();
+    private HashMap<kanwa_key, kanwa_address> kanwa_index = new HashMap<kanwa_key, kanwa_address>();
+
     static {
         File kanwa_dict = new File(SRC_PATH, KANWA_FILENAMES);
 
@@ -84,9 +87,6 @@ public class kanwadict {
         }
     }
 
-    private HashMap kanwa_map = new HashMap();
-    private HashMap kanwa_index = new HashMap();
-
     public static kanwadict get_kanwa() {
         return kanwa;
     }
@@ -120,7 +120,7 @@ public class kanwadict {
             obj_file = new File(SRC_PATH, KANWA_FILENAMES);
             file_stream = new FileInputStream(obj_file);
 
-            long obj_address = ((kanwa_address) kanwa_index.get(key)).value;
+            long obj_address = (kanwa_index.get(key)).value;
 
             file_stream.skip(obj_address);
 
@@ -128,8 +128,12 @@ public class kanwadict {
             object_stream = new ObjectInputStream(buffer);
 
             try {
-                ArrayList value_list = (ArrayList) object_stream.readObject();
-                kanwa_map.put(key, value_list);
+                Object obj = object_stream.readObject();
+                if (obj instanceof ArrayList) {
+                    ArrayList<yomi_kanji_data> value_list;
+                    value_list = (ArrayList<yomi_kanji_data>) obj;
+                    kanwa_map.put(key, value_list);
+                }
             } catch (ClassNotFoundException e) {
                 throw new Exception(e.toString());
             }
@@ -149,9 +153,7 @@ public class kanwadict {
     private void build_dict(final HashMap map) throws IOException {
         File out_file = new File(SRC_PATH, KANWA_FILENAMES);
 
-        if (out_file.exists()) {
-            out_file.delete();
-            out_file.createNewFile();
+        if (out_file.exists() && out_file.delete() && out_file.createNewFile()) {
             System.out.println("Creating a new dictionary...");
         }
 
@@ -178,7 +180,7 @@ public class kanwadict {
             ByteArrayOutputStream byte_array_stream = new ByteArrayOutputStream();
             ObjectOutputStream object_stream = new ObjectOutputStream(byte_array_stream);
 
-            object_stream.writeObject((ArrayList) map.get(key));
+            object_stream.writeObject(map.get(key));
 
             // Move to the end and append data.
             dict_file.seek(dict_file.length());
@@ -200,7 +202,7 @@ public class kanwadict {
     }
 
     public boolean search_key(kanwa_key key) throws Exception {
-        kanwa_address this_address = (kanwa_address) kanwa_index.get(key);
+        kanwa_address this_address = kanwa_index.get(key);
         if (this_address != null && !kanwa_map.containsKey(key) && this_address.value > 0) {
             load_object(key);
         }
@@ -275,7 +277,7 @@ public class kanwadict {
     }
 
     private void add_entry(String yomi, String kanji, char tail) {
-        ArrayList value_list;
+        ArrayList<yomi_kanji_data> value_list;
         if (kanji.charAt(0) < 0xb0) {
             return;
         }
@@ -324,16 +326,16 @@ public class kanwadict {
         yomi_kanji_data value = new yomi_kanji_data(yomi, tail, kanji);
 
         if (kanwa_map.containsKey(key)) {
-            value_list = (ArrayList) kanwa_map.get(key);
+            value_list = kanwa_map.get(key);
         } else {
-            value_list = new ArrayList();
+            value_list = new ArrayList<yomi_kanji_data>();
         }
 
-//		This is too slow. There is no harm having duplicates.
-//		if ( !value_list.contains(value) )
-//		{
+//		This slows down the process. There is no harm having duplicates.
+//		if (!value_list.contains(value)) {
 //			value_list.add(value);
 //		}
+
         value_list.add(value);
         kanwa_map.put(key, value_list);
     }
@@ -350,9 +352,12 @@ public class kanwadict {
             key_mbr[1] = second;
         }
 
-        public boolean equals(Object object) {
-            kanwa_key this_key = (kanwa_key) object;
-            return (this.key_mbr[0] == this_key.key_mbr[0] && this.key_mbr[1] == this_key.key_mbr[1]);
+        public boolean equals(Object obj) {
+            if (obj instanceof kanwa_key) {
+                kanwa_key this_key = (kanwa_key) obj;
+                return (this.key_mbr[0] == this_key.key_mbr[0] && this.key_mbr[1] == this_key.key_mbr[1]);
+            }
+            return false;
         }
 
         public int hashCode() {
@@ -387,13 +392,12 @@ public class kanwadict {
             return tail_mbr;
         }
 
-        public boolean equals(Object o) {
-            yomi_kanji_data data = (yomi_kanji_data) o;
-            return (yomi_mbr.equals(data.get_yomi()) && tail_mbr == data.get_tail() && kanji_mbr.equals(data.get_kanji()));
+        public boolean equals(Object obj) {
+            if (obj instanceof yomi_kanji_data) {
+                yomi_kanji_data data = (yomi_kanji_data) obj;
+                return (yomi_mbr.equals(data.get_yomi()) && tail_mbr == data.get_tail() && kanji_mbr.equals(data.get_kanji()));
+            }
+            return false;
         }
     }
 }
-
-/*
- * $History: $
- */
