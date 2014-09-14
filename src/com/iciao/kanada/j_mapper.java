@@ -47,12 +47,6 @@ public abstract class j_mapper extends kanada_def {
         out_str_mbr = str;
     }
 
-    protected void append(String str) {
-        StringBuffer buf = new StringBuffer();
-        buf.append(str);
-        out_str_mbr = buf.toString();
-    }
-
     protected abstract void process(String str, int param);
 }
 
