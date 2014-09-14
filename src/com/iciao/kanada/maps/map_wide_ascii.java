@@ -35,7 +35,7 @@ public class map_wide_ascii extends j_mapper {
 
     protected void process(String str, int param) {
         int i = 0;
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
 
         out.append((char) (str.charAt(1) - 0x80));
 

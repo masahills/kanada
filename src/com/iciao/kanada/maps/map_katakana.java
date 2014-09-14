@@ -36,7 +36,7 @@ public class map_katakana extends j_mapper {
 
     protected void process(String str, int param) {
         int i = 0;
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
 
         switch (param) {
             case TO_HIRAGANA: {
