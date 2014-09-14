@@ -41,8 +41,6 @@ public class kanada extends kanada_def {
     protected boolean mode_uc_all_mbr = false;
     protected boolean mode_kunrei_romaji_mbr = false;
     protected boolean mode_wakachi_kaki_mbr = false;
-    private j_writer writer_mbr;
-    private kanji_parser parser_mbr;
     private boolean massage_string_mbr = false;
     private String encoding_in_mbr = DEFAULT_ENCODING_NAME;
     private String encoding_out_mbr = DEFAULT_ENCODING_NAME;
@@ -229,8 +227,7 @@ public class kanada extends kanada_def {
 
     public String process(String str, int mode) {
         set_mode(mode);
-        String processed = process(str);
-        return processed;
+        return process(str);
     }
 
     public String process(String str, boolean add_space) {
@@ -255,15 +252,15 @@ public class kanada extends kanada_def {
         String parsed_str;
 
         try {
-            writer_mbr = new j_writer(this);
-            parser_mbr = new kanji_parser(writer_mbr);
+            j_writer writer = new j_writer(this);
+            kanji_parser parser = new kanji_parser(writer);
 
             String temp_str;
 
             if (massage_string_mbr) {
                 temp_str = new String(str.getBytes(JDK_ISO8859_1), encoding_in_mbr);
             } else {
-                temp_str = new String(str);
+                temp_str = str;
             }
 
             temp_str = new String(temp_str.getBytes(JDK_EUC_JP), JDK_ISO8859_1);
@@ -276,7 +273,7 @@ public class kanada extends kanada_def {
                 return str;
             }
 
-            parsed_str = parser_mbr.parse(str);
+            parsed_str = parser.parse(str);
             parsed_str = new String(parsed_str.getBytes(JDK_ISO8859_1), JDK_EUC_JP);
 
             if (massage_string_mbr) {
@@ -286,6 +283,7 @@ public class kanada extends kanada_def {
             if (mode_uc_all_mbr) {
                 parsed_str = parsed_str.toUpperCase(Locale.ENGLISH);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             return str;
