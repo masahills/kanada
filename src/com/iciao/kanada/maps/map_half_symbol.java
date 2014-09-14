@@ -45,7 +45,3 @@ public class map_half_symbol extends j_mapper {
         set_string(out.toString());
     }
 }
-
-/*
- * $History: $
- */

@@ -25,6 +25,21 @@ import com.iciao.kanada.j_mapper;
  * @author Masahiko Sato
  */
 public class map_wide_symbol extends j_mapper {
+    private static final String wide_symbol_a1_to_ascii[] = {
+            " ", ",", ".", ",", ".", ".", ":", ";", "?", "!", "\"", "(degree)", "'", "`", "..",
+            "^", "~", "_", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "shime", "(circle)", "-", "-", "-", "/",
+            "\\", "~", "||", "|", "...", "..", "'", " ", "\"", "\"", "(", ")", "[", "]", "[", "]",
+            "{", "}", "<", ">", "<<", ">>", "\"", "\"", "\"", "\"", "[", "]", "+", "-", "+/-", "x",
+            "/", "=", "!=", "<", ">", "<=", ">=", "(infinite)", "...", "(male)", "(female)", "(degree)", "'", "\"", "(celsius)", "(yen)",
+            "$", "(cent)", "(pound)", "%", "#", "&", "*", "@", "(section)", "*", "*", "o", "o", "o", "o"};
+    private static final String wide_symbol_a2_to_ascii[] = {
+            "o", "o", "o", "o", "o", "o", "o", "*", "(postal code)", "->", "<-", "(up)", "(down)", "(undef)"};
+    private static final String wide_symbol_a6_to_ascii[] = {
+            "Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron",
+            "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega", "", "", "", "", "", "", "",
+            "", "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "iota", "kappa", "lambda", "mu", "nu", "xi", "omicron",
+            "pi", "rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega"};
+
     public map_wide_symbol() {
         this(0, null);
     }
@@ -96,8 +111,6 @@ public class map_wide_symbol extends j_mapper {
         set_int(i);
         set_string(out.toString());
     }
-}
 
-/*
- * $History: $
- */
+
+}

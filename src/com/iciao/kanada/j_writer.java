@@ -32,6 +32,7 @@ public class j_writer {
     protected StringBuilder buffer_mbr = new StringBuilder();
     protected char tail_mbr;
 
+
     public j_writer(kanada this_kanada) throws java.io.IOException {
         this.clear();
         kanada_mbr = this_kanada;
@@ -81,7 +82,7 @@ public class j_writer {
 
             if (first_char < 0xa0 && first_char != 0x8e && first_char != 0x8f) {
                 switch (kanada_mbr.option_ascii_mbr) {
-                    case kanada_def.TO_WIDE_ASCII: {
+                    case j_mapper.TO_WIDE_ASCII: {
                         j_mapper ascii = new map_ascii();
                         ascii.process(temp_str, kanada_mbr.option_ascii_mbr);
                         mapped = ascii;
@@ -116,10 +117,10 @@ public class j_writer {
                 // Half Katakana
                 case 0x8e: {
                     switch (kanada_mbr.option_half_katakana_mbr) {
-                        case kanada_def.TO_WIDE_ASCII:
-                        case kanada_def.TO_ASCII:
-                        case kanada_def.TO_KATAKANA:
-                        case kanada_def.TO_HIRAGANA: {
+                        case j_mapper.TO_WIDE_ASCII:
+                        case j_mapper.TO_ASCII:
+                        case j_mapper.TO_KATAKANA:
+                        case j_mapper.TO_HIRAGANA: {
                             j_mapper half_katakana = new map_half_katakana();
                             half_katakana.process(temp_str, kanada_mbr.option_half_katakana_mbr);
                             mapped = half_katakana;
@@ -140,8 +141,8 @@ public class j_writer {
                 case 0xa8:
                 case 0xad: {
                     switch (kanada_mbr.option_wide_symbol_mbr) {
-                        case kanada_def.TO_ASCII:
-                        case kanada_def.TO_HALF_SYMBOL: {
+                        case j_mapper.TO_ASCII:
+                        case j_mapper.TO_HALF_SYMBOL: {
                             j_mapper wide_symbol = new map_wide_symbol();
                             wide_symbol.process(temp_str, kanada_mbr.option_wide_symbol_mbr);
                             mapped = wide_symbol;
@@ -157,7 +158,7 @@ public class j_writer {
                 // Wide Ascii
                 case 0xa3: {
                     switch (kanada_mbr.option_wide_ascii_mbr) {
-                        case kanada_def.TO_ASCII: {
+                        case j_mapper.TO_ASCII: {
                             j_mapper wide_ascii = new map_wide_ascii();
                             wide_ascii.process(temp_str, kanada_mbr.option_wide_ascii_mbr);
                             mapped = wide_ascii;
@@ -173,10 +174,10 @@ public class j_writer {
                 // Hiragana
                 case 0xa4: {
                     switch (kanada_mbr.option_hiragana_mbr) {
-                        case kanada_def.TO_KATAKANA:
-                        case kanada_def.TO_HALF_KATAKANA:
-                        case kanada_def.TO_ASCII:
-                        case kanada_def.TO_WIDE_ASCII: {
+                        case j_mapper.TO_KATAKANA:
+                        case j_mapper.TO_HALF_KATAKANA:
+                        case j_mapper.TO_ASCII:
+                        case j_mapper.TO_WIDE_ASCII: {
                             j_mapper hiragana = new map_hiragana();
                             hiragana.process(temp_str, kanada_mbr.option_hiragana_mbr);
                             mapped = hiragana;
@@ -192,15 +193,15 @@ public class j_writer {
                 // Katakana
                 case 0xa5: {
                     switch (kanada_mbr.option_katakana_mbr) {
-                        case kanada_def.TO_HIRAGANA:
-                        case kanada_def.TO_HALF_KATAKANA: {
+                        case j_mapper.TO_HIRAGANA:
+                        case j_mapper.TO_HALF_KATAKANA: {
                             j_mapper katakana = new map_katakana();
                             katakana.process(temp_str, kanada_mbr.option_katakana_mbr);
                             mapped = katakana;
                             break;
                         }
-                        case kanada_def.TO_ASCII:
-                        case kanada_def.TO_WIDE_ASCII: {
+                        case j_mapper.TO_ASCII:
+                        case j_mapper.TO_WIDE_ASCII: {
                             j_mapper katakana = new map_katakana();
                             katakana.process(temp_str, kanada_mbr.option_katakana_mbr);
                             mapped = katakana;
@@ -266,8 +267,4 @@ public class j_writer {
         return out_str;
     }
 }
-
-/*
- * $History: $
- */
 

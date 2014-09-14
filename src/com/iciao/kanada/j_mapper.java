@@ -22,9 +22,18 @@ package com.iciao.kanada;
  *
  * @author Masahiko Sato
  */
-public abstract class j_mapper extends kanada_def {
+public abstract class j_mapper {
+    public static final int AS_IS = -1;
+    public static final int TO_HIRAGANA = 0;
+    public static final int TO_KATAKANA = 1;
+    public static final int TO_WIDE_ASCII = 2;
+    public static final int TO_WIDE_SYMBOL = 3;
+    public static final int TO_HALF_KATAKANA = 4;
+    public static final int TO_ASCII = 5;
+    public static final int TO_HALF_SYMBOL = 6;
     protected int count_mbr;
     protected String out_str_mbr;
+
 
     protected j_mapper(int count, String str) {
         count_mbr = count;
@@ -49,7 +58,3 @@ public abstract class j_mapper extends kanada_def {
 
     protected abstract void process(String str, int param);
 }
-
-/*
- * $History: $
- */

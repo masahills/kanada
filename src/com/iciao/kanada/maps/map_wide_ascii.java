@@ -49,7 +49,3 @@ public class map_wide_ascii extends j_mapper {
         set_string(out.toString());
     }
 }
-
-/*
- * $History: $
- */

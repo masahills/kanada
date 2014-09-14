@@ -31,6 +31,7 @@ public class kanji_parser {
     private kanada kanada_mbr;
     private j_writer j_writer_mbr;
     private StringBuilder output_buffer;
+
     public kanji_parser(j_writer writer) {
         kanada_mbr = writer.get_kanada();
         j_writer_mbr = writer;
@@ -153,7 +154,7 @@ public class kanji_parser {
                 output_buffer.append(second_char);
                 i = i + 2;
             } else {
-                if (kanada_mbr.option_kanji_mbr == kanada_def.NO_OP) {
+                if (kanada_mbr.option_kanji_mbr == kanada_def.CONFIG_GET_AS_IS) {
                     output_buffer.append(kanji);
                 } else {
                     j_writer_mbr.append(yomi);

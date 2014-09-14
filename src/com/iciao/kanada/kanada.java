@@ -44,16 +44,20 @@ public class kanada extends kanada_def {
     private boolean massage_string_mbr = false;
     private String encoding_in_mbr = DEFAULT_ENCODING_NAME;
     private String encoding_out_mbr = DEFAULT_ENCODING_NAME;
+
     public kanada() throws java.io.IOException {
-        set_param(NO_OP);
+        set_param(CONFIG_GET_AS_IS);
     }
+
     public kanada(int config) throws java.io.IOException {
         this(config, false);
     }
+
     public kanada(int config, boolean massage_string) throws java.io.IOException {
         set_param(config);
         massage_string_mbr = massage_string;
     }
+
     public kanada(int param_kanji,
                   int param_hiragana,
                   int param_katakana,
@@ -98,23 +102,60 @@ public class kanada extends kanada_def {
     private void set_param(int config) {
         switch (config) {
             case CONFIG_GET_ROMAJI: {
-                set_param(TO_ASCII, TO_ASCII, TO_ASCII, TO_ASCII, TO_ASCII, NO_OP, TO_ASCII, TO_ASCII);
+                set_param(j_mapper.TO_ASCII,
+                        j_mapper.TO_ASCII,
+                        j_mapper.TO_ASCII,
+                        j_mapper.TO_ASCII,
+                        j_mapper.TO_ASCII,
+                        j_mapper.AS_IS,
+                        j_mapper.TO_ASCII,
+                        j_mapper.TO_ASCII);
                 break;
             }
             case CONFIG_GET_HIRAGANA: {
-                set_param(TO_HIRAGANA, NO_OP, TO_HIRAGANA, NO_OP, NO_OP, TO_HIRAGANA, NO_OP, NO_OP);
+                set_param(j_mapper.TO_HIRAGANA,
+                        j_mapper.AS_IS,
+                        j_mapper.TO_HIRAGANA,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.TO_HIRAGANA,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS);
                 break;
             }
             case CONFIG_GET_KATAKANA: {
-                set_param(TO_KATAKANA, TO_KATAKANA, NO_OP, NO_OP, NO_OP, TO_KATAKANA, NO_OP, NO_OP);
+                set_param(j_mapper.TO_KATAKANA,
+                        j_mapper.TO_KATAKANA,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.TO_KATAKANA,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS);
                 break;
             }
             case CONFIG_HALF_TO_WIDE_ALL: {
-                set_param(NO_OP, NO_OP, NO_OP, NO_OP, TO_HIRAGANA, TO_WIDE_ASCII, TO_KATAKANA, TO_WIDE_SYMBOL);
+                set_param(
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.TO_HIRAGANA,
+                        j_mapper.TO_WIDE_ASCII,
+                        j_mapper.TO_KATAKANA,
+                        j_mapper.TO_WIDE_SYMBOL
+                );
                 break;
             }
             default: {
-                set_param(NO_OP, NO_OP, NO_OP, NO_OP, NO_OP, NO_OP, NO_OP, NO_OP);
+                set_param(j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS,
+                        j_mapper.AS_IS);
                 break;
             }
         }

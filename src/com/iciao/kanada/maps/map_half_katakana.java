@@ -45,7 +45,3 @@ public class map_half_katakana extends j_mapper {
         set_string(out.toString());
     }
 }
-
-/*
- * $History: $
- */
