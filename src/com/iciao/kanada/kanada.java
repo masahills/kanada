@@ -102,7 +102,8 @@ public class kanada extends kanada_def {
     private void set_param(int config) {
         switch (config) {
             case CONFIG_GET_ROMAJI: {
-                set_param(j_mapper.TO_ASCII,
+                set_param(
+                        j_mapper.TO_ASCII,
                         j_mapper.TO_ASCII,
                         j_mapper.TO_ASCII,
                         j_mapper.TO_ASCII,
@@ -113,7 +114,8 @@ public class kanada extends kanada_def {
                 break;
             }
             case CONFIG_GET_HIRAGANA: {
-                set_param(j_mapper.TO_HIRAGANA,
+                set_param(
+                        j_mapper.TO_HIRAGANA,
                         j_mapper.AS_IS,
                         j_mapper.TO_HIRAGANA,
                         j_mapper.AS_IS,
@@ -143,12 +145,12 @@ public class kanada extends kanada_def {
                         j_mapper.TO_HIRAGANA,
                         j_mapper.TO_WIDE_ASCII,
                         j_mapper.TO_KATAKANA,
-                        j_mapper.TO_WIDE_SYMBOL
-                );
+                        j_mapper.TO_WIDE_SYMBOL);
                 break;
             }
             default: {
-                set_param(j_mapper.AS_IS,
+                set_param(
+                        j_mapper.AS_IS,
                         j_mapper.AS_IS,
                         j_mapper.AS_IS,
                         j_mapper.AS_IS,
@@ -334,7 +336,3 @@ public class kanada extends kanada_def {
         return parsed_str;
     }
 }
-
-/*
- * $History: $
- */
