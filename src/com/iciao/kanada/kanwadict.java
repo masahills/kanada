@@ -33,7 +33,7 @@ public class kanwadict {
     private static final int SIZE_OF_LONG = 8;
 
     private static kanwadict kanwa = new kanwadict();
-    private static boolean init_faild = false;
+    private static boolean init_failed = false;
 
     static {
         File kanwa_dict = new File(SRC_PATH, KANWA_FILENAMES);
@@ -45,7 +45,7 @@ public class kanwadict {
                 System.out.println("Kanada: Init completed!");
             } catch (Exception e) {
                 System.out.println("Kanada: Error!! Could not load the dictionary index: " + e);
-                init_faild = true;
+                init_failed = true;
             }
         } else {
             System.out.println("Kanada: Building Japanese dictionary...");
@@ -66,10 +66,10 @@ public class kanwadict {
                 }
             } catch (IOException e) {
                 System.out.println("Kanada: Error!! Could not build dictionary: " + e);
-                init_faild = true;
+                init_failed = true;
             }
 
-            if (!init_faild) {
+            if (!init_failed) {
                 int loading_time = (int) Math.ceil((Calendar.getInstance().getTime().getTime() - start.getTime().getTime()));
                 System.out.println("Kanada: Build Completed! (" + loading_time + " ms)");
                 try {
@@ -78,11 +78,12 @@ public class kanwadict {
                     System.out.println("Kanada: Init completed!");
                 } catch (IOException e) {
                     System.out.println("Kanada: Error!! Could not load the dictionary index: " + e);
-                    init_faild = true;
+                    init_failed = true;
                 }
             }
         }
     }
+
     private HashMap kanwa_map = new HashMap();
     private HashMap kanwa_index = new HashMap();
 
@@ -211,7 +212,7 @@ public class kanwadict {
 
         if (!kanwa_file.exists()) {
             System.out.println("Dictionary File Not Found: " + filepath + filename);
-            init_faild = true;
+            init_failed = true;
             return;
         }
 
@@ -235,9 +236,7 @@ public class kanwadict {
         } catch (IOException e) {
             throw new IOException();
         } finally {
-            if (file_stream != null) {
-                file_stream.close();
-            }
+            file_stream.close();
         }
     }
 
