@@ -30,17 +30,15 @@ public class kanji_parser {
     private static kanwadict kanwa = kanwadict.get_kanwa();
     private kanada kanada_mbr;
     private j_writer j_writer_mbr;
-    private StringBuffer output_buffer;
+    private StringBuilder output_buffer;
     public kanji_parser(j_writer writer) {
         kanada_mbr = writer.get_kanada();
         j_writer_mbr = writer;
-        output_buffer = new StringBuffer();
+        output_buffer = new StringBuilder();
     }
 
     public String parse(String input_string) throws Exception {
-        if (input_string == null || input_string.length() < 1) {
-            return input_string;
-        } else if (input_string.length() < 2) {
+        if (input_string.length() < 2) {
             return input_string;
         }
 
@@ -78,14 +76,14 @@ public class kanji_parser {
             }
 
             // output non-kanji string to buffer
-            StringBuffer non_kanji_str = j_writer_mbr.map();
+            StringBuilder non_kanji_str = j_writer_mbr.map();
             output_buffer.append(non_kanji_str);
             j_writer_mbr.clear();
 
             if (kanada_mbr.mode_add_space_mbr && output_buffer.length() > 0) {
                 char last_char = output_buffer.charAt(output_buffer.length() - 1);
 
-                if (last_char != ' ' && last_char != '\t' && last_char != '\n') {
+                if (!Character.isWhitespace(last_char)) {
                     output_buffer.append(' ');
                 }
             }

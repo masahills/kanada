@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
  */
 public class j_writer {
     protected kanada kanada_mbr;
-    protected StringBuffer buffer_mbr = new StringBuffer();
+    protected StringBuilder buffer_mbr = new StringBuilder();
     protected char tail_mbr;
 
     public j_writer(kanada this_kanada) throws java.io.IOException {
@@ -38,17 +38,17 @@ public class j_writer {
         tail_mbr = ' ';
     }
 
-    public j_writer(kanada this_kanada, StringBuffer input) throws java.io.IOException {
+    public j_writer(kanada this_kanada, StringBuilder input) throws java.io.IOException {
         this(this_kanada);
         buffer_mbr = input;
         tail_mbr = ' ';
     }
 
-    public StringBuffer append(char ch) {
+    public StringBuilder append(char ch) {
         return buffer_mbr.append(ch);
     }
 
-    public StringBuffer append(String str) {
+    public StringBuilder append(String str) {
         return buffer_mbr.append(str);
     }
 
@@ -60,10 +60,10 @@ public class j_writer {
         return kanada_mbr;
     }
 
-    public StringBuffer map() {
+    public StringBuilder map() {
         String temp_str;
-        StringBuffer mapped_str = new StringBuffer();
-        StringBuffer out_str = new StringBuffer();
+        StringBuilder mapped_str = new StringBuilder();
+        StringBuilder out_str = new StringBuilder();
 
         int i = 0;
         int last_type = 0;
@@ -98,8 +98,8 @@ public class j_writer {
                     char next_char = mapped_str.charAt(0);
 
                     if (last_type > 0xa0 && last_type != first_char
-                            && last_char != ' ' && last_char != '\t' && last_char != '\n' && last_char != '-' && last_char != '/'
-                            && next_char != ' ' && next_char != ',' && next_char != '.' && next_char != '-' && next_char != '/') {
+                            && !Character.isWhitespace(last_char) && last_char != '-' && last_char != '/'
+                            && !Character.isWhitespace(next_char) && next_char != '-' && next_char != '/') {
                         out_str.append(' ');
                     }
                 }
@@ -237,11 +237,8 @@ public class j_writer {
                         && kanada_mbr.mode_add_space_mbr
                         && !(before_last_char == 0xa1 && last_char == 0xbc)
                         && !(next_char == 0xa1 && after_next_char == 0xbc)
-                        && last_char != ' ' && last_char != '\t' && last_char != '\n'
-                        && last_char != '-' && last_char != '/' && last_char != '\'' && last_char != '\"'
-                        && next_char != ' ' && next_char != '\t' && next_char != '\n'
-                        && next_char != '-' && next_char != '/' && next_char != '\'' && next_char != '\"'
-                        && next_char != '.' && next_char != ',') {
+                        && !Character.isWhitespace(last_char) && last_char != '-' && last_char != '/'
+                        && !Character.isWhitespace(next_char) && next_char != '-' && next_char != '/') {
                     out_str.append(' ');
                 }
 
@@ -254,19 +251,11 @@ public class j_writer {
         }
 
         if (kanada_mbr.mode_uc_first_mbr && tail_mbr == ' ') {
-            StringBuffer sb = new StringBuffer();
-            StringTokenizer token = new StringTokenizer(out_str.toString(), " ", true);
+            StringBuilder sb = new StringBuilder();
+            StringTokenizer token = new StringTokenizer(out_str.toString(), " \t\n\r\f", true);
             while (token.hasMoreTokens()) {
                 String word = token.nextToken();
-                if (word.length() == 1) {
-                    sb.append(word.substring(0, 1).toUpperCase(Locale.ENGLISH));
-                } else if (word.length() > 1) {
-                    if (word.charAt(0) == ' ') {
-                        sb.append(' ');
-                        word = word.substring(1);
-                    }
-                    sb.append(word.substring(0, 1).toUpperCase()).append(word.substring(1));
-                }
+                sb.append(word.substring(0, 1).toUpperCase(Locale.ENGLISH)).append(word.substring(1));
             }
             out_str.setLength(0);
             out_str.append(sb.toString());
