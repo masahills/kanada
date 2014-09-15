@@ -154,7 +154,7 @@ public class kanji_parser {
                 output_buffer.append(second_char);
                 i = i + 2;
             } else {
-                if (kanada_mbr.option_kanji_mbr == kanada_def.CONFIG_GET_AS_IS) {
+                if (kanada_mbr.option_kanji_mbr == kanada.CONFIG_GET_AS_IS) {
                     output_buffer.append(kanji);
                 } else {
                     j_writer_mbr.append(yomi);

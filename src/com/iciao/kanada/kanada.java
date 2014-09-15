@@ -25,7 +25,29 @@ import java.util.Locale;
  *
  * @author Masahiko Sato
  */
-public class kanada extends kanada_def {
+public class kanada {
+    public static final int FLAG_ADD_SPACE = 0x00000001;
+    public static final int FLAG_UC_FIRST = 0x00000002;
+    public static final int FLAG_UC_ALL = 0x00000004;
+    public static final int FLAG_FURIGANA = 0x00000008;
+    public static final int FLAG_SHOW_ALL_YOMI = 0x00000010;
+    public static final int FLAG_KUNREI_ROMAJI = 0x00000020;
+    public static final int ENCODING_SJIS = 0;
+    public static final int ENCODING_JIS = 1;
+    public static final int ENCODING_EUC_JP = 2;
+    public static final int ENCODING_AUTO_DETECT = 3;
+    public static final int CONFIG_GET_AS_IS = -1;
+    public static final int CONFIG_GET_ROMAJI = 0;
+    public static final int CONFIG_GET_HIRAGANA = 1;
+    public static final int CONFIG_GET_KATAKANA = 2;
+    public static final int CONFIG_HALF_TO_WIDE_ALL = 3;
+    public static final int CONFIG_HALF_TO_WIDE_KANA = 4;
+    protected static final String JDK_ISO8859_1 = "ISO8859_1";
+    protected static final String JDK_SJIS = "SJIS";
+    protected static final String DEFAULT_ENCODING_NAME = JDK_SJIS;
+    protected static final String JDK_JIS = "JIS";
+    protected static final String JDK_EUC_JP = "EUC_JP";
+    protected static final String JDK_JIS_AUTO_DETECT = "JISAutoDetect";
     protected int option_kanji_mbr;
     protected int option_hiragana_mbr;
     protected int option_katakana_mbr;

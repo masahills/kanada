@@ -218,7 +218,7 @@ public class kanwadict {
             return;
         }
 
-        InputStreamReader file_stream = new InputStreamReader(new FileInputStream(kanwa_file), kanada_def.JDK_JIS_AUTO_DETECT);
+        InputStreamReader file_stream = new InputStreamReader(new FileInputStream(kanwa_file), kanada.JDK_JIS_AUTO_DETECT);
         BufferedReader reader = new BufferedReader(file_stream);
         try {
             for (; ; ) {
@@ -228,7 +228,7 @@ public class kanwadict {
                     return;
                 }
 
-                line = new String(line.getBytes(kanada_def.JDK_EUC_JP), kanada_def.JDK_ISO8859_1);
+                line = new String(line.getBytes(kanada.JDK_EUC_JP), kanada.JDK_ISO8859_1);
                 line = line.trim();
 
                 if (line.length() > 0) {
