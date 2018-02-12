@@ -5,12 +5,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -26,26 +26,21 @@ import com.iciao.kanada.j_mapper;
  */
 public class map_wide_ascii extends j_mapper {
     public map_wide_ascii() {
-        this(0, null);
+        this(null);
     }
 
-    protected map_wide_ascii(int count, String str) {
-        super(count, str);
+    protected map_wide_ascii(String str) {
+        super(str);
     }
 
     protected void process(String str, int param) {
-        int i = 0;
         StringBuilder out = new StringBuilder();
-
-        out.append((char) (str.charAt(1) - 0x80));
-
-        if (out.length() == 0) {
-            out.append('?');
+        int this_char = str.codePointAt(0);
+        if (this_char >= 0xff00 && this_char <= 0xff5e) {
+            out.appendCodePoint(this_char - 0xfee0);
+        } else {
+            out.appendCodePoint(this_char);
         }
-
-        i = 2;
-
-        set_int(i);
         set_string(out.toString());
     }
 }
