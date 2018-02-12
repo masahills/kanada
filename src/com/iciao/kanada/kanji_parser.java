@@ -5,12 +5,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -20,6 +20,7 @@ package com.iciao.kanada;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Parse strings and look up Kanji dictionary.<br>
@@ -39,81 +40,46 @@ public class kanji_parser {
     }
 
     public String parse(String input_string) throws Exception {
-        if (input_string.length() < 2) {
-            return input_string;
-        }
+        int str_len = input_string.length();
+        output_buffer.ensureCapacity(str_len);
 
-        output_buffer.ensureCapacity(input_string.length());
+        for (int i = 0; i < str_len; i++) {
+            int this_char = input_string.codePointAt(i);
 
-        int i = 0;
-
-        for (; ; ) {
-            if (i > input_string.length() - 1) {
-                if (j_writer_mbr.buffer_mbr.length() > 0) {
-                    output_buffer.append(j_writer_mbr.map());
-                    j_writer_mbr.clear();
-                }
-                break;
-            }
-
-            char first_char = input_string.charAt(i);
-
-            // Single byte characters
-            if (first_char < 0x80) {
-                j_writer_mbr.append(first_char);
-                i = i + 1;
-                continue;
-            }
-            // Half_width Katakana or Non-Kanji Wide Chars
-            else if ((first_char == 0x8e || first_char < 0xb0) && first_char != 0x8f) {
-                try {
-                    j_writer_mbr.append(first_char).append(input_string.charAt(i + 1));
-                    i = i + 2;
-                } catch (StringIndexOutOfBoundsException e) {
-                    continue;
-                }
-
+            if (!Pattern.matches("[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]",
+                    String.valueOf(Character.toChars(this_char)))) {
+                j_writer_mbr.append(this_char);
                 continue;
             }
 
-            // output non-kanji string to buffer
-            StringBuilder non_kanji_str = j_writer_mbr.map();
-            output_buffer.append(non_kanji_str);
-            j_writer_mbr.clear();
-
-            if (kanada_mbr.mode_add_space_mbr && output_buffer.length() > 0) {
-                char last_char = output_buffer.charAt(output_buffer.length() - 1);
-
-                if (!Character.isWhitespace(last_char)) {
-                    output_buffer.append(' ');
-                }
-            }
-
-            // Kanji
-            char second_char = input_string.charAt(i + 1);
-
-            if (second_char < 0xa0) {
-                // Not a kanji
-                output_buffer.append(first_char);
-                output_buffer.append(second_char);
-                i = i + 2;
-                continue;
-            }
-
-            kanwadict.kanwa_key key = kanwa.get_key(first_char, second_char);
+            kanwadict.kanwa_key key = kanwa.get_key(this_char);
             List value_list = new ArrayList();
 
             if (kanwa.search_key(key)) {
-                value_list = (List) kanwa.get_value(key);
+                value_list = kanwa.get_value(key);
             }
 
-            if (value_list == null) {
-                // Could not find a value_list for the kanwa_key.
-                // Do nothing and move to the next letter.
-                output_buffer.append(first_char);
-                output_buffer.append(second_char);
-                i = i + 2;
+            if (value_list.isEmpty()) {
+                j_writer_mbr.append(this_char);
                 continue;
+            }
+
+            if (j_writer_mbr.buffer_mbr.length() > 0) {
+                if (kanada_mbr.mode_add_space_mbr && output_buffer.length() > 0) {
+                    int next_char = 0;
+                    if (i < str_len - 1) {
+                        next_char = input_string.codePointAt(i);
+                    }
+                    if (!Pattern.matches("[\\p{Cntrl}\\p{IsCommon}]", String.valueOf(Character.toChars(next_char)))
+                            && !Pattern.matches("(?s).*?[\\p{IsCommon}]$", j_writer_mbr.buffer_mbr.toString())) {
+                        j_writer_mbr.append(' ');
+                    }
+//                    System.out.println("### '" + j_writer_mbr.buffer_mbr.toString()
+//                            + "':'" + String.valueOf(Character.toChars(next_char)) + "'");
+                }
+                StringBuilder non_dic_str = j_writer_mbr.map();
+                output_buffer.append(non_dic_str);
+                j_writer_mbr.clear();
             }
 
             Iterator dic_iterator = value_list.iterator();
@@ -121,15 +87,16 @@ public class kanji_parser {
             int matched_len = 0;
             String yomi = "";
             String kanji = "";
-            char tail = ' ';
+            int tail = ' ';
 
             while (dic_iterator.hasNext()) {
                 kanwadict.yomi_kanji_data term = (kanwadict.yomi_kanji_data) dic_iterator.next();
 
                 int search_len = term.get_length();
-                if (i + search_len > input_string.length() || search_len <= matched_len) {
+                if ((i + search_len) > input_string.length() || search_len <= matched_len) {
                     continue;
                 }
+
                 String search_word = input_string.substring(i, i + search_len);
 
                 if (search_word.equals(term.get_kanji())) {
@@ -138,7 +105,7 @@ public class kanji_parser {
                         yomi = term.get_yomi();
                         tail = term.get_tail();
                         matched_len = search_len;
-                    } else if (search_len > 2 || input_string.length() > search_word.length()) {
+                    } else if (input_string.length() > search_word.length()) {
                         kanji = term.get_kanji();
                         yomi = term.get_yomi();
                         tail = term.get_tail();
@@ -148,27 +115,41 @@ public class kanji_parser {
             }
 
             if (matched_len == 0 || yomi.length() == 0) {
-                // Could not find a value_list for the kanwa_key.
-                // Do nothing and move to the next letter.
-                output_buffer.append(first_char);
-                output_buffer.append(second_char);
-                i = i + 2;
+                output_buffer.appendCodePoint(this_char);
             } else {
                 if (kanada_mbr.option_kanji_mbr == kanada.CONFIG_GET_AS_IS) {
-                    output_buffer.append(kanji);
+                    j_writer_mbr.append(kanji);
                 } else {
                     j_writer_mbr.append(yomi);
-                    output_buffer.append(j_writer_mbr.map());
                 }
+                if (j_writer_mbr.buffer_mbr.length() > 0) {
+                    int next_char = 0;
+                    if (kanada_mbr.mode_add_space_mbr && tail == ' ') {
+                        if (i < str_len - matched_len - 1) {
+                            next_char = input_string.codePointAt(i + matched_len);
+                        }
+                        if (!Pattern.matches("[\\p{Cntrl}\\p{IsCommon}]", String.valueOf(Character.toChars(next_char)))) {
+                            j_writer_mbr.append(' ');
+                        }
+                    }
+//                    System.out.println(">>> '" + kanji
+//                            + "':'" + String.valueOf(Character.toChars(tail))
+//                            + "':'" + j_writer_mbr.buffer_mbr.toString()
+//                            + "':'" + String.valueOf(Character.toChars(next_char)) + "'");
+                }
+                StringBuilder dic_str = j_writer_mbr.map();
+//                System.out.println("# '" + j_writer_mbr.buffer_mbr.toString() + "':'" + dic_str +"'");
+                output_buffer.append(dic_str);
                 j_writer_mbr.clear();
-                i = i + matched_len;
-
-                if (kanada_mbr.mode_add_space_mbr && tail == ' ' && output_buffer.length() > 0 && i < input_string.length()) {
-                    output_buffer.append(' ');
-                }
+                i = i + matched_len - 1;
             }
 
             j_writer_mbr.tail_mbr = tail;
+        }
+
+        if (j_writer_mbr.buffer_mbr.length() > 0) {
+            output_buffer.append(j_writer_mbr.map());
+            j_writer_mbr.clear();
         }
 
         return output_buffer.toString();

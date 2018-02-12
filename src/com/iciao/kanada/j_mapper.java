@@ -31,21 +31,10 @@ public abstract class j_mapper {
     public static final int TO_HALF_KATAKANA = 4;
     public static final int TO_ASCII = 5;
     public static final int TO_HALF_SYMBOL = 6;
-    protected int count_mbr;
     protected String out_str_mbr;
 
-
-    protected j_mapper(int count, String str) {
-        count_mbr = count;
+    protected j_mapper(String str) {
         out_str_mbr = str;
-    }
-
-    protected int get_int() {
-        return count_mbr;
-    }
-
-    protected void set_int(int count) {
-        count_mbr = count;
     }
 
     protected String get_string() {

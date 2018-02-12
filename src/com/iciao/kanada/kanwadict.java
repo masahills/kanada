@@ -5,12 +5,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -19,6 +19,7 @@ package com.iciao.kanada;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Japanese dictionary class.<br>
@@ -96,9 +97,9 @@ public class kanwadict {
         DataInputStream data_stream = new DataInputStream(file_stream);
 
         try {
-            for (int i = 0xb0; i <= 0xff; ++i) {
+            for (int i = 0x4e; i <= 0x9f; ++i) {
                 for (int j = 0x00; j <= 0xff; ++j) {
-                    kanwa_key this_key = new kanwa_key((char) i, (char) j);
+                    kanwa_key this_key = new kanwa_key(((i << 8) | j));
                     kanwa_address this_address = new kanwa_address();
                     this_address.value = data_stream.readLong();
                     kanwa_index.put(this_key, this_address);
@@ -160,7 +161,7 @@ public class kanwadict {
         RandomAccessFile dict_file = new RandomAccessFile(out_file, "rw");
 
         // Create a space for key indices.
-        for (int i = 0xb0; i <= 0xff; ++i) {
+        for (int i = 0x4e; i <= 0x9f; ++i) {
             for (int j = 0x00; j <= 0xff; ++j) {
                 dict_file.writeLong(0);
             }
@@ -171,7 +172,7 @@ public class kanwadict {
         while (iterator.hasNext()) {
             kanwa_key key = (kanwa_key) iterator.next();
 
-            long pos = (((key.key_mbr[0] << 8) | key.key_mbr[1]) - 0xb000) * SIZE_OF_LONG;
+            long pos = (key.key_mbr - 0x4e00) * SIZE_OF_LONG;
 
             // Move to the key address.
             dict_file.seek(pos);
@@ -193,8 +194,8 @@ public class kanwadict {
         dict_file.close();
     }
 
-    public kanwa_key get_key(char first, char second) {
-        return new kanwa_key(first, second);
+    public kanwa_key get_key(int codepoint) {
+        return new kanwa_key(codepoint);
     }
 
     public ArrayList get_value(kanwa_key key) {
@@ -218,7 +219,7 @@ public class kanwadict {
             return;
         }
 
-        InputStreamReader file_stream = new InputStreamReader(new FileInputStream(kanwa_file), kanada.JDK_JIS_AUTO_DETECT);
+        InputStreamReader file_stream = new InputStreamReader(new FileInputStream(kanwa_file), "JISAutoDetect");
         BufferedReader reader = new BufferedReader(file_stream);
         try {
             for (; ; ) {
@@ -228,7 +229,6 @@ public class kanwadict {
                     return;
                 }
 
-                line = new String(line.getBytes(kanada.JDK_EUC_JP), kanada.JDK_ISO8859_1);
                 line = line.trim();
 
                 if (line.length() > 0) {
@@ -243,9 +243,13 @@ public class kanwadict {
     }
 
     private void parse_line(String line) {
-        char first_char = line.charAt(0);
+        int first_char = line.codePointAt(0);
+        Character.UnicodeBlock block = Character.UnicodeBlock.of(first_char);
 
-        if (first_char < 0xa4 && first_char != 0xa1) {
+
+        if (block != Character.UnicodeBlock.HIRAGANA
+                && block != Character.UnicodeBlock.KATAKANA
+                && block != Character.UnicodeBlock.KATAKANA_PHONETIC_EXTENSIONS) {
             return;
         }
 
@@ -255,9 +259,13 @@ public class kanwadict {
 
         StringTokenizer tokenizer = new StringTokenizer(line, " ");
         int count = tokenizer.countTokens();
-        String yomi = (count > 0) ? tokenizer.nextToken() : "";
+        if (count < 1) {
+            return;
+        }
+
+        String yomi = tokenizer.nextToken();
         int yomi_len = yomi.length();
-        char tail = yomi.charAt(yomi_len - 1);
+        int tail = yomi.codePointAt(yomi_len - 1);
 
         if ((tail > 0x40 && tail < 0x5b) || (tail > 0x60 && tail < 0x7b)) {
             yomi_len = yomi_len - 1;
@@ -266,63 +274,28 @@ public class kanwadict {
             tail = ' ';
         }
 
-        if (count > 1) {
-            while (tokenizer.hasMoreTokens()) {
-                String kanji = tokenizer.nextToken();
-                if (yomi_len > 1 && kanji.length() > 1) {
-                    add_entry(yomi, kanji, tail);
-                }
+        while (tokenizer.hasMoreTokens()) {
+            String kanji = tokenizer.nextToken();
+            if (yomi_len > 0 && kanji.length() > 0) {
+                add_entry(yomi, kanji, tail);
             }
         }
     }
 
-    private void add_entry(String yomi, String kanji, char tail) {
+    private void add_entry(String yomi, String kanji, int tail) {
         ArrayList<yomi_kanji_data> value_list;
-        if (kanji.charAt(0) < 0xb0) {
+
+        if (!Pattern.matches("^\\p{IsHiragana}+$", yomi)) {
             return;
         }
 
-        int kanji_len = kanji.length();
-
-        for (int k = 0; k < kanji_len - 1; k += 2) {
-            char kanji_first_char;
-            char kanji_second_char;
-
-            kanji_first_char = kanji.charAt(k);
-            kanji_second_char = kanji.charAt(k + 1);
-
-            if (kanji_first_char < 0xa0 || kanji_second_char < 0xa0) {
-                return;
-            }
-
-            // Need to add code for kanji nomalization at here.
-            // normalize_itaiji(first_char, second_char);
+        if (!Pattern.matches("^[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]+$", kanji)) {
+            return;
         }
 
-        for (int j = 0; j < yomi.length() - 1; j += 2) {
-            char yomi_first_char;
-            char yomi_second_char;
+        int cp = kanji.codePointAt(0);
 
-            yomi_first_char = yomi.charAt(j);
-            yomi_second_char = yomi.charAt(j + 1);
-
-            if (yomi_first_char < 0xa1) {
-                return;
-            }
-
-            if (yomi_first_char == 0xa5) {
-                yomi_first_char = 0xa4;
-            }
-
-            if (yomi_first_char != 0xa4 && (yomi_first_char != 0xa1 || yomi_second_char != 0xbc)) {
-                return;
-            }
-        }
-
-        char first_char = kanji.charAt(0);
-        char second_char = kanji.charAt(1);
-
-        kanwa_key key = new kanwa_key(first_char, second_char);
+        kanwa_key key = new kanwa_key(cp);
         yomi_kanji_data value = new yomi_kanji_data(yomi, tail, kanji);
 
         if (kanwa_map.containsKey(key)) {
@@ -330,11 +303,6 @@ public class kanwadict {
         } else {
             value_list = new ArrayList<yomi_kanji_data>();
         }
-
-//		This slows down the process. There is no harm having duplicates.
-//		if (!value_list.contains(value)) {
-//			value_list.add(value);
-//		}
 
         value_list.add(value);
         kanwa_map.put(key, value_list);
@@ -345,32 +313,31 @@ public class kanwadict {
     }
 
     public static class kanwa_key implements Serializable {
-        private char[] key_mbr = new char[2];
+        private int key_mbr;
 
-        public kanwa_key(char first, char second) {
-            key_mbr[0] = first;
-            key_mbr[1] = second;
+        public kanwa_key(int codepoint) {
+            key_mbr = codepoint;
         }
 
         public boolean equals(Object obj) {
             if (obj instanceof kanwa_key) {
                 kanwa_key this_key = (kanwa_key) obj;
-                return (this.key_mbr[0] == this_key.key_mbr[0] && this.key_mbr[1] == this_key.key_mbr[1]);
+                return (this.key_mbr == this_key.key_mbr);
             }
             return false;
         }
 
         public int hashCode() {
-            return ((key_mbr[0] << 8) | key_mbr[1]);
+            return key_mbr;
         }
     }
 
     public static class yomi_kanji_data implements Serializable {
         private String yomi_mbr;
-        private char tail_mbr;
+        private int tail_mbr;
         private String kanji_mbr;
 
-        public yomi_kanji_data(String yomi, char tail, String kanji) {
+        public yomi_kanji_data(String yomi, int tail, String kanji) {
             yomi_mbr = yomi;
             tail_mbr = tail;
             kanji_mbr = kanji;
@@ -388,7 +355,7 @@ public class kanwadict {
             return kanji_mbr.length();
         }
 
-        public char get_tail() {
+        public int get_tail() {
             return tail_mbr;
         }
 

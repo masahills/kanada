@@ -5,12 +5,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -24,93 +24,44 @@ import com.iciao.kanada.j_mapper;
  *
  * @author Masahiko Sato
  */
+/*
+ 	    0	1	2	3	4	5	6	7	8	9	A	B	C	D	E	F
+U+300x	　	、	。	〃	〄	々	〆	〇	〈	〉	《	》	「	」	『	』
+U+301x	【	】	〒	〓	〔	〕	〖	〗	〘	〙	〚	〛	〜	〝	〞	〟
+U+302x	〠	〡	〢	〣	〤	〥	〦	〧	〨	〩	〪	〫	〬	〭	〮	〯
+U+303x	〰	〱	〲	〳	〴	〵	〶	〷	〸	〹	〺	〻	〼	〽	 〾 	〿
+ */
 public class map_wide_symbol extends j_mapper {
-    private static final String wide_symbol_a1_to_ascii[] = {
-            " ", ",", ".", ",", ".", ".", ":", ";", "?", "!", "\"", "(degree)", "'", "`", "..",
-            "^", "~", "_", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "shime", "(circle)", "-", "-", "-", "/",
-            "\\", "~", "||", "|", "...", "..", "'", " ", "\"", "\"", "(", ")", "[", "]", "[", "]",
-            "{", "}", "<", ">", "<<", ">>", "\"", "\"", "\"", "\"", "[", "]", "+", "-", "+/-", "x",
-            "/", "=", "!=", "<", ">", "<=", ">=", "(infinite)", "...", "(male)", "(female)", "(degree)", "'", "\"", "(celsius)", "(yen)",
-            "$", "(cent)", "(pound)", "%", "#", "&", "*", "@", "(section)", "*", "*", "o", "o", "o", "o"};
-    private static final String wide_symbol_a2_to_ascii[] = {
-            "o", "o", "o", "o", "o", "o", "o", "*", "(postal code)", "->", "<-", "(up)", "(down)", "(undef)"};
-    private static final String wide_symbol_a6_to_ascii[] = {
-            "Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron",
-            "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega", "", "", "", "", "", "", "",
-            "", "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "iota", "kappa", "lambda", "mu", "nu", "xi", "omicron",
-            "pi", "rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega"};
+    private static final String cjk_symbols_and_punctuation_to_ascii[] = {
+            " ", ",", ".", "(repeat)", "(jis)", "(repeat)", "shime", "(circle)",
+            "<", ">", "<<", ">>", "\"", "\"", "\"", "\"",
+
+            "[", "]", "(postal mark)", "=", "[", "]", "[", "]",
+            "[", "]", "[", "]", "~", "\"", "\"", "\"",
+
+            "(postal mark face)", "1", "2", "3", "4", "5", "6", "7",
+            "8", "9", "", "", "", "", "", "",
+
+            "~", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(postal mark circle)", "XX",
+            "10", "11", "12", "(repeat)", "(square)", "^", " "};
 
     public map_wide_symbol() {
-        this(0, null);
+        this(null);
     }
 
-    protected map_wide_symbol(int count, String str) {
-        super(count, str);
+    protected map_wide_symbol(String str) {
+        super(str);
     }
 
     protected void process(String str, int param) {
-        int i = 0;
         StringBuilder out = new StringBuilder();
-
-        char first_char = str.charAt(0);
-
-        try {
-            char second_char = str.charAt(1);
-
-            if (second_char < 0xa1) {
-                // Out of range. Not a Japanese character.
-                out.append(first_char);
-                out.append(second_char);
-                i = 2;
-            }
-
-            switch (first_char) {
-                case 0xa1: {
-                    out.append(wide_symbol_a1_to_ascii[second_char - 0xa1]);
-                    i = 2;
-                    break;
-                }
-                case 0xa2: {
-                    out.append(wide_symbol_a2_to_ascii[second_char - 0xa1]);
-                    i = 2;
-                    break;
-                }
-                case 0xa3: {
-                    if (second_char < 0x80) {
-                        // Out of range. Not a Japanese character.
-                        out.append(first_char);
-                        out.append(second_char);
-                        i = 2;
-                    } else {
-                        out.append((char) (second_char - 0x80));
-                        i = 2;
-                    }
-                    break;
-                }
-                case 0xa6: {
-                    out.append(wide_symbol_a6_to_ascii[second_char - 0xa1]);
-                    i = 2;
-                    break;
-                }
-                default: {
-                    // You sould never get here.
-                    out.append(first_char);
-                    out.append(second_char);
-                    i = 2;
-                    break;
-                }
-            }
+        int this_char = str.codePointAt(0);
+        Character.UnicodeBlock block = Character.UnicodeBlock.of(this_char);
+        if (block == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION) {
+            out.append(cjk_symbols_and_punctuation_to_ascii[this_char - 0x3000]);
+        } else {
+            out.appendCodePoint(this_char);
         }
-        // ArrayIndexOutOfBoundsException or StringIndexOutOfBoundsException may occur
-        // while processing non-Japanese double byte texts or other non-Ascii chars.
-        catch (Exception e) {
-            out.append(first_char);
-            i = 1;
-        }
-
-        set_int(i);
         set_string(out.toString());
     }
-
-
 }
