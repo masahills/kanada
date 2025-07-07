@@ -21,19 +21,21 @@ public class KanadaTest {
     public void testBasicHiraganaConversion() throws Exception {
         String result = hiragana.process("漢字");
         assertNotNull(result);
-        // 基本的な変換が動作することを確認
+        assertEquals(result, "かんじ");
     }
     
     @Test
     public void testBasicKatakanaConversion() throws Exception {
         String result = katakana.process("漢字");
         assertNotNull(result);
+        assertEquals(result, "カンジ");
     }
     
     @Test
     public void testBasicRomajiConversion() throws Exception {
         String result = romaji.process("漢字");
         assertNotNull(result);
+        assertEquals(result, "kanzi");
     }
     
     @Test
