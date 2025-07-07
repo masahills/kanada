@@ -25,7 +25,7 @@ import java.util.Locale;
  *
  * @author Masahiko Sato
  */
-public class kanada {
+public class Kanada {
     public static final int FLAG_ADD_SPACE = 0x00000001;
     public static final int FLAG_UC_FIRST = 0x00000002;
     public static final int FLAG_UC_ALL = 0x00000004;
@@ -40,181 +40,181 @@ public class kanada {
     public static final int CONFIG_HALF_TO_WIDE_ALL = 3;
     public static final int CONFIG_HALF_TO_WIDE_KANA = 4;
 
-    protected int option_kanji_mbr;
-    protected int option_hiragana_mbr;
-    protected int option_katakana_mbr;
-    protected int option_wide_ascii_mbr;
-    protected int option_wide_symbol_mbr;
-    protected int option_half_katakana_mbr;
-    protected int option_ascii_mbr;
-    protected int option_half_symbol_mbr;
-    protected boolean mode_show_all_yomi_mbr = false;
-    protected boolean mode_add_space_mbr = false;
-    protected boolean mode_furigana_mbr = false;
-    protected boolean mode_uc_first_mbr = false;
-    protected boolean mode_uc_all_mbr = false;
-    protected boolean mode_kunrei_romaji_mbr = false;
-    protected boolean mode_wakachi_kaki_mbr = false;
+    protected int optionKanji;
+    protected int optionHiragana;
+    protected int optionKatakana;
+    protected int optionWideAscii;
+    protected int optionWideSymbol;
+    protected int optionHalfKatakana;
+    protected int optionAscii;
+    protected int optionHalfSymbol;
+    protected boolean modeShowAllYomi = false;
+    protected boolean modeAddSpace = false;
+    protected boolean modeFurigana = false;
+    protected boolean modeUcFirst = false;
+    protected boolean modeUcAll = false;
+    protected boolean modeKunreiRomaji = false;
+    protected boolean modeWakachiKaki = false;
 
-    public kanada() throws java.io.IOException {
-        set_param(CONFIG_GET_AS_IS);
+    public Kanada() throws java.io.IOException {
+        setParam(CONFIG_GET_AS_IS);
     }
 
-    public kanada(int config) throws java.io.IOException {
-        set_param(config);
+    public Kanada(int config) throws java.io.IOException {
+        setParam(config);
     }
 
-    public kanada(int param_kanji,
-                  int param_hiragana,
-                  int param_katakana,
-                  int param_wide_ascii,
-                  int param_wide_symbol,
-                  int param_half_katakana,
-                  int param_ascii,
-                  int param_half_symbol) throws java.io.IOException {
-        set_param(param_kanji,
-                param_hiragana,
-                param_katakana,
-                param_wide_ascii,
-                param_wide_symbol,
-                param_ascii,
-                param_half_katakana,
-                param_half_symbol);
+    public Kanada(int paramKanji,
+                  int paramHiragana,
+                  int paramKatakana,
+                  int paramWideAscii,
+                  int paramWideSymbol,
+                  int paramHalfKatakana,
+                  int paramAscii,
+                  int paramHalfSymbol) throws java.io.IOException {
+        setParam(paramKanji,
+                paramHiragana,
+                paramKatakana,
+                paramWideAscii,
+                paramWideSymbol,
+                paramAscii,
+                paramHalfKatakana,
+                paramHalfSymbol);
     }
 
-    private void set_param(int config) {
+    private void setParam(int config) {
         switch (config) {
             case CONFIG_GET_ROMAJI: {
-                set_param(
-                        j_mapper.TO_ASCII,
-                        j_mapper.TO_ASCII,
-                        j_mapper.TO_ASCII,
-                        j_mapper.TO_ASCII,
-                        j_mapper.TO_ASCII,
-                        j_mapper.AS_IS,
-                        j_mapper.TO_ASCII,
-                        j_mapper.TO_ASCII);
+                setParam(
+                        JMapper.TO_ASCII,
+                        JMapper.TO_ASCII,
+                        JMapper.TO_ASCII,
+                        JMapper.TO_ASCII,
+                        JMapper.TO_ASCII,
+                        JMapper.AS_IS,
+                        JMapper.TO_ASCII,
+                        JMapper.TO_ASCII);
                 break;
             }
             case CONFIG_GET_HIRAGANA: {
-                set_param(
-                        j_mapper.TO_HIRAGANA,
-                        j_mapper.AS_IS,
-                        j_mapper.TO_HIRAGANA,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.TO_HIRAGANA,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS);
+                setParam(
+                        JMapper.TO_HIRAGANA,
+                        JMapper.AS_IS,
+                        JMapper.TO_HIRAGANA,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.TO_HIRAGANA,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS);
                 break;
             }
             case CONFIG_GET_KATAKANA: {
-                set_param(j_mapper.TO_KATAKANA,
-                        j_mapper.TO_KATAKANA,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.TO_KATAKANA,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS);
+                setParam(JMapper.TO_KATAKANA,
+                        JMapper.TO_KATAKANA,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.TO_KATAKANA,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS);
                 break;
             }
             case CONFIG_HALF_TO_WIDE_ALL: {
-                set_param(
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.TO_HIRAGANA,
-                        j_mapper.TO_WIDE_ASCII,
-                        j_mapper.TO_KATAKANA,
-                        j_mapper.TO_WIDE_SYMBOL);
+                setParam(
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.TO_HIRAGANA,
+                        JMapper.TO_WIDE_ASCII,
+                        JMapper.TO_KATAKANA,
+                        JMapper.TO_WIDE_SYMBOL);
                 break;
             }
             default: {
-                set_param(
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS,
-                        j_mapper.AS_IS);
+                setParam(
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS,
+                        JMapper.AS_IS);
                 break;
             }
         }
     }
 
-    private void set_param(int param_kanji,
-                           int param_hiragana,
-                           int param_katakana,
-                           int param_wide_ascii,
-                           int param_wide_symbol,
-                           int param_ascii,
-                           int param_half_katakana,
-                           int param_half_symbol) {
-        option_kanji_mbr = param_kanji;
-        option_hiragana_mbr = param_hiragana;
-        option_katakana_mbr = param_katakana;
-        option_wide_ascii_mbr = param_wide_ascii;
-        option_wide_symbol_mbr = param_wide_symbol;
-        option_ascii_mbr = param_ascii;
-        option_half_katakana_mbr = param_half_katakana;
-        option_half_symbol_mbr = param_half_symbol;
+    private void setParam(int paramKanji,
+                          int paramHiragana,
+                          int paramKatakana,
+                          int paramWideAscii,
+                          int paramWideSymbol,
+                          int paramAscii,
+                          int paramHalfKatakana,
+                          int paramHalfSymbol) {
+        optionKanji = paramKanji;
+        optionHiragana = paramHiragana;
+        optionKatakana = paramKatakana;
+        optionWideAscii = paramWideAscii;
+        optionWideSymbol = paramWideSymbol;
+        optionAscii = paramAscii;
+        optionHalfKatakana = paramHalfKatakana;
+        optionHalfSymbol = paramHalfSymbol;
     }
 
-    public void set_mode(int mode) {
-        mode_show_all_yomi_mbr = false;
-        mode_add_space_mbr = false;
-        mode_uc_first_mbr = false;
-        mode_uc_all_mbr = false;
-        mode_kunrei_romaji_mbr = false;
+    public void setMode(int mode) {
+        modeShowAllYomi = false;
+        modeAddSpace = false;
+        modeUcFirst = false;
+        modeUcAll = false;
+        modeKunreiRomaji = false;
 
         if ((mode & FLAG_ADD_SPACE) != 0) {
-            mode_add_space_mbr = true;
+            modeAddSpace = true;
         }
 
         if ((mode & FLAG_UC_FIRST) != 0) {
-            mode_uc_first_mbr = true;
-            mode_uc_all_mbr = false;
+            modeUcFirst = true;
+            modeUcAll = false;
         }
 
         if ((mode & FLAG_UC_ALL) != 0) {
-            mode_uc_first_mbr = false;
-            mode_uc_all_mbr = true;
+            modeUcFirst = false;
+            modeUcAll = true;
         }
 
         // TODO: To be implemented
         if ((mode & FLAG_FURIGANA) != 0) {
-            mode_uc_all_mbr = true;
+            modeUcAll = true;
         }
 
         if ((mode & FLAG_SHOW_ALL_YOMI) != 0) {
-            mode_show_all_yomi_mbr = true;
+            modeShowAllYomi = true;
         }
 
         if ((mode & FLAG_KUNREI_ROMAJI) != 0) {
-            mode_kunrei_romaji_mbr = true;
+            modeKunreiRomaji = true;
         }
     }
 
     public String process(String str, int mode) {
-        set_mode(mode);
+        setMode(mode);
         return process(str);
     }
 
-    public String process(String str, boolean add_space) {
-        boolean saved_status = mode_add_space_mbr;
+    public String process(String str, boolean addSpace) {
+        boolean savedStatus = modeAddSpace;
 
-        if (add_space) {
-            mode_add_space_mbr = true;
+        if (addSpace) {
+            modeAddSpace = true;
         }
 
         String processed = process(str);
 
-        if (add_space) {
-            mode_add_space_mbr = saved_status;
+        if (addSpace) {
+            modeAddSpace = savedStatus;
         }
 
         return processed;
@@ -225,19 +225,19 @@ public class kanada {
             return str;
         }
 
-        String parsed_str;
+        String parsedStr;
         try {
-            j_writer writer = new j_writer(this);
-            kanji_parser parser = new kanji_parser(writer);
-            parsed_str = parser.parse(str);
-            if (mode_uc_all_mbr) {
-                parsed_str = parsed_str.toUpperCase(Locale.ENGLISH);
+            JWriter writer = new JWriter(this);
+            KanjiParser parser = new KanjiParser(writer);
+            parsedStr = parser.parse(str);
+            if (modeUcAll) {
+                parsedStr = parsedStr.toUpperCase(Locale.ENGLISH);
             }
         } catch (Exception e) {
             e.printStackTrace();
             return str;
         }
 
-        return parsed_str;
+        return parsedStr;
     }
 }

@@ -17,26 +17,30 @@
  */
 package com.iciao.kanada.maps;
 
-import com.iciao.kanada.j_mapper;
+import com.iciao.kanada.JMapper;
 
 /**
  * Remap non-kanji characters.<br>
  *
  * @author Masahiko Sato
  */
-public class map_half_symbol extends j_mapper {
-    public map_half_symbol() {
+public class MapWideAscii extends JMapper {
+    public MapWideAscii() {
         this(null);
     }
 
-    protected map_half_symbol(String str) {
+    protected MapWideAscii(String str) {
         super(str);
     }
 
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
-        int this_char = str.codePointAt(0);
-        out.appendCodePoint(this_char);
-        set_string(out.toString());
+        int thisChar = str.codePointAt(0);
+        if (thisChar >= 0xff00 && thisChar <= 0xff5e) {
+            out.appendCodePoint(thisChar - 0xfee0);
+        } else {
+            out.appendCodePoint(thisChar);
+        }
+        setString(out.toString());
     }
 }

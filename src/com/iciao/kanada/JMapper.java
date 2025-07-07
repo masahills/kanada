@@ -22,7 +22,7 @@ package com.iciao.kanada;
  *
  * @author Masahiko Sato
  */
-public abstract class j_mapper {
+public abstract class JMapper {
     public static final int AS_IS = -1;
     public static final int TO_HIRAGANA = 0;
     public static final int TO_KATAKANA = 1;
@@ -31,18 +31,18 @@ public abstract class j_mapper {
     public static final int TO_HALF_KATAKANA = 4;
     public static final int TO_ASCII = 5;
     public static final int TO_HALF_SYMBOL = 6;
-    protected String out_str_mbr;
+    protected String outStr;
 
-    protected j_mapper(String str) {
-        out_str_mbr = str;
+    protected JMapper(String str) {
+        outStr = str;
     }
 
-    protected String get_string() {
-        return out_str_mbr;
+    protected String getString() {
+        return outStr;
     }
 
-    protected void set_string(String str) {
-        out_str_mbr = str;
+    protected void setString(String str) {
+        outStr = str;
     }
 
     protected abstract void process(String str, int param);

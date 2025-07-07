@@ -17,7 +17,7 @@
  */
 package com.iciao.kanada.maps;
 
-import com.iciao.kanada.j_mapper;
+import com.iciao.kanada.JMapper;
 
 import java.util.HashMap;
 
@@ -36,8 +36,8 @@ import java.util.HashMap;
  U+308x	む	め	も	ゃ	や	ゅ	ゆ	ょ	よ	ら	り	る	れ	ろ	ゎ	わ
  U+309x	ゐ	ゑ	を	ん	ゔ	ゕ	ゖ			゙	゚	゛	゜	ゝ	ゞ	ゟ 
  */
-public class map_hiragana extends j_mapper {
-    private static final String hiragana_to_romaji[] = {
+public class MapHiragana extends JMapper {
+    private static final String[] hiraganaToRomaji = {
             "\u3041", "a",
             "\u3042", "a",
             "\u3043", "i",
@@ -349,48 +349,48 @@ public class map_hiragana extends j_mapper {
 
             "", ""};
 
-    private static final HashMap<String, String> hiragana_to_romaji_map;
+    private static final HashMap<String, String> hiraganaToRomajiMap;
 
     static {
-        hiragana_to_romaji_map = new HashMap<String, String>(hiragana_to_romaji.length);
-        for (int i = 0; i < hiragana_to_romaji.length; i += 2) {
-            String key = hiragana_to_romaji[i];
-            String value = hiragana_to_romaji[i + 1];
-            hiragana_to_romaji_map.put(key, value);
+        hiraganaToRomajiMap = new HashMap<String, String>(hiraganaToRomaji.length);
+        for (int i = 0; i < hiraganaToRomaji.length; i += 2) {
+            String key = hiraganaToRomaji[i];
+            String value = hiraganaToRomaji[i + 1];
+            hiraganaToRomajiMap.put(key, value);
         }
     }
 
-    public map_hiragana() {
+    public MapHiragana() {
         this(null);
     }
 
-    protected map_hiragana(String str) {
+    protected MapHiragana(String str) {
         super(str);
     }
 
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
-        int this_char = str.codePointAt(0);
+        int thisChar = str.codePointAt(0);
         switch (param) {
             case TO_KATAKANA:
-                out.appendCodePoint(this_char + 0x60);
+                out.appendCodePoint(thisChar + 0x60);
                 break;
             case TO_HALF_KATAKANA:
                 // TODO: need implementation
-                out.append(String.valueOf(Character.toChars(this_char)));
+                out.append(String.valueOf(Character.toChars(thisChar)));
                 break;
             case TO_ASCII:
             case TO_WIDE_ASCII:
-                String kana = String.valueOf(Character.toChars(this_char));
-                if (hiragana_to_romaji_map.containsKey(kana)) {
-                    out.append(hiragana_to_romaji_map.get(kana));
+                String kana = String.valueOf(Character.toChars(thisChar));
+                if (hiraganaToRomajiMap.containsKey(kana)) {
+                    out.append(hiraganaToRomajiMap.get(kana));
                 }
                 break;
             default: {
-                out.appendCodePoint(this_char);
+                out.appendCodePoint(thisChar);
                 break;
             }
         }
-        set_string(out.toString());
+        setString(out.toString());
     }
 }

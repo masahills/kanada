@@ -17,30 +17,30 @@
  */
 package com.iciao.kanada.maps;
 
-import com.iciao.kanada.j_mapper;
+import com.iciao.kanada.JMapper;
 
 /**
  * Remap non-kanji characters.<br>
  *
  * @author Masahiko Sato
  */
-public class map_wide_ascii extends j_mapper {
-    public map_wide_ascii() {
+public class MapAscii extends JMapper {
+    public MapAscii() {
         this(null);
     }
 
-    protected map_wide_ascii(String str) {
+    protected MapAscii(String str) {
         super(str);
     }
 
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
-        int this_char = str.codePointAt(0);
-        if (this_char >= 0xff00 && this_char <= 0xff5e) {
-            out.appendCodePoint(this_char - 0xfee0);
+        int thisChar = str.codePointAt(0);
+        if (thisChar > 0x20 && thisChar < 0x7f) {
+            out.appendCodePoint(thisChar + 0xfee0);
         } else {
-            out.appendCodePoint(this_char);
+            out.appendCodePoint(thisChar);
         }
-        set_string(out.toString());
+        setString(out.toString());
     }
 }

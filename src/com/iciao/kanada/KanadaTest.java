@@ -11,7 +11,7 @@ package com.iciao.kanada;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class kanada_test {
+public class KanadaTest {
 
     private static final String TEST_TEXT =
             "第二次安倍改造内閣は3日夕方、皇居での認証式を経て正式に発足した。\n" +
@@ -51,23 +51,23 @@ public class kanada_test {
 
     public static void main(String[] args) throws Exception {
 
-        kanada roomaji = null;
-        kanada wakatigaki = null;
-        kanada hiragana = null;
-        kanada katakana = null;
-        kanada fullwidth = null;
+        Kanada roomaji = null;
+        Kanada wakatigaki = null;
+        Kanada hiragana = null;
+        Kanada katakana = null;
+        Kanada fullwidth = null;
 
         try {
-            roomaji = new kanada(kanada.CONFIG_GET_ROMAJI);
-            wakatigaki = new kanada(kanada.CONFIG_GET_AS_IS);
-            hiragana = new kanada(kanada.CONFIG_GET_HIRAGANA);
-            katakana = new kanada(kanada.CONFIG_GET_KATAKANA);
-            fullwidth = new kanada(kanada.CONFIG_HALF_TO_WIDE_ALL);
+            roomaji = new Kanada(Kanada.CONFIG_GET_ROMAJI);
+            wakatigaki = new Kanada(Kanada.CONFIG_GET_AS_IS);
+            hiragana = new Kanada(Kanada.CONFIG_GET_HIRAGANA);
+            katakana = new Kanada(Kanada.CONFIG_GET_KATAKANA);
+            fullwidth = new Kanada(Kanada.CONFIG_HALF_TO_WIDE_ALL);
         } catch (IOException e) {
             System.out.println(e);
         }
 
-        roomaji.set_mode(kanada.FLAG_UC_FIRST);
+        roomaji.setMode(Kanada.FLAG_UC_FIRST);
 
         System.out.println(TEST_TEXT);
 
@@ -79,12 +79,12 @@ public class kanada_test {
         process(fullwidth, TEST_TEXT_TO_WIDE);
     }
 
-    private static void process(kanada obj, String str) {
+    private static void process(Kanada obj, String str) {
         Calendar t0 = Calendar.getInstance();
         String result = obj.process(str, true);
         Calendar t1 = Calendar.getInstance();
-        int lap_time = (int) Math.ceil(t1.getTime().getTime() - t0.getTime().getTime());
-        System.out.println("" + lap_time + " ms: " + "'" + result + "'");
+        int lapTime = (int) Math.ceil(t1.getTime().getTime() - t0.getTime().getTime());
+        System.out.println("" + lapTime + " ms: " + "'" + result + "'");
     }
 
 }

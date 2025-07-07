@@ -17,7 +17,7 @@
  */
 package com.iciao.kanada.maps;
 
-import com.iciao.kanada.j_mapper;
+import com.iciao.kanada.JMapper;
 
 /**
  * Remap non-kanji characters.<br>
@@ -31,8 +31,8 @@ U+301x	【	】	〒	〓	〔	〕	〖	〗	〘	〙	〚	〛	〜	〝	〞	〟
 U+302x	〠	〡	〢	〣	〤	〥	〦	〧	〨	〩	〪	〫	〬	〭	〮	〯
 U+303x	〰	〱	〲	〳	〴	〵	〶	〷	〸	〹	〺	〻	〼	〽	 〾 	〿
  */
-public class map_wide_symbol extends j_mapper {
-    private static final String cjk_symbols_and_punctuation_to_ascii[] = {
+public class MapWideSymbol extends JMapper {
+    private static final String[] cjkSymbolsAndPunctuationToAscii = {
             " ", ",", ".", "(repeat)", "(jis)", "(repeat)", "shime", "(circle)",
             "<", ">", "<<", ">>", "\"", "\"", "\"", "\"",
 
@@ -45,23 +45,23 @@ public class map_wide_symbol extends j_mapper {
             "~", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(postal mark circle)", "XX",
             "10", "11", "12", "(repeat)", "(square)", "^", " "};
 
-    public map_wide_symbol() {
+    public MapWideSymbol() {
         this(null);
     }
 
-    protected map_wide_symbol(String str) {
+    protected MapWideSymbol(String str) {
         super(str);
     }
 
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
-        int this_char = str.codePointAt(0);
-        Character.UnicodeBlock block = Character.UnicodeBlock.of(this_char);
+        int thisChar = str.codePointAt(0);
+        Character.UnicodeBlock block = Character.UnicodeBlock.of(thisChar);
         if (block == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION) {
-            out.append(cjk_symbols_and_punctuation_to_ascii[this_char - 0x3000]);
+            out.append(cjkSymbolsAndPunctuationToAscii[thisChar - 0x3000]);
         } else {
-            out.appendCodePoint(this_char);
+            out.appendCodePoint(thisChar);
         }
-        set_string(out.toString());
+        setString(out.toString());
     }
 }
