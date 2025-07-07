@@ -18,3 +18,10 @@ Thumbs.db
 
 # Generated dictionary files
 dictionary/japanese/kanwadict.dat
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
