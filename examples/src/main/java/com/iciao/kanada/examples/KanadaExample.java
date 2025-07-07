@@ -6,12 +6,16 @@
  * To change template for new class use
  * Code Style | Class Templates options (Tools | IDE Options).
  */
-package com.iciao.kanada;
+package com.iciao.kanada.examples;
 
+import com.iciao.kanada.Kanada;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class KanadaTest {
+/**
+ * Example usage of Kanada library
+ */
+public class KanadaExample {
 
     private static final String TEST_TEXT =
             "第二次安倍改造内閣は3日夕方、皇居での認証式を経て正式に発足した。\n" +
