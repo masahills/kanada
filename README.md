@@ -1,8 +1,63 @@
-Kanada
-======
+# Kanada - Japanese Text Transliteration Library
 
-A Java library to transliterate Kanji-Kana-mixed Japanese text into Hiragana, Katakana, or Romaji representations.
-The Kanada is also useful for text segmentation processing (word-splitting or 'wakachi-gaki') for further morphological analysis.
+A pure Java library for converting Japanese text between Kanji, Hiragana, Katakana, and Romaji.
 
-This is something I wrote (ported from KAKASI) in the early 2000s and hasn't been maintained since then.
-I'm planning to refine the library so that it become useful for Android app developers.
+## Features
+
+- **Kanji to Kana conversion** - Convert Kanji to Hiragana or Katakana
+- **Romanization** - Convert Japanese text to Latin alphabet
+- **Multiple romanization systems** - Hepburn and Kunrei-shiki
+- **Flexible formatting** - Space insertion, case conversion
+- **Character width conversion** - Half-width ↔ Full-width
+- **Pure Java** - No external dependencies or native libraries
+
+## Quick Start
+
+### Gradle
+```gradle
+dependencies {
+    implementation 'com.iciao:kanada:1.0.0'
+}
+```
+
+### Simple Usage (Recommended)
+```java
+import com.iciao.kanada.Kanada;
+
+// Static methods for quick conversion
+String romaji = Kanada.toRomaji("日本語");     // "nihongo"
+String hiragana = Kanada.toHiragana("日本語"); // "にほんご"
+String katakana = Kanada.toKatakana("日本語");  // "ニホンゴ"
+```
+
+### Advanced Usage (Builder Pattern)
+```java
+import com.iciao.kanada.KanadaBuilder;
+
+// Customized conversion with spaces and capitalization
+Kanada converter = KanadaBuilder.create()
+    .toRomaji()
+    .withSpaces()
+    .upperCaseFirst()
+    .build();
+    
+String result = converter.process("東京都"); // "Tokyo To"
+```
+
+
+
+## Building
+
+```bash
+./gradlew build
+```
+
+## Running Examples
+
+```bash
+./gradlew :examples:run
+```
+
+## License
+
+GPL v2 - See LICENSE file for details.

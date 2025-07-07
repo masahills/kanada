@@ -20,12 +20,53 @@ package com.iciao.kanada;
 import java.util.Locale;
 
 /**
- * Kanji-to-Kana/Romaji Conversion Utility.<br>
- * Convert a given Japanese string into Hiragana, Katakana, or Romaji string.
+ * Japanese text transliteration library for converting between Kanji, Hiragana, Katakana, and Romaji.
+ * 
+ * <h3>Simple Usage:</h3>
+ * <pre>{@code
+ * String romaji = Kanada.toRomaji("日本語");     // "nihongo"
+ * String hiragana = Kanada.toHiragana("日本語"); // "にほんご"
+ * String katakana = Kanada.toKatakana("日本語");  // "ニホンゴ"
+ * }</pre>
+ * 
+ * <h3>Advanced Usage:</h3>
+ * <pre>{@code
+ * Kanada converter = KanadaBuilder.create()
+ *     .toRomaji()
+ *     .withSpaces()
+ *     .upperCaseFirst()
+ *     .build();
+ * String result = converter.process("東京都"); // "Tokyo To"
+ * }</pre>
  *
  * @author Masahiko Sato
  */
 public class Kanada {
+    
+    // Convenience static methods
+    public static String toRomaji(String text) {
+        try {
+            return new Kanada(CONFIG_GET_ROMAJI).process(text);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static String toHiragana(String text) {
+        try {
+            return new Kanada(CONFIG_GET_HIRAGANA).process(text);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static String toKatakana(String text) {
+        try {
+            return new Kanada(CONFIG_GET_KATAKANA).process(text);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public static final int FLAG_ADD_SPACE = 0x00000001;
     public static final int FLAG_UC_FIRST = 0x00000002;
     public static final int FLAG_UC_ALL = 0x00000004;
