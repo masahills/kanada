@@ -55,12 +55,11 @@ For development, first generate the mapping file:
 ./gradlew generateMapping
 ```
 
-Alternatively, copy the stub file for basic functionality:
+Alternatively, use the stub file for basic functionality:
 
 ```bash
-# Copy development stub (minimal functionality)
-cp src/main/java/com/iciao/kanada/maps/KanaMapping.stub.java \
-   src/main/java/com/iciao/kanada/maps/KanaMapping.java
+# Development stub is available as KanaMappingStub.java (minimal functionality)
+# The actual KanaMapping.java will be generated during build
 ```
 
 ## Building

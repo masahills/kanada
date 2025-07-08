@@ -23,7 +23,7 @@ import com.iciao.kanada.JMapper;
  * Convert hiragana input to romaji using TSV-based mapping.
  * @author Masahiko Sato
  */
-class MapHiragana extends JMapper {
+public class MapHiragana extends JMapper {
     
     private static final KanaMapping kanaMapping = KanaMapping.getInstance();
     
@@ -38,386 +38,8 @@ class MapHiragana extends JMapper {
     @Override
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
-        int i = 0;
-        
-        while (i < str.length()) {
-            String longest = null;
-            int longestLength = 0;
-            
-            // Try longest match first
-            for (int j = Math.min(i + 3, str.length()); j > i; j--) {
-                String candidate = str.substring(i, j);
-                String romaji = null;
-                // Only process if input is actually hiragana
-                if (isHiragana(candidate)) {
-                    romaji = kanaMapping.toRomaji(candidate, KanaMapping.RomanizationSystem.KUNREI);
-                }
-                
-                if (romaji != null) {
-                    longest = kanaMapping.removeMacrons(romaji);
-                    longestLength = j - i;
-                    break;
-                }
-            }
-            
-            if (longest != null) {
-                out.append(longest);
-                i += longestLength;
-            } else {
-                out.append(str.charAt(i));
-                i++;
-            }
-        }
-        
-        setResult(out.toString());
-    }
-    
-    private boolean isHiragana(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (!(c >= '\u3041' && c <= '\u3096')) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    // Legacy array - no longer used
-    @SuppressWarnings("unused")
-    private static final String[] hiraganaToRomaji = {
-            "ぁ", "a",
-            "あ", "a",
-            "ぃ", "i",
-            "い", "i",
-            "いぇ", "ye",
-            "ぅ", "u",
-            "う", "u",
-            "ぇ", "e",
-            "え", "e",
-            "ぉ", "o",
-            "お", "o",
-
-            "か", "ka",
-            "が", "ga",
-            "き", "ki",
-            "きぃ", "ki",
-            "きぇ", "kye",
-            "きゃ", "kya",
-            "きゅ", "kyu",
-            "きょ", "kyo",
-            "ぎ", "gi",
-            "ぎぃ", "gi",
-            "ぎぇ", "gye",
-            "ぎゃ", "gya",
-            "ぎゅ", "gyu",
-            "ぎょ", "gyo",
-            "く", "ku",
-            "くぁ", "kwa",
-            "くぃ", "kwi",
-            "くぅ", "ku",
-            "くぇ", "kwe",
-            "くぉ", "kwo",
-            "ぐ", "gu",
-            "ぐぁ", "gwa",
-            "ぐぃ", "gwi",
-            "ぐぅ", "gu",
-            "ぐぇ", "gwe",
-            "ぐぉ", "gwo",
-            "け", "ke",
-            "げ", "ge",
-            "こ", "ko",
-            "ご", "go",
-
-            "さ", "sa",
-            "ざ", "za",
-            "し", "si",
-            "しぃ", "si",
-            "しぇ", "sye",
-            "しゃ", "sya",
-            "しゅ", "syu",
-            "しょ", "syo",
-            "じ", "zi",
-            "じぃ", "zi",
-            "じぇ", "zye",
-            "じゃ", "zya",
-            "じゅ", "zyu",
-            "じょ", "zyo",
-            "す", "su",
-            "ず", "zu",
-            "せ", "se",
-            "ぜ", "ze",
-            "そ", "so",
-            "ぞ", "zo",
-
-            "た", "ta",
-            "だ", "da",
-            "ち", "ti",
-            "ちぃ", "ti",
-            "ちぇ", "tye",
-            "ちゃ", "tya",
-            "ちゅ", "tyu",
-            "ちょ", "tyo",
-            "ぢ", "zi",
-            "ぢぃ", "zi",
-            "ぢぇ", "zye",
-            "ぢゃ", "zya",
-            "ぢゅ", "zyu",
-            "ぢょ", "zyo",
-
-            "っ", "tu",
-            "っか", "kka",
-            "っが", "gga",
-            "っき", "kki",
-            "っきぃ", "kki",
-            "っきぇ", "kkye",
-            "っきゃ", "kkya",
-            "っきゅ", "kkyu",
-            "っきょ", "kkyo",
-            "っぎ", "ggi",
-            "っぎぃ", "ggi",
-            "っぎぇ", "ggye",
-            "っぎゃ", "ggya",
-            "っぎゅ", "ggyu",
-            "っぎょ", "ggyo",
-            "っく", "kku",
-            "っぐ", "ggu",
-            "っけ", "kke",
-            "っげ", "gge",
-            "っこ", "kko",
-            "っご", "ggo",
-            "っさ", "ssa",
-            "っざ", "zza",
-            "っし", "ssi",
-            "っしぃ", "ssi",
-            "っしぇ", "ssye",
-            "っしゃ", "ssya",
-            "っしゅ", "ssyu",
-            "っしょ", "ssyo",
-            "っじ", "zzi",
-            "っじぃ", "zzi",
-            "っじぇ", "zzye",
-            "っじゃ", "zzya",
-            "っじゅ", "zzyu",
-            "っじょ", "zzyo",
-            "っす", "ssu",
-            "っず", "zzu",
-            "っせ", "sse",
-            "っぜ", "zze",
-            "っそ", "sso",
-            "っぞ", "zzo",
-            "った", "tta",
-            "っだ", "dda",
-            "っち", "tti",
-            "っちぃ", "tti",
-            "っちぇ", "ttye",
-            "っちゃ", "ttya",
-            "っちゅ", "ttyu",
-            "っちょ", "ttyo",
-            "っぢ", "zzi",
-            "っぢぃ", "zzi",
-            "っぢぇ", "zzye",
-            "っぢゃ", "zzya",
-            "っぢゅ", "zzyu",
-            "っぢょ", "zzyo",
-            "っつ", "ttu",
-            "っづ", "zzu",
-            "って", "tte",
-            "っで", "dde",
-            "っと", "tto",
-            "っど", "ddo",
-            "っは", "hha",
-            "っば", "bba",
-            "っぱ", "ppa",
-            "っひ", "hhi",
-            "っひぃ", "hhi",
-            "っひぇ", "hhye",
-            "っひゃ", "hhya",
-            "っひゅ", "hhyu",
-            "っひょ", "hhyo",
-            "っび", "bbi",
-            "っびぃ", "bbi",
-            "っびぇ", "bbye",
-            "っびゃ", "bbya",
-            "っびゅ", "bbyu",
-            "っびょ", "bbyo",
-            "っぴ", "ppi",
-            "っぴぃ", "ppi",
-            "っぴぇ", "ppye",
-            "っぴゃ", "ppya",
-            "っぴゅ", "ppyu",
-            "っぴょ", "ppyo",
-            "っふ", "hhu",
-            "っふぁ", "hhwa",
-            "っふぃ", "hhwi",
-            "っふぅ", "hhu",
-            "っふぇ", "hhwe",
-            "っふぉ", "hhwo",
-            "っぶ", "bbu",
-            "っぷ", "ppu",
-            "っへ", "hhe",
-            "っべ", "bbe",
-            "っぺ", "ppe",
-            "っほ", "hho",
-            "っぼ", "bbo",
-            "っぽ", "ppo",
-            "っや", "yya",
-            "っゆ", "yyu",
-            "っよ", "yyo",
-            "っら", "rra",
-            "っり", "rri",
-            "っりゃ", "rrya",
-            "っりゅ", "rryu",
-            "っりょ", "rryo",
-            "っる", "rru",
-            "っれ", "rre",
-            "っろ", "rro",
-
-            "つ", "tu",
-            "つぁ", "twa",
-            "つぃ", "twi",
-            "つぅ", "tu",
-            "つぇ", "twe",
-            "つぉ", "two",
-            "づ", "zu",
-            "て", "te",
-            "てゅ", "twyu",
-            "で", "de",
-            "でゅ", "dwyu",
-            "と", "to",
-            "ど", "do",
-
-            "な", "na",
-            "に", "ni",
-            "にぃ", "ni",
-            "にぇ", "nye",
-            "にゃ", "nya",
-            "にゅ", "nyu",
-            "にょ", "nyo",
-            "ぬ", "nu",
-            "ね", "ne",
-            "の", "no",
-
-            "は", "ha",
-            "ば", "ba",
-            "ぱ", "pa",
-            "ひ", "hi",
-            "ひぃ", "hi",
-            "ひぇ", "hye",
-            "ひゃ", "hya",
-            "ひゅ", "hyu",
-            "ひょ", "hyo",
-            "び", "bi",
-            "びぃ", "bi",
-            "びぇ", "bye",
-            "びゃ", "bya",
-            "びゅ", "byu",
-            "びょ", "byo",
-            "ぴ", "pi",
-            "ぴぃ", "pi",
-            "ぴぇ", "pye",
-            "ぴゃ", "pya",
-            "ぴゅ", "pyu",
-            "ぴょ", "pyo",
-            "ふ", "hu",
-            "ふぁ", "hwa",
-            "ふぃ", "hwi",
-            "ふぅ", "hu",
-            "ふぇ", "hwe",
-            "ふぉ", "hwo",
-            "ふゅ", "hwyu",
-            "ぶ", "bu",
-            "ぷ", "pu",
-            "へ", "he",
-            "べ", "be",
-            "ぺ", "pe",
-            "ほ", "ho",
-            "ぼ", "bo",
-            "ぽ", "po",
-
-            "ま", "ma",
-            "み", "mi",
-            "みぃ", "mi",
-            "みぇ", "mye",
-            "みゃ", "mya",
-            "みゅ", "myu",
-            "みょ", "myo",
-            "む", "mu",
-            "め", "me",
-            "も", "mo",
-
-            "ゃ", "ya",
-            "や", "ya",
-            "ゅ", "yu",
-            "ゆ", "yu",
-            "ょ", "yo",
-            "よ", "yo",
-
-            "ら", "ra",
-            "り", "ri",
-            "りぃ", "ri",
-            "りぇ", "rye",
-            "りゃ", "rya",
-            "りゅ", "ryu",
-            "りょ", "ryo",
-            "る", "ru",
-            "れ", "re",
-            "ろ", "ro",
-
-            "ゎ", "wa",
-            "わ", "wa",
-            "ゐ", "i",
-            "ゑ", "e",
-            "を", "o",
-            "ん", "n",
-
-            "んあ", "n'a",
-            "んい", "n'i",
-            "んう", "n'u",
-            "んえ", "n'e",
-            "んお", "n'o",
-
-            "う゛", "vu", // う゛
-            "う゛ぁ", "va",
-            "う゛ぃ", "vi",
-            "う゛ぇ", "ve",
-            "う゛ぉ", "vo",
-            "う゛ゃ", "vya",
-            "う゛ゅ", "vyu",
-            "う゛ょ", "vyo",
-
-            "っう゛", "vvu",
-            "っう゛ぁ", "vva",
-            "っう゛ぃ", "vvi",
-            "っう゛ぇ", "vve",
-            "っう゛ぉ", "vvo",
-            "っう゛ゃ", "vvya",
-            "っう゛ゅ", "vvyu",
-            "っう゛ょ", "vvyo",
-
-            "", ""};
-
-    private static final HashMap<String, String> hiraganaToRomajiMap;
-
-    static {
-        hiraganaToRomajiMap = new HashMap<String, String>(hiraganaToRomaji.length);
-        for (int i = 0; i < hiraganaToRomaji.length; i += 2) {
-            String key = hiraganaToRomaji[i];
-            String value = hiraganaToRomaji[i + 1];
-            hiraganaToRomajiMap.put(key, value);
-        }
-    }
-
-    public MapHiragana() {
-        this(null);
-    }
-
-    protected MapHiragana(String str) {
-        super(str);
-    }
-
-    protected void process(String str, int param) {
-        StringBuilder out = new StringBuilder();
         int thisChar = str.codePointAt(0);
+        
         switch (param) {
             case TO_KATAKANA:
                 out.appendCodePoint(thisChar + 0x60);
@@ -429,15 +51,32 @@ class MapHiragana extends JMapper {
             case TO_ASCII:
             case TO_WIDE_ASCII:
                 String kana = String.valueOf(Character.toChars(thisChar));
-                if (hiraganaToRomajiMap.containsKey(kana)) {
-                    out.append(hiraganaToRomajiMap.get(kana));
+                if (isHiragana(kana)) {
+                    String romaji = kanaMapping.toRomaji(kana, KanaMapping.RomanizationSystem.KUNREI);
+                    if (romaji != null) {
+                        out.append(kanaMapping.removeMacrons(romaji));
+                    } else {
+                        out.append(kana);
+                    }
+                } else {
+                    out.append(kana);
                 }
                 break;
-            default: {
+            default:
                 out.appendCodePoint(thisChar);
                 break;
-            }
         }
         setString(out.toString());
     }
+    
+    private boolean isHiragana(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (!(c >= '\u3041' && c <= '\u3096')) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

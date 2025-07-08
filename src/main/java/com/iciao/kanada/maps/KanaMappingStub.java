@@ -7,7 +7,7 @@ package com.iciao.kanada.maps;
 import java.util.HashMap;
 import java.util.Map;
 
-public class KanaMapping {
+public class KanaMappingStub {
     
     public enum RomanizationSystem {
         MODIFIED_HEPBURN(2),
@@ -31,16 +31,16 @@ public class KanaMapping {
     private final Map<String, String[]> hiraganaMap = new HashMap<>();
     private final Map<String, String[]> katakanaMap = new HashMap<>();
     
-    private static KanaMapping instance;
+    private static KanaMappingStub instance;
     
-    public static synchronized KanaMapping getInstance() {
+    public static synchronized KanaMappingStub getInstance() {
         if (instance == null) {
-            instance = new KanaMapping();
+            instance = new KanaMappingStub();
         }
         return instance;
     }
     
-    private KanaMapping() {
+    private KanaMappingStub() {
         // Minimal stub data for development
         hiraganaMap.put("あ", new String[]{"a", "a", "a", "a", "a", "a"});
         hiraganaMap.put("か", new String[]{"ka", "ka", "ka", "ka", "ka", "ka"});
