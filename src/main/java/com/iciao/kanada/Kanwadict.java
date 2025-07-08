@@ -36,8 +36,8 @@ public class Kanwadict {
     private static Kanwadict kanwa = new Kanwadict();
     private static boolean initFailed = false;
 
-    private HashMap<KanwaKey, ArrayList<YomiKanjiData>> kanwaMap = new HashMap<KanwaKey, ArrayList<YomiKanjiData>>();
-    private HashMap<KanwaKey, KanwaAddress> kanwaIndex = new HashMap<KanwaKey, KanwaAddress>();
+    private HashMap<KanwaKey, ArrayList<YomiKanjiData>> kanwaMap = new HashMap<>();
+    private HashMap<KanwaKey, KanwaAddress> kanwaIndex = new HashMap<>();
 
     static {
         File kanwaDict = new File(SRC_PATH, KANWA_FILENAMES);
@@ -131,8 +131,8 @@ public class Kanwadict {
             try {
                 Object obj = objectStream.readObject();
                 if (obj instanceof ArrayList) {
-                    ArrayList<YomiKanjiData> valueList;
-                    valueList = (ArrayList<YomiKanjiData>) obj;
+                    @SuppressWarnings("unchecked")
+                    ArrayList<YomiKanjiData> valueList = (ArrayList<YomiKanjiData>) obj;
                     kanwaMap.put(key, valueList);
                 }
             } catch (ClassNotFoundException e) {
@@ -151,7 +151,7 @@ public class Kanwadict {
 
     }
 
-    private void buildDict(final HashMap map) throws IOException {
+    private void buildDict(final HashMap<KanwaKey, ArrayList<YomiKanjiData>> map) throws IOException {
         File outFile = new File(SRC_PATH, KANWA_FILENAMES);
 
         if (outFile.exists() && outFile.delete() && outFile.createNewFile()) {
@@ -167,10 +167,10 @@ public class Kanwadict {
             }
         }
 
-        Iterator iterator = map.keySet().iterator();
+        Iterator<KanwaKey> iterator = map.keySet().iterator();
 
         while (iterator.hasNext()) {
-            KanwaKey key = (KanwaKey) iterator.next();
+            KanwaKey key = iterator.next();
 
             long pos = (key.key - 0x4e00) * SIZE_OF_LONG;
 
@@ -198,8 +198,8 @@ public class Kanwadict {
         return new KanwaKey(codepoint);
     }
 
-    public ArrayList getValue(KanwaKey key) {
-        return (ArrayList) kanwaMap.get(key);
+    public ArrayList<YomiKanjiData> getValue(KanwaKey key) {
+        return kanwaMap.get(key);
     }
 
     public boolean searchKey(KanwaKey key) throws Exception {
@@ -301,7 +301,7 @@ public class Kanwadict {
         if (kanwaMap.containsKey(key)) {
             valueList = kanwaMap.get(key);
         } else {
-            valueList = new ArrayList<YomiKanjiData>();
+            valueList = new ArrayList<>();
         }
 
         valueList.add(value);

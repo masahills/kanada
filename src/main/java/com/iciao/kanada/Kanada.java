@@ -31,11 +31,10 @@ import java.util.Locale;
  * 
  * <h3>Advanced Usage:</h3>
  * <pre>{@code
- * Kanada converter = KanadaBuilder.create()
+ * Kanada converter = Kanada.create()
  *     .toRomaji()
  *     .withSpaces()
- *     .upperCaseFirst()
- *     .build();
+ *     .upperCaseFirst();
  * String result = converter.process("東京都"); // "Tokyo To"
  * }</pre>
  *
@@ -45,28 +44,82 @@ public class Kanada {
     
     // Convenience static methods
     public static String toRomaji(String text) {
-        try {
-            return new Kanada(CONFIG_GET_ROMAJI).process(text);
-        } catch (java.io.IOException e) {
-            throw new RuntimeException(e);
-        }
+        return convert(text, OutputFormat.ROMAJI);
     }
     
     public static String toHiragana(String text) {
+        return convert(text, OutputFormat.HIRAGANA);
+    }
+    
+    public static String toKatakana(String text) {
+        return convert(text, OutputFormat.KATAKANA);
+    }
+    
+    // Simplified conversion method
+    public static String convert(String text, OutputFormat format) {
         try {
-            return new Kanada(CONFIG_GET_HIRAGANA).process(text);
+            return new Kanada(format.toConfig()).process(text);
         } catch (java.io.IOException e) {
             throw new RuntimeException(e);
         }
     }
     
-    public static String toKatakana(String text) {
+    // Builder pattern methods
+    public static Kanada create() {
         try {
-            return new Kanada(CONFIG_GET_KATAKANA).process(text);
+            return new Kanada();
         } catch (java.io.IOException e) {
             throw new RuntimeException(e);
         }
     }
+    
+    public Kanada toRomaji() {
+        setParam(CONFIG_GET_ROMAJI);
+        return this;
+    }
+    
+    public Kanada toHiragana() {
+        setParam(CONFIG_GET_HIRAGANA);
+        return this;
+    }
+    
+    public Kanada toKatakana() {
+        setParam(CONFIG_GET_KATAKANA);
+        return this;
+    }
+    
+    public Kanada withSpaces() {
+        modeAddSpace = true;
+        return this;
+    }
+    
+    public Kanada upperCaseFirst() {
+        modeUcFirst = true;
+        modeUcAll = false;
+        return this;
+    }
+    
+    public Kanada upperCaseAll() {
+        modeUcAll = true;
+        modeUcFirst = false;
+        return this;
+    }
+    
+    public Kanada kunreiRomaji() {
+        modeKunreiRomaji = true;
+        return this;
+    }
+    
+    public Kanada halfToWideAll() {
+        setParam(CONFIG_HALF_TO_WIDE_ALL);
+        return this;
+    }
+    
+    public Kanada halfToWideKana() {
+        setParam(CONFIG_HALF_TO_WIDE_KANA);
+        return this;
+    }
+    // Mode flags for bitwise operations
     public static final int FLAG_ADD_SPACE = 0x00000001;
     public static final int FLAG_UC_FIRST = 0x00000002;
     public static final int FLAG_UC_ALL = 0x00000004;
@@ -74,6 +127,7 @@ public class Kanada {
     public static final int FLAG_SHOW_ALL_YOMI = 0x00000010;
     public static final int FLAG_KUNREI_ROMAJI = 0x00000020;
 
+    // Configuration presets
     public static final int CONFIG_GET_AS_IS = -1;
     public static final int CONFIG_GET_ROMAJI = 0;
     public static final int CONFIG_GET_HIRAGANA = 1;
@@ -103,6 +157,10 @@ public class Kanada {
 
     public Kanada(int config) throws java.io.IOException {
         setParam(config);
+    }
+    
+    public Kanada(OutputFormat format) throws java.io.IOException {
+        setParam(format.toConfig());
     }
 
     public Kanada(int paramKanji,

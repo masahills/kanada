@@ -32,16 +32,18 @@ String katakana = Kanada.toKatakana("日本語");  // "ニホンゴ"
 
 ### Advanced Usage (Builder Pattern)
 ```java
-import com.iciao.kanada.KanadaBuilder;
+import com.iciao.kanada.Kanada;
 
 // Customized conversion with spaces and capitalization
-Kanada converter = KanadaBuilder.create()
+Kanada converter = Kanada.create()
     .toRomaji()
     .withSpaces()
-    .upperCaseFirst()
-    .build();
+    .upperCaseFirst();
     
 String result = converter.process("東京都"); // "Tokyo To"
+
+// Or as a one-liner
+String result = Kanada.create().toRomaji().withSpaces().process("東京都");
 ```
 
 
