@@ -13,6 +13,7 @@ public class KanadaTest {
     @Before
     public void setUp() throws Exception {
         romaji = new Kanada(Kanada.CONFIG_GET_ROMAJI);
+        romaji = new Kanada(Kanada.CONFIG_GET_ROMAJI);
         hiragana = new Kanada(Kanada.CONFIG_GET_HIRAGANA);
         katakana = new Kanada(Kanada.CONFIG_GET_KATAKANA);
     }
