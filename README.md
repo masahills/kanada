@@ -46,11 +46,31 @@ String result = converter.process("東京都"); // "Tokyo To"
 
 
 
+## Development Setup
+
+For development, first generate the mapping file:
+
+```bash
+# Generate KanaMapping.java from TSV
+./gradlew generateMapping
+```
+
+Alternatively, copy the stub file for basic functionality:
+
+```bash
+# Copy development stub (minimal functionality)
+cp src/main/java/com/iciao/kanada/maps/KanaMapping.stub.java \
+   src/main/java/com/iciao/kanada/maps/KanaMapping.java
+```
+
 ## Building
 
 ```bash
+# Full build (includes mapping generation)
 ./gradlew build
 ```
+
+**Note**: `KanaMapping.java` is generated from `tools/mappings/kanatable.tsv` and should not be edited manually.
 
 ## Running Examples
 

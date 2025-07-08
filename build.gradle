@@ -19,6 +19,15 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
+task generateMapping(type: Exec) {
+    description 'Generate KanaMapping.java from kanatable.tsv'
+    commandLine 'python3', 'tools/generate-mapping.py'
+    inputs.file 'tools/mappings/kanatable.tsv'
+    outputs.file 'src/main/java/com/iciao/kanada/maps/KanaMapping.java'
+}
+
+compileJava.dependsOn generateMapping
+
 jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }

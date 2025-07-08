@@ -19,6 +19,9 @@ Thumbs.db
 # Generated dictionary files
 dictionary/japanese/kanwadict.dat
 
+# Generated mapping files
+src/main/java/com/iciao/kanada/maps/KanaMapping.java
+
 # Gradle
 .gradle/
 gradle-app.setting

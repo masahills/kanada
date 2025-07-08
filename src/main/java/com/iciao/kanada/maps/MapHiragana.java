@@ -19,14 +19,71 @@ package com.iciao.kanada.maps;
 
 import com.iciao.kanada.JMapper;
 
-import java.util.HashMap;
-
 /**
- * Remap non-kanji characters.<br>
- *
+ * Convert hiragana input to romaji using TSV-based mapping.
  * @author Masahiko Sato
  */
-public class MapHiragana extends JMapper {
+class MapHiragana extends JMapper {
+    
+    private static final KanaMapping kanaMapping = KanaMapping.getInstance();
+    
+    public MapHiragana() {
+        this(null);
+    }
+    
+    protected MapHiragana(String str) {
+        super(str);
+    }
+    
+    @Override
+    protected void process(String str, int param) {
+        StringBuilder out = new StringBuilder();
+        int i = 0;
+        
+        while (i < str.length()) {
+            String longest = null;
+            int longestLength = 0;
+            
+            // Try longest match first
+            for (int j = Math.min(i + 3, str.length()); j > i; j--) {
+                String candidate = str.substring(i, j);
+                String romaji = null;
+                // Only process if input is actually hiragana
+                if (isHiragana(candidate)) {
+                    romaji = kanaMapping.toRomaji(candidate, KanaMapping.RomanizationSystem.KUNREI);
+                }
+                
+                if (romaji != null) {
+                    longest = kanaMapping.removeMacrons(romaji);
+                    longestLength = j - i;
+                    break;
+                }
+            }
+            
+            if (longest != null) {
+                out.append(longest);
+                i += longestLength;
+            } else {
+                out.append(str.charAt(i));
+                i++;
+            }
+        }
+        
+        setResult(out.toString());
+    }
+    
+    private boolean isHiragana(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (!(c >= '\u3041' && c <= '\u3096')) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Legacy array - no longer used
+    @SuppressWarnings("unused")
     private static final String[] hiraganaToRomaji = {
             "ぁ", "a",
             "あ", "a",
