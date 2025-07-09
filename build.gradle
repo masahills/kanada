@@ -28,6 +28,15 @@ task generateMapping(type: Exec) {
 
 compileJava.dependsOn generateMapping
 
+task reallyClean(type: Delete) {
+    description 'Clean build artifacts and regenerate dictionary files'
+    delete layout.buildDirectory.get().asFile
+    delete 'dictionary/japanese/kanwadict.dat'
+    delete 'src/main/java/com/iciao/kanada/maps/KanaMapping.java'
+}
+
+reallyClean.dependsOn clean
+
 jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }

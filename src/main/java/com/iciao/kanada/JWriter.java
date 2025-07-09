@@ -1,20 +1,3 @@
-/**
- * Kanada (Kanji-Kana Transliteration Library for Java)
- * Copyright (C) 2002-2014 Masahiko Sato
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
 package com.iciao.kanada;
 
 import com.iciao.kanada.maps.*;
@@ -68,27 +51,21 @@ public class JWriter {
             JMapper mappedMapper = null;
 
             if (block == Character.UnicodeBlock.BASIC_LATIN) {
-                switch (kanada.optionAscii) {
-                    case JMapper.TO_WIDE_ASCII:
-                        JMapper ascii = new MapAscii();
-                        ascii.process(workStr, kanada.optionAscii);
-                        mappedMapper = ascii;
-                        break;
-                    default:
-                        mappedStr.appendCodePoint(thisChar);
-                        break;
+                if (kanada.optionAscii == JMapper.TO_WIDE_ASCII) {
+                    JMapper ascii = new MapAscii();
+                    ascii.process(workStr, kanada.optionAscii);
+                    mappedMapper = ascii;
+                } else {
+                    mappedStr.appendCodePoint(thisChar);
                 }
             } else if (block == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS) {
                 if (thisChar < 0xff5f) {
-                    switch (kanada.optionWideAscii) {
-                        case JMapper.TO_ASCII:
-                            JMapper wideAscii = new MapWideAscii();
-                            wideAscii.process(workStr, kanada.optionWideAscii);
-                            mappedMapper = wideAscii;
-                            break;
-                        default:
-                            mappedStr.appendCodePoint(thisChar);
-                            break;
+                    if (kanada.optionWideAscii == JMapper.TO_ASCII) {
+                        JMapper wideAscii = new MapWideAscii();
+                        wideAscii.process(workStr, kanada.optionWideAscii);
+                        mappedMapper = wideAscii;
+                    } else {
+                        mappedStr.appendCodePoint(thisChar);
                     }
                 } else {
                     switch (kanada.optionHalfKatakana) {
@@ -165,7 +142,7 @@ public class JWriter {
                 sb.append(word.substring(0, 1).toUpperCase(Locale.ENGLISH)).append(word.substring(1));
             }
             outStr.setLength(0);
-            outStr.append(sb.toString());
+            outStr.append(sb);
         }
 
         tail = ' ';

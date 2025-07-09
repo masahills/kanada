@@ -1,24 +1,10 @@
-/**
- * Kanada (Kanji-Kana Transliteration Library for Java)
- * Copyright (C) 2002-2014 Masahiko Sato
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
 package com.iciao.kanada;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 /**
@@ -27,25 +13,25 @@ import java.util.regex.Pattern;
  * @author Masahiko Sato
  */
 public class Kanwadict {
-    private static final String SRC_PATH = "dictionary/japanese/";
-    private static final String SRC_FILES = "kanwadict";
-    private static final String KANWA_FILENAMES = "kanwadict.dat";
+    private static final String DICTIONARY_PATH = getDictionaryPath();
+    private static final String DICTIONARY_SRC = "kanwadict";
+    private static final String DICTIONARY_DAT = "kanwadict.dat";
 
-    private static final int SIZE_OF_LONG = 8;
+    private static final int INDEX_ENTRY_SIZE = Integer.BYTES;
 
-    private static Kanwadict kanwa = new Kanwadict();
+    private static final Kanwadict KANWADICT = new Kanwadict();
     private static boolean initFailed = false;
 
-    private HashMap<KanwaKey, ArrayList<YomiKanjiData>> kanwaMap = new HashMap<>();
-    private HashMap<KanwaKey, KanwaAddress> kanwaIndex = new HashMap<>();
+    private final HashMap<KanwaKey, ArrayList<YomiKanjiData>> kanwaMap = new HashMap<>();
+    private final HashMap<KanwaKey, KanwaAddress> kanwaIndex = new HashMap<>();
 
     static {
-        File kanwaDict = new File(SRC_PATH, KANWA_FILENAMES);
+        File kanwaDict = new File(DICTIONARY_PATH, DICTIONARY_DAT);
 
         if (kanwaDict.exists()) {
             System.out.println("Kanada: Found a pre-built Japanese dictionary.");
             try {
-                kanwa.loadIndex(kanwaDict);
+                KANWADICT.loadIndex(kanwaDict);
                 System.out.println("Kanada: Init completed!");
             } catch (Exception e) {
                 System.out.println("Kanada: Error!! Could not load the dictionary index: " + e);
@@ -55,14 +41,14 @@ public class Kanwadict {
             System.out.println("Kanada: Building Japanese dictionary...");
 
             Calendar start = Calendar.getInstance();
-            StringTokenizer token = new StringTokenizer(SRC_FILES, ",");
+            StringTokenizer token = new StringTokenizer(DICTIONARY_SRC, ",");
 
             try {
                 Calendar lap = start;
                 while (token.hasMoreTokens()) {
                     String sourceFile = token.nextToken();
-                    System.out.print("-> Loading Data: " + SRC_PATH + sourceFile + "... ");
-                    kanwa.loadData(SRC_PATH, sourceFile);
+                    System.out.print("-> Loading Data: " + DICTIONARY_PATH + sourceFile + "... ");
+                    KANWADICT.loadData();
                     Calendar now = Calendar.getInstance();
                     int lapTime = (int) Math.ceil(now.getTime().getTime() - lap.getTime().getTime());
                     System.out.println("Done (" + lapTime + " ms)");
@@ -77,8 +63,8 @@ public class Kanwadict {
                 int loadingTime = (int) Math.ceil((Calendar.getInstance().getTime().getTime() - start.getTime().getTime()));
                 System.out.println("Kanada: Build Completed! (" + loadingTime + " ms)");
                 try {
-                    kanwa.buildDict(kanwa.kanwaMap);
-                    kanwa.loadIndex(kanwaDict);
+                    KANWADICT.buildDict(KANWADICT.kanwaMap);
+                    KANWADICT.loadIndex(kanwaDict);
                     System.out.println("Kanada: Init completed!");
                 } catch (IOException e) {
                     System.out.println("Kanada: Error!! Could not load the dictionary index: " + e);
@@ -88,47 +74,62 @@ public class Kanwadict {
         }
     }
 
-    public static Kanwadict getKanwa() {
-        return kanwa;
+    public static Kanwadict getKanwadict() {
+        return KANWADICT;
+    }
+
+    private static String getDictionaryPath() {
+        // Try the current directory first
+        File dictDir = new File("dictionary/japanese/");
+        if (dictDir.exists()) {
+            return "dictionary/japanese/";
+        }
+
+        // Try the parent directory (for when running from build/)
+        dictDir = new File("../dictionary/japanese/");
+        if (dictDir.exists()) {
+            return "../dictionary/japanese/";
+        }
+
+        // Try the two levels up
+        dictDir = new File("../../dictionary/japanese/");
+        if (dictDir.exists()) {
+            return "../../dictionary/japanese/";
+        }
+
+        // Default fallback
+        return "dictionary/japanese/";
     }
 
     private void loadIndex(File objFile) throws IOException {
         FileInputStream fileStream = new FileInputStream(objFile);
-        DataInputStream dataStream = new DataInputStream(fileStream);
 
-        try {
+        try (fileStream; DataInputStream dataStream = new DataInputStream(fileStream)) {
             for (int i = 0x4e; i <= 0x9f; ++i) {
                 for (int j = 0x00; j <= 0xff; ++j) {
                     KanwaKey thisKey = new KanwaKey(((i << 8) | j));
                     KanwaAddress thisAddress = new KanwaAddress();
-                    thisAddress.value = dataStream.readLong();
+                    thisAddress.value = dataStream.readInt();
                     kanwaIndex.put(thisKey, thisAddress);
                 }
             }
-        } finally {
-            fileStream.close();
-            dataStream.close();
         }
     }
 
     private void loadObject(KanwaKey key) throws Exception {
-        File objFile;
-        FileInputStream fileStream = null;
-        BufferedInputStream buffer = null;
-        ObjectInputStream objectStream = null;
+        File objFile = new File(DICTIONARY_PATH, DICTIONARY_DAT);
 
-        try {
-            objFile = new File(SRC_PATH, KANWA_FILENAMES);
-            fileStream = new FileInputStream(objFile);
+        try (RandomAccessFile randomFile = new RandomAccessFile(objFile, "r")) {
+            int objAddress = (kanwaIndex.get(key)).value;
 
-            long objAddress = (kanwaIndex.get(key)).value;
+            randomFile.seek(objAddress);
 
-            fileStream.skip(objAddress);
+            byte[] data = new byte[(int) (randomFile.length() - objAddress)];
+            randomFile.readFully(data);
 
-            buffer = new BufferedInputStream(fileStream);
-            objectStream = new ObjectInputStream(buffer);
+            try (ObjectInputStream objectStream = new ObjectInputStream(
+                    new ByteArrayInputStream(data))) {
 
-            try {
                 Object obj = objectStream.readObject();
                 if (obj instanceof ArrayList) {
                     @SuppressWarnings("unchecked")
@@ -138,21 +139,11 @@ public class Kanwadict {
             } catch (ClassNotFoundException e) {
                 throw new Exception(e.toString());
             }
-        } finally {
-            if (objectStream != null)
-                objectStream.close();
-
-            if (buffer != null)
-                buffer.close();
-
-            if (fileStream != null)
-                fileStream.close();
         }
-
     }
 
     private void buildDict(final HashMap<KanwaKey, ArrayList<YomiKanjiData>> map) throws IOException {
-        File outFile = new File(SRC_PATH, KANWA_FILENAMES);
+        File outFile = new File(DICTIONARY_PATH, DICTIONARY_DAT);
 
         if (outFile.exists() && outFile.delete() && outFile.createNewFile()) {
             System.out.println("Creating a new dictionary...");
@@ -163,20 +154,16 @@ public class Kanwadict {
         // Create a space for key indices.
         for (int i = 0x4e; i <= 0x9f; ++i) {
             for (int j = 0x00; j <= 0xff; ++j) {
-                dictFile.writeLong(0);
+                dictFile.writeInt(0);
             }
         }
 
-        Iterator<KanwaKey> iterator = map.keySet().iterator();
-
-        while (iterator.hasNext()) {
-            KanwaKey key = iterator.next();
-
-            long pos = (key.key - 0x4e00) * SIZE_OF_LONG;
+        for (KanwaKey key : map.keySet()) {
+            int pos = (key.key - 0x4e00) * INDEX_ENTRY_SIZE;
 
             // Move to the key address.
             dictFile.seek(pos);
-            dictFile.writeLong(dictFile.length());
+            dictFile.writeInt((int) dictFile.length());
 
             ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
             ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
@@ -210,18 +197,20 @@ public class Kanwadict {
         return kanwaMap.containsKey(key);
     }
 
-    private void loadData(String filepath, String filename) throws IOException {
-        File kanwaFile = new File(filepath, filename);
+    private void loadData() throws IOException {
+        File kanwaFile = new File(DICTIONARY_PATH, DICTIONARY_SRC);
 
         if (!kanwaFile.exists()) {
-            System.out.println("Dictionary File Not Found: " + filepath + filename);
+            System.out.println("Dictionary File Not Found: " + DICTIONARY_PATH + DICTIONARY_SRC);
+            System.out.println("Current working directory: " + System.getProperty("user.dir"));
+            System.out.println("Absolute path attempted: " + kanwaFile.getAbsolutePath());
             initFailed = true;
             return;
         }
 
         InputStreamReader fileStream = new InputStreamReader(new FileInputStream(kanwaFile), "JISAutoDetect");
-        BufferedReader reader = new BufferedReader(fileStream);
-        try {
+        try (fileStream) {
+            BufferedReader reader = new BufferedReader(fileStream);
             for (; ; ) {
                 String line = reader.readLine();
 
@@ -231,14 +220,12 @@ public class Kanwadict {
 
                 line = line.trim();
 
-                if (line.length() > 0) {
+                if (!line.isEmpty()) {
                     parseLine(line);
                 }
             }
         } catch (IOException e) {
             throw new IOException();
-        } finally {
-            fileStream.close();
         }
     }
 
@@ -276,7 +263,7 @@ public class Kanwadict {
 
         while (tokenizer.hasMoreTokens()) {
             String kanji = tokenizer.nextToken();
-            if (yomiLen > 0 && kanji.length() > 0) {
+            if (yomiLen > 0 && !kanji.isEmpty()) {
                 addEntry(yomi, kanji, tail);
             }
         }
@@ -309,11 +296,11 @@ public class Kanwadict {
     }
 
     public static class KanwaAddress implements Serializable {
-        long value;
+        int value;
     }
 
     public static class KanwaKey implements Serializable {
-        private int key;
+        private final int key;
 
         public KanwaKey(int codepoint) {
             key = codepoint;
@@ -333,9 +320,9 @@ public class Kanwadict {
     }
 
     public static class YomiKanjiData implements Serializable {
-        private String yomi;
-        private int tail;
-        private String kanji;
+        private final String yomi;
+        private final int tail;
+        private final String kanji;
 
         public YomiKanjiData(String yomi, int tail, String kanji) {
             this.yomi = yomi;

@@ -1,34 +1,17 @@
-/**
- * Kanada (Kanji-Kana Transliteration Library for Java)
- * Copyright (C) 2002-2014 Masahiko Sato
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
 package com.iciao.kanada;
 
 import java.util.Locale;
 
 /**
  * Japanese text transliteration library for converting between Kanji, Hiragana, Katakana, and Romaji.
- * 
+ *
  * <h3>Simple Usage:</h3>
  * <pre>{@code
  * String romaji = Kanada.toRomaji("日本語");     // "nihongo"
  * String hiragana = Kanada.toHiragana("日本語"); // "にほんご"
  * String katakana = Kanada.toKatakana("日本語");  // "ニホンゴ"
  * }</pre>
- * 
+ *
  * <h3>Advanced Usage:</h3>
  * <pre>{@code
  * Kanada converter = Kanada.create()
@@ -41,99 +24,6 @@ import java.util.Locale;
  * @author Masahiko Sato
  */
 public class Kanada {
-    
-    // Convenience static methods
-    public static String toRomaji(String text) {
-        return convert(text, OutputFormat.ROMAJI);
-    }
-    
-    public static String toHiragana(String text) {
-        return convert(text, OutputFormat.HIRAGANA);
-    }
-    
-    public static String toKatakana(String text) {
-        return convert(text, OutputFormat.KATAKANA);
-    }
-    
-    // Simplified conversion method
-    public static String convert(String text, OutputFormat format) {
-        try {
-            return new Kanada(format.toConfig()).process(text);
-        } catch (java.io.IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
-    // Builder pattern methods
-    public static Kanada create() {
-        try {
-            return new Kanada();
-        } catch (java.io.IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
-    public Kanada toRomaji() {
-        setParam(CONFIG_GET_ROMAJI);
-        return this;
-    }
-    
-    public Kanada toHiragana() {
-        setParam(CONFIG_GET_HIRAGANA);
-        return this;
-    }
-    
-    public Kanada toKatakana() {
-        setParam(CONFIG_GET_KATAKANA);
-        return this;
-    }
-    
-    public Kanada withSpaces() {
-        modeAddSpace = true;
-        return this;
-    }
-    
-    public Kanada upperCaseFirst() {
-        modeUcFirst = true;
-        modeUcAll = false;
-        return this;
-    }
-    
-    public Kanada upperCaseAll() {
-        modeUcAll = true;
-        modeUcFirst = false;
-        return this;
-    }
-    
-    public Kanada kunreiRomaji() {
-        modeKunreiRomaji = true;
-        return this;
-    }
-    
-    public Kanada halfToWideAll() {
-        setParam(CONFIG_HALF_TO_WIDE_ALL);
-        return this;
-    }
-    
-    public Kanada halfToWideKana() {
-        setParam(CONFIG_HALF_TO_WIDE_KANA);
-        return this;
-    }
-    // Mode flags for bitwise operations
-    public static final int FLAG_ADD_SPACE = 0x00000001;
-    public static final int FLAG_UC_FIRST = 0x00000002;
-    public static final int FLAG_UC_ALL = 0x00000004;
-    public static final int FLAG_FURIGANA = 0x00000008;
-    public static final int FLAG_SHOW_ALL_YOMI = 0x00000010;
-    public static final int FLAG_KUNREI_ROMAJI = 0x00000020;
-
-    // Configuration presets
-    public static final int CONFIG_GET_AS_IS = -1;
-    public static final int CONFIG_GET_ROMAJI = 0;
-    public static final int CONFIG_GET_HIRAGANA = 1;
-    public static final int CONFIG_GET_KATAKANA = 2;
-    public static final int CONFIG_HALF_TO_WIDE_ALL = 3;
-    public static final int CONFIG_HALF_TO_WIDE_KANA = 4;
 
     protected int optionKanji;
     protected int optionHiragana;
@@ -143,6 +33,7 @@ public class Kanada {
     protected int optionHalfKatakana;
     protected int optionAscii;
     protected int optionHalfSymbol;
+
     protected boolean modeShowAllYomi = false;
     protected boolean modeAddSpace = false;
     protected boolean modeFurigana = false;
@@ -152,97 +43,136 @@ public class Kanada {
     protected boolean modeWakachiKaki = false;
 
     public Kanada() throws java.io.IOException {
-        setParam(CONFIG_GET_AS_IS);
+        setParam(
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS);
     }
 
-    public Kanada(int config) throws java.io.IOException {
-        setParam(config);
-    }
-    
-    public Kanada(OutputFormat format) throws java.io.IOException {
-        setParam(format.toConfig());
-    }
-
-    public Kanada(int paramKanji,
-                  int paramHiragana,
-                  int paramKatakana,
-                  int paramWideAscii,
-                  int paramWideSymbol,
-                  int paramHalfKatakana,
-                  int paramAscii,
-                  int paramHalfSymbol) throws java.io.IOException {
-        setParam(paramKanji,
-                paramHiragana,
-                paramKatakana,
-                paramWideAscii,
-                paramWideSymbol,
-                paramAscii,
-                paramHalfKatakana,
-                paramHalfSymbol);
-    }
-
-    private void setParam(int config) {
-        switch (config) {
-            case CONFIG_GET_ROMAJI: {
-                setParam(
-                        JMapper.TO_ASCII,
-                        JMapper.TO_ASCII,
-                        JMapper.TO_ASCII,
-                        JMapper.TO_ASCII,
-                        JMapper.TO_ASCII,
-                        JMapper.AS_IS,
-                        JMapper.TO_ASCII,
-                        JMapper.TO_ASCII);
-                break;
-            }
-            case CONFIG_GET_HIRAGANA: {
-                setParam(
-                        JMapper.TO_HIRAGANA,
-                        JMapper.AS_IS,
-                        JMapper.TO_HIRAGANA,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.TO_HIRAGANA,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS);
-                break;
-            }
-            case CONFIG_GET_KATAKANA: {
-                setParam(JMapper.TO_KATAKANA,
-                        JMapper.TO_KATAKANA,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.TO_KATAKANA,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS);
-                break;
-            }
-            case CONFIG_HALF_TO_WIDE_ALL: {
-                setParam(
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.TO_HIRAGANA,
-                        JMapper.TO_WIDE_ASCII,
-                        JMapper.TO_KATAKANA,
-                        JMapper.TO_WIDE_SYMBOL);
-                break;
-            }
-            default: {
-                setParam(
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS,
-                        JMapper.AS_IS);
-                break;
-            }
+    // Convenience static methods
+    public static Kanada create() {
+        try {
+            return new Kanada();
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    public static String toRomaji(String text) {
+        try {
+            return new Kanada().toRomaji().withSpaces().process(text);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String toHiragana(String text) {
+        try {
+            return new Kanada().toHiragana().process(text);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String toKatakana(String text) {
+        try {
+            return new Kanada().toKatakana().process(text);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Builder pattern methods
+    public Kanada toRomaji() {
+        setParam(
+                JMapper.TO_ASCII,
+                JMapper.TO_ASCII,
+                JMapper.TO_ASCII,
+                JMapper.TO_ASCII,
+                JMapper.TO_ASCII,
+                JMapper.AS_IS,
+                JMapper.TO_ASCII,
+                JMapper.TO_ASCII);
+        return this;
+    }
+
+    public Kanada toHiragana() {
+        setParam(
+                JMapper.TO_HIRAGANA,
+                JMapper.AS_IS,
+                JMapper.TO_HIRAGANA,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.TO_HIRAGANA,
+                JMapper.AS_IS,
+                JMapper.AS_IS);
+        return this;
+    }
+
+    public Kanada toKatakana() {
+        setParam(
+                JMapper.TO_KATAKANA,
+                JMapper.TO_KATAKANA,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.TO_KATAKANA,
+                JMapper.AS_IS,
+                JMapper.AS_IS);
+        return this;
+    }
+
+    public Kanada toFullWidthKana() {
+        setParam(
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.TO_HIRAGANA,
+                JMapper.AS_IS,
+                JMapper.TO_KATAKANA,
+                JMapper.TO_WIDE_SYMBOL);
+        return this;
+    }
+
+    public Kanada toFullWidthAll() {
+        setParam(
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.AS_IS,
+                JMapper.TO_HIRAGANA,
+                JMapper.TO_WIDE_ASCII,
+                JMapper.TO_KATAKANA,
+                JMapper.TO_WIDE_SYMBOL);
+        return this;
+    }
+
+    public Kanada withSpaces() {
+        modeAddSpace = true;
+        return this;
+    }
+
+    public Kanada upperCaseFirst() {
+        modeUcFirst = true;
+        modeUcAll = false;
+        return this;
+    }
+
+    public Kanada upperCaseAll() {
+        modeUcAll = true;
+        modeUcFirst = false;
+        return this;
+    }
+
+    public Kanada kunreiRomaji() {
+        modeKunreiRomaji = true;
+        return this;
     }
 
     private void setParam(int paramKanji,
@@ -263,62 +193,6 @@ public class Kanada {
         optionHalfSymbol = paramHalfSymbol;
     }
 
-    public void setMode(int mode) {
-        modeShowAllYomi = false;
-        modeAddSpace = false;
-        modeUcFirst = false;
-        modeUcAll = false;
-        modeKunreiRomaji = false;
-
-        if ((mode & FLAG_ADD_SPACE) != 0) {
-            modeAddSpace = true;
-        }
-
-        if ((mode & FLAG_UC_FIRST) != 0) {
-            modeUcFirst = true;
-            modeUcAll = false;
-        }
-
-        if ((mode & FLAG_UC_ALL) != 0) {
-            modeUcFirst = false;
-            modeUcAll = true;
-        }
-
-        // TODO: To be implemented
-        if ((mode & FLAG_FURIGANA) != 0) {
-            modeUcAll = true;
-        }
-
-        if ((mode & FLAG_SHOW_ALL_YOMI) != 0) {
-            modeShowAllYomi = true;
-        }
-
-        if ((mode & FLAG_KUNREI_ROMAJI) != 0) {
-            modeKunreiRomaji = true;
-        }
-    }
-
-    public String process(String str, int mode) {
-        setMode(mode);
-        return process(str);
-    }
-
-    public String process(String str, boolean addSpace) {
-        boolean savedStatus = modeAddSpace;
-
-        if (addSpace) {
-            modeAddSpace = true;
-        }
-
-        String processed = process(str);
-
-        if (addSpace) {
-            modeAddSpace = savedStatus;
-        }
-
-        return processed;
-    }
-
     public String process(String str) {
         if (str == null) {
             return str;
@@ -333,7 +207,7 @@ public class Kanada {
                 parsedStr = parsedStr.toUpperCase(Locale.ENGLISH);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             return str;
         }
 

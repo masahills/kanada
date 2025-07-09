@@ -1,20 +1,3 @@
-/**
- * Kanada (Kanji-Kana Transliteration Library for Java)
- * Copyright (C) 2002-2014 Masahiko Sato
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
 package com.iciao.kanada;
 
 import java.util.ArrayList;
@@ -23,15 +6,15 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * Parse strings and look up Kanji dictionary.<br>
+ * Parse strings and look up the kanji dictionary.<br>
  *
  * @author Masahiko Sato
  */
 public class KanjiParser {
-    private static Kanwadict kanwa = Kanwadict.getKanwa();
-    private Kanada kanada;
-    private JWriter jWriter;
-    private StringBuilder outputBuffer;
+    private final static Kanwadict kanwa = Kanwadict.getKanwadict();
+    private final Kanada kanada;
+    private final JWriter jWriter;
+    private final StringBuilder outputBuffer;
 
     public KanjiParser(JWriter writer) {
         kanada = writer.getKanada();
@@ -53,7 +36,7 @@ public class KanjiParser {
             }
 
             Kanwadict.KanwaKey key = kanwa.getKey(thisChar);
-            List valueList = new ArrayList();
+            List<Kanwadict.YomiKanjiData> valueList = new ArrayList<>();
 
             if (kanwa.searchKey(key)) {
                 valueList = kanwa.getValue(key);
@@ -71,18 +54,16 @@ public class KanjiParser {
                         nextChar = inputString.codePointAt(i);
                     }
                     if (!Pattern.matches("[\\p{Cntrl}\\p{IsCommon}]", String.valueOf(Character.toChars(nextChar)))
-                            && !Pattern.matches("(?s).*?[\\p{IsCommon}]$", jWriter.buffer.toString())) {
+                            && !Pattern.matches("(?s).*?\\p{IsCommon}$", jWriter.buffer.toString())) {
                         jWriter.append(' ');
                     }
-//                    System.out.println("### '" + jWriter.buffer.toString()
-//                            + "':'" + String.valueOf(Character.toChars(nextChar)) + "'");
                 }
                 StringBuilder nonDicStr = jWriter.map();
                 outputBuffer.append(nonDicStr);
                 jWriter.clear();
             }
 
-            Iterator dicIterator = valueList.iterator();
+            Iterator<Kanwadict.YomiKanjiData> dicIterator = valueList.iterator();
 
             int matchedLen = 0;
             String yomi = "";
@@ -90,7 +71,7 @@ public class KanjiParser {
             int tail = ' ';
 
             while (dicIterator.hasNext()) {
-                Kanwadict.YomiKanjiData term = (Kanwadict.YomiKanjiData) dicIterator.next();
+                Kanwadict.YomiKanjiData term = dicIterator.next();
 
                 int searchLen = term.getLength();
                 if ((i + searchLen) > inputString.length() || searchLen <= matchedLen) {
@@ -114,10 +95,10 @@ public class KanjiParser {
                 }
             }
 
-            if (matchedLen == 0 || yomi.length() == 0) {
+            if (matchedLen == 0 || yomi.isEmpty()) {
                 outputBuffer.appendCodePoint(thisChar);
             } else {
-                if (kanada.optionKanji == Kanada.CONFIG_GET_AS_IS) {
+                if (kanada.optionKanji == JMapper.AS_IS) {
                     jWriter.append(kanji);
                 } else {
                     jWriter.append(yomi);
@@ -132,13 +113,8 @@ public class KanjiParser {
                             jWriter.append(' ');
                         }
                     }
-//                    System.out.println(">>> '" + kanji
-//                            + "':'" + String.valueOf(Character.toChars(tail))
-//                            + "':'" + jWriter.buffer.toString()
-//                            + "':'" + String.valueOf(Character.toChars(nextChar)) + "'");
                 }
                 StringBuilder dicStr = jWriter.map();
-//                System.out.println("# '" + jWriter.buffer.toString() + "':'" + dicStr +"'");
                 outputBuffer.append(dicStr);
                 jWriter.clear();
                 i = i + matchedLen - 1;

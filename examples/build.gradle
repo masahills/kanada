@@ -11,6 +11,10 @@ application {
     mainClass = 'com.iciao.kanada.examples.KanadaExample'
 }
 
+run {
+    workingDir = rootProject.projectDir
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11

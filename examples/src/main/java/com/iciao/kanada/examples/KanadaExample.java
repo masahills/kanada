@@ -9,7 +9,7 @@
 package com.iciao.kanada.examples;
 
 import com.iciao.kanada.Kanada;
-import java.io.IOException;
+
 import java.util.Calendar;
 
 /**
@@ -55,40 +55,40 @@ public class KanadaExample {
 
     public static void main(String[] args) throws Exception {
 
-        Kanada roomaji = null;
-        Kanada wakatigaki = null;
-        Kanada hiragana = null;
-        Kanada katakana = null;
-        Kanada fullwidth = null;
+        Kanada romaji = new Kanada().toRomaji().withSpaces().upperCaseFirst();
+        Kanada wakatigaki = new Kanada().withSpaces();
+        Kanada hiragana = new Kanada().toHiragana().withSpaces();
+        Kanada katakana = new Kanada().toKatakana().withSpaces();
+        Kanada fullwidth = new Kanada().toFullWidthAll().withSpaces();
 
-        try {
-            roomaji = new Kanada(Kanada.CONFIG_GET_ROMAJI);
-            wakatigaki = new Kanada(Kanada.CONFIG_GET_AS_IS);
-            hiragana = new Kanada(Kanada.CONFIG_GET_HIRAGANA);
-            katakana = new Kanada(Kanada.CONFIG_GET_KATAKANA);
-            fullwidth = new Kanada(Kanada.CONFIG_HALF_TO_WIDE_ALL);
-        } catch (IOException e) {
-            System.out.println(e);
-        }
-
-        roomaji.setMode(Kanada.FLAG_UC_FIRST);
-
+        System.out.println("Original:");
         System.out.println(TEST_TEXT);
 
-        process(wakatigaki, TEST_TEXT);
-        process(hiragana, TEST_TEXT);
-        process(katakana, TEST_TEXT);
-        process(roomaji, TEST_TEXT);
-        process(roomaji, TEST_ROMAJI);
-        process(fullwidth, TEST_TEXT_TO_WIDE);
+        System.out.println("Wakatigaki:");
+        convert(wakatigaki, TEST_TEXT);
+
+        System.out.println("To Hiragana:");
+        convert(hiragana, TEST_TEXT);
+
+        System.out.println("To Katakana:");
+        convert(katakana, TEST_TEXT);
+
+        System.out.println("To Romaji:");
+        convert(romaji, TEST_TEXT);
+
+        System.out.println("To Romaji 2:");
+        convert(romaji, TEST_ROMAJI);
+
+        System.out.println("To Full Width All:");
+        convert(fullwidth, TEST_TEXT_TO_WIDE);
     }
 
-    private static void process(Kanada obj, String str) {
+    private static void convert(Kanada obj, String str) {
         Calendar t0 = Calendar.getInstance();
-        String result = obj.process(str, true);
+        String result = obj.process(str);
         Calendar t1 = Calendar.getInstance();
         int lapTime = (int) Math.ceil(t1.getTime().getTime() - t0.getTime().getTime());
-        System.out.println("" + lapTime + " ms: " + "'" + result + "'");
+        System.out.println("> " + lapTime + " ms: " + "'" + result + "'");
     }
 
 }
