@@ -1,5 +1,7 @@
 package com.iciao.kanada;
 
+import com.iciao.kanada.maps.KanaMapping;
+
 import java.util.Locale;
 
 /**
@@ -34,13 +36,12 @@ public class Kanada {
     protected int optionAscii;
     protected int optionHalfSymbol;
 
-    protected boolean modeShowAllYomi = false;
     protected boolean modeAddSpace = false;
-    protected boolean modeFurigana = false;
     protected boolean modeUcFirst = false;
     protected boolean modeUcAll = false;
-    protected boolean modeKunreiRomaji = false;
-    protected boolean modeWakachiKaki = false;
+    protected KanaMapping.RomanizationSystem romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
+    protected boolean modeShowAllYomi = false;
+    protected boolean modeFurigana = false;
 
     public Kanada() throws java.io.IOException {
         setParam(
@@ -171,7 +172,17 @@ public class Kanada {
     }
 
     public Kanada kunreiRomaji() {
-        modeKunreiRomaji = true;
+        romanizationSystem = KanaMapping.RomanizationSystem.KUNREI;
+        return this;
+    }
+
+    public Kanada hepburnRomaji() {
+        romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
+        return this;
+    }
+
+    public Kanada romanizationSystem(KanaMapping.RomanizationSystem system) {
+        this.romanizationSystem = system;
         return this;
     }
 

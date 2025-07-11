@@ -55,7 +55,7 @@ public class KanadaExample {
 
     public static void main(String[] args) throws Exception {
 
-        Kanada romaji = new Kanada().toRomaji().withSpaces().upperCaseFirst();
+        Kanada romaji = new Kanada().toRomaji().withSpaces();
         Kanada wakatigaki = new Kanada().withSpaces();
         Kanada hiragana = new Kanada().toHiragana().withSpaces();
         Kanada katakana = new Kanada().toKatakana().withSpaces();
@@ -73,8 +73,11 @@ public class KanadaExample {
         System.out.println("To Katakana:");
         convert(katakana, TEST_TEXT);
 
-        System.out.println("To Romaji:");
-        convert(romaji, TEST_TEXT);
+        System.out.println("To Romaji UcFirst:");
+        convert(romaji.upperCaseFirst(), TEST_TEXT);
+
+        System.out.println("To Romaji UcAll:");
+        convert(romaji.upperCaseAll(), TEST_TEXT);
 
         System.out.println("To Romaji 2:");
         convert(romaji, TEST_ROMAJI);
