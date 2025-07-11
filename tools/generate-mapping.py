@@ -32,15 +32,7 @@ def generate_mapping():
                 katakana_entries.append(f'        katakanaMap.put("{escape_java_string(katakana)}", new String[]{{{array_str}}});')
     
     # Generate Java code
-    java_code = f'''/**
- * Kanada (Kanji-Kana Transliteration Library for Java)
- * Copyright (C) 2002-2014 Masahiko Sato
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- */
-package com.iciao.kanada.maps;
+    java_code = f'''package com.iciao.kanada.maps;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,9 +42,7 @@ import java.util.Map;
  * Generated from kanatable.tsv - DO NOT EDIT MANUALLY
  */
 class KanaMappingData {{
-    
 
-    
     private final Map<String, String[]> hiraganaMap = new HashMap<>();
     private final Map<String, String[]> katakanaMap = new HashMap<>();
     private final Map<Character, String> halfWidthMap = new HashMap<>();
@@ -82,7 +72,7 @@ class KanaMappingData {{
     }}
     
     private void initializeHalfWidthMapping() {{
-halfWidthMap.put('ガ', "ｶﾞ");
+        halfWidthMap.put('ガ', "ｶﾞ");
         halfWidthMap.put('ギ', "ｷﾞ");
         halfWidthMap.put('グ', "ｸﾞ");
         halfWidthMap.put('ゲ', "ｹﾞ");
@@ -139,7 +129,8 @@ halfWidthMap.put('ガ', "ｶﾞ");
         halfWidthMap.put('「', "｢");
         halfWidthMap.put('」', "｣");
         halfWidthMap.put('・', "･");
-        halfWidthMap.put('ー', "ｰ");    }}
+        halfWidthMap.put('ー', "ｰ");
+    }}
 }}'''
     
     with open(java_path, 'w', encoding='utf-8') as f:

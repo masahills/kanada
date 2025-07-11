@@ -23,7 +23,7 @@ task generateMapping(type: Exec) {
     description 'Generate KanaMapping.java from kanatable.tsv'
     commandLine 'python3', 'tools/generate-mapping.py'
     inputs.file 'tools/mappings/kanatable.tsv'
-    outputs.file 'src/main/java/com/iciao/kanada/maps/KanaMapping.java'
+    outputs.file 'src/main/java/com/iciao/kanada/maps/KanaMappingData.java'
 }
 
 compileJava.dependsOn generateMapping
@@ -32,7 +32,7 @@ task reallyClean(type: Delete) {
     description 'Clean build artifacts and regenerate dictionary files'
     delete layout.buildDirectory.get().asFile
     delete 'dictionary/japanese/kanwadict.dat'
-    delete 'src/main/java/com/iciao/kanada/maps/KanaMapping.java'
+    delete 'src/main/java/com/iciao/kanada/maps/KanaMappingData.java'
 }
 
 reallyClean.dependsOn clean
