@@ -1,6 +1,7 @@
 package com.iciao.kanada.maps;
 
 import com.iciao.kanada.JMapper;
+import com.iciao.kanada.Kanada;
 
 /**
  * Convert katakana input to romaji using TSV-based mapping.
@@ -11,15 +12,10 @@ public class MapKatakana extends JMapper {
 
     private static final KanaMapping kanaMapping = KanaMapping.getInstance();
 
-    public MapKatakana() {
-        this(null);
+    public MapKatakana(Kanada kanada) {
+        super(kanada);
     }
 
-    protected MapKatakana(String str) {
-        super(str);
-    }
-
-    @Override
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
         int thisChar = str.codePointAt(0);
@@ -36,7 +32,7 @@ public class MapKatakana extends JMapper {
             case TO_WIDE_ASCII:
                 String kana = String.valueOf(Character.toChars(thisChar));
                 if (isKatakana(kana)) {
-                    String romaji = kanaMapping.toRomaji(kana, KanaMapping.RomanizationSystem.MODIFIED_HEPBURN);
+                    String romaji = kanaMapping.toRomaji(kana, getRomanizationSystem());
                     if (romaji != null) {
                         out.append(kanaMapping.removeMacrons(romaji));
                     } else {

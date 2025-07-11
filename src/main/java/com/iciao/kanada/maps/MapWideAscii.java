@@ -8,14 +8,6 @@ import com.iciao.kanada.JMapper;
  * @author Masahiko Sato
  */
 public class MapWideAscii extends JMapper {
-    public MapWideAscii() {
-        this(null);
-    }
-
-    protected MapWideAscii(String str) {
-        super(str);
-    }
-
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
         int thisChar = str.codePointAt(0);

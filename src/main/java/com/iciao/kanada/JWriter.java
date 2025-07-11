@@ -100,7 +100,7 @@ public class JWriter {
                     case JMapper.TO_HALF_KATAKANA:
                     case JMapper.TO_ASCII:
                     case JMapper.TO_WIDE_ASCII:
-                        JMapper hiragana = new MapHiragana();
+                        JMapper hiragana = new MapHiragana(kanada);
                         hiragana.process(workStr, kanada.optionHiragana);
                         mappedMapper = hiragana;
                         break;
@@ -115,7 +115,7 @@ public class JWriter {
                     case JMapper.TO_HALF_KATAKANA:
                     case JMapper.TO_ASCII:
                     case JMapper.TO_WIDE_ASCII:
-                        JMapper katakana = new MapKatakana();
+                        JMapper katakana = new MapKatakana(kanada);
                         katakana.process(workStr, kanada.optionKatakana);
                         mappedMapper = katakana;
                         break;

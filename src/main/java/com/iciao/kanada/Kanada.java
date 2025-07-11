@@ -99,6 +99,8 @@ public class Kanada {
                 JMapper.AS_IS,
                 JMapper.TO_ASCII,
                 JMapper.TO_ASCII);
+        // default to Modified Hepburn
+        romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
         return this;
     }
 
@@ -171,18 +173,8 @@ public class Kanada {
         return this;
     }
 
-    public Kanada kunreiRomaji() {
-        romanizationSystem = KanaMapping.RomanizationSystem.KUNREI;
-        return this;
-    }
-
-    public Kanada hepburnRomaji() {
-        romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
-        return this;
-    }
-
     public Kanada romanizationSystem(KanaMapping.RomanizationSystem system) {
-        this.romanizationSystem = system;
+        romanizationSystem = system;
         return this;
     }
 

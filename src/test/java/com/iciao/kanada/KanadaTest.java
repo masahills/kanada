@@ -36,7 +36,7 @@ public class KanadaTest {
     public void testBasicRomajiConversion() throws Exception {
         String result = romaji.process("漢字");
         assertNotNull(result);
-        assertEquals("kanzi", result);
+        assertEquals("kanji", result);
     }
 
     @Test

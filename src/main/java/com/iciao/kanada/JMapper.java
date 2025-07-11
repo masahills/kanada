@@ -1,5 +1,7 @@
 package com.iciao.kanada;
 
+import com.iciao.kanada.maps.KanaMapping;
+
 /**
  * Remap non-kanji characters.<br>
  *
@@ -14,10 +16,20 @@ public abstract class JMapper {
     public static final int TO_HALF_KATAKANA = 4;
     public static final int TO_ASCII = 5;
     public static final int TO_HALF_SYMBOL = 6;
+
+    protected Kanada kanada;
     protected String outStr;
 
-    protected JMapper(String str) {
-        outStr = str;
+    public JMapper() {
+        this.kanada = null;
+    }
+
+    public JMapper(Kanada kanada) {
+        this.kanada = kanada;
+    }
+
+    protected KanaMapping.RomanizationSystem getRomanizationSystem() {
+        return kanada.romanizationSystem;
     }
 
     protected String getString() {

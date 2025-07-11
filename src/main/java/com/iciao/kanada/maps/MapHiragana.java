@@ -1,6 +1,7 @@
 package com.iciao.kanada.maps;
 
 import com.iciao.kanada.JMapper;
+import com.iciao.kanada.Kanada;
 
 /**
  * Convert hiragana input to romaji using TSV-based mapping.
@@ -8,18 +9,12 @@ import com.iciao.kanada.JMapper;
  * @author Masahiko Sato
  */
 public class MapHiragana extends JMapper {
-
     private static final KanaMapping kanaMapping = KanaMapping.getInstance();
 
-    public MapHiragana() {
-        this(null);
+    public MapHiragana(Kanada kanada) {
+        super(kanada);
     }
 
-    protected MapHiragana(String str) {
-        super(str);
-    }
-
-    @Override
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
         int thisChar = str.codePointAt(0);
@@ -36,7 +31,7 @@ public class MapHiragana extends JMapper {
             case TO_WIDE_ASCII:
                 String kana = String.valueOf(Character.toChars(thisChar));
                 if (isHiragana(kana)) {
-                    String romaji = kanaMapping.toRomaji(kana, KanaMapping.RomanizationSystem.MODIFIED_HEPBURN);
+                    String romaji = kanaMapping.toRomaji(kana, getRomanizationSystem());
                     if (romaji != null) {
                         out.append(kanaMapping.removeMacrons(romaji));
                     } else {
