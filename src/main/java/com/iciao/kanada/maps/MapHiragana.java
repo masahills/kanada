@@ -31,13 +31,9 @@ public class MapHiragana extends JMapper {
             case TO_ASCII:
             case TO_WIDE_ASCII:
                 String kana = String.valueOf(Character.toChars(thisChar));
-                if (isHiragana(kana)) {
-                    String romaji = kanaMapping.toRomaji(kana, getRomanizationSystem());
-                    if (romaji != null) {
-                        out.append(kanaMapping.removeMacrons(romaji));
-                    } else {
-                        out.append(kana);
-                    }
+                String romaji = kanaMapping.toRomaji(kana, getRomanizationSystem());
+                if (romaji != null) {
+                    out.append(kanaMapping.removeMacrons(romaji));
                 } else {
                     out.append(kana);
                 }
@@ -49,14 +45,6 @@ public class MapHiragana extends JMapper {
         setString(out.toString());
     }
 
-    private boolean isHiragana(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (!(c >= '\u3041' && c <= '\u3096')) {
-                return false;
-            }
-        }
-        return true;
-    }
+
 
 }

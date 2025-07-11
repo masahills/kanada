@@ -20,7 +20,7 @@ Thumbs.db
 dictionary/japanese/kanwadict.dat
 
 # Generated mapping files
-src/main/java/com/iciao/kanada/maps/KanaMapping.java
+src/main/java/com/iciao/kanada/maps/KanaMappingData.java
 
 # Gradle
 .gradle/

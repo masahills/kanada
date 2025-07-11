@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate KanaMapping.java from kanatable.tsv
+Generate KanaMappingData.java from kanatable.tsv
 """
 import csv
 import os
@@ -11,7 +11,7 @@ def escape_java_string(s):
 
 def generate_mapping():
     tsv_path = os.path.join(os.path.dirname(__file__), 'mappings', 'kanatable.tsv')
-    java_path = os.path.join(os.path.dirname(__file__), '..', 'src', 'main', 'java', 'com', 'iciao', 'kanada', 'maps', 'KanaMapping.java')
+    java_path = os.path.join(os.path.dirname(__file__), '..', 'src', 'main', 'java', 'com', 'iciao', 'kanada', 'maps', 'KanaMappingData.java')
     
     hiragana_entries = []
     katakana_entries = []
@@ -46,44 +46,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * TSV-based kana to romanization mapping with support for multiple romanization systems.
+ * Kana mapping data including romanization and half-width conversion.
  * Generated from kanatable.tsv - DO NOT EDIT MANUALLY
  */
-public class KanaMapping {{
+class KanaMappingData {{
     
-    public enum RomanizationSystem {{
-        MODIFIED_HEPBURN(2),    // 修正ヘボン式
-        KUNREI(3),              // 訓令式
-        GAIMUSHO_HEPBURN(4),    // 外務省ヘボン式
-        NIHON(5),               // 日本式
-        STATION_HEPBURN(6),     // 駅名標ヘボン式
-        ROAD_SIGN_HEPBURN(7);   // 道路標識ヘボン式
-        
-        private final int columnIndex;
-        
-        RomanizationSystem(int columnIndex) {{
-            this.columnIndex = columnIndex;
-        }}
-        
-        public int getColumnIndex() {{
-            return columnIndex;
-        }}
-    }}
+
     
     private final Map<String, String[]> hiraganaMap = new HashMap<>();
     private final Map<String, String[]> katakanaMap = new HashMap<>();
+    private final Map<Character, String> halfWidthMap = new HashMap<>();
     
-    private static KanaMapping instance;
-    
-    public static synchronized KanaMapping getInstance() {{
-        if (instance == null) {{
-            instance = new KanaMapping();
-        }}
-        return instance;
-    }}
-    
-    private KanaMapping() {{
+    KanaMappingData() {{
         initializeMappings();
+        initializeHalfWidthMapping();
     }}
     
     private void initializeMappings() {{
@@ -93,27 +69,77 @@ public class KanaMapping {{
 {chr(10).join(katakana_entries)}
     }}
     
-    public String toRomaji(String kana, RomanizationSystem system) {{
+    String[] getRomanizations(String kana) {{
         String[] romanizations = hiraganaMap.get(kana);
         if (romanizations == null) {{
             romanizations = katakanaMap.get(kana);
         }}
-        
-        if (romanizations != null) {{
-            String result = romanizations[system.getColumnIndex() - 2];
-            return result.isEmpty() ? null : result;
-        }}
-        
-        return null;
+        return romanizations;
     }}
     
-    public String removeMacrons(String text) {{
-        return text.replace("ā", "aa")
-                  .replace("ī", "ii")
-                  .replace("ū", "uu")
-                  .replace("ē", "ee")
-                  .replace("ō", "oo");
+    String getHalfWidthKana(char c) {{
+        return halfWidthMap.get(c);
     }}
+    
+    private void initializeHalfWidthMapping() {{
+halfWidthMap.put('ガ', "ｶﾞ");
+        halfWidthMap.put('ギ', "ｷﾞ");
+        halfWidthMap.put('グ', "ｸﾞ");
+        halfWidthMap.put('ゲ', "ｹﾞ");
+        halfWidthMap.put('ゴ', "ｺﾞ");
+        halfWidthMap.put('ザ', "ｻﾞ");
+        halfWidthMap.put('ジ', "ｼﾞ");
+        halfWidthMap.put('ズ', "ｽﾞ");
+        halfWidthMap.put('ゼ', "ｾﾞ");
+        halfWidthMap.put('ゾ', "ｿﾞ");
+        halfWidthMap.put('ダ', "ﾀﾞ");
+        halfWidthMap.put('ヂ', "ﾁﾞ");
+        halfWidthMap.put('ヅ', "ﾂﾞ");
+        halfWidthMap.put('デ', "ﾃﾞ");
+        halfWidthMap.put('ド', "ﾄﾞ");
+        halfWidthMap.put('バ', "ﾊﾞ");
+        halfWidthMap.put('ビ', "ﾋﾞ");
+        halfWidthMap.put('ブ', "ﾌﾞ");
+        halfWidthMap.put('ベ', "ﾍﾞ");
+        halfWidthMap.put('ボ', "ﾎﾞ");
+        halfWidthMap.put('パ', "ﾊﾟ");
+        halfWidthMap.put('ピ', "ﾋﾟ");
+        halfWidthMap.put('プ', "ﾌﾟ");
+        halfWidthMap.put('ペ', "ﾍﾟ");
+        halfWidthMap.put('ポ', "ﾎﾟ");
+        halfWidthMap.put('ヴ', "ｳﾞ");
+        halfWidthMap.put('が', "ｶﾞ");
+        halfWidthMap.put('ぎ', "ｷﾞ");
+        halfWidthMap.put('ぐ', "ｸﾞ");
+        halfWidthMap.put('げ', "ｹﾞ");
+        halfWidthMap.put('ご', "ｺﾞ");
+        halfWidthMap.put('ざ', "ｻﾞ");
+        halfWidthMap.put('じ', "ｼﾞ");
+        halfWidthMap.put('ず', "ｽﾞ");
+        halfWidthMap.put('ぜ', "ｾﾞ");
+        halfWidthMap.put('ぞ', "ｿﾞ");
+        halfWidthMap.put('だ', "ﾀﾞ");
+        halfWidthMap.put('ぢ', "ﾁﾞ");
+        halfWidthMap.put('づ', "ﾂﾞ");
+        halfWidthMap.put('で', "ﾃﾞ");
+        halfWidthMap.put('ど', "ﾄﾞ");
+        halfWidthMap.put('ば', "ﾊﾞ");
+        halfWidthMap.put('び', "ﾋﾞ");
+        halfWidthMap.put('ぶ', "ﾌﾞ");
+        halfWidthMap.put('べ', "ﾍﾞ");
+        halfWidthMap.put('ぼ', "ﾎﾞ");
+        halfWidthMap.put('ぱ', "ﾊﾟ");
+        halfWidthMap.put('ぴ', "ﾋﾟ");
+        halfWidthMap.put('ぷ', "ﾌﾟ");
+        halfWidthMap.put('ぺ', "ﾍﾟ");
+        halfWidthMap.put('ぽ', "ﾎﾟ");
+        halfWidthMap.put('ゔ', "ｳﾞ");
+        halfWidthMap.put('。', "｡");
+        halfWidthMap.put('、', "､");
+        halfWidthMap.put('「', "｢");
+        halfWidthMap.put('」', "｣");
+        halfWidthMap.put('・', "･");
+        halfWidthMap.put('ー', "ｰ");    }}
 }}'''
     
     with open(java_path, 'w', encoding='utf-8') as f:

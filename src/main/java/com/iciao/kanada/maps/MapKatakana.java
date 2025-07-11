@@ -32,13 +32,9 @@ public class MapKatakana extends JMapper {
             case TO_ASCII:
             case TO_WIDE_ASCII:
                 String kana = String.valueOf(Character.toChars(thisChar));
-                if (isKatakana(kana)) {
-                    String romaji = kanaMapping.toRomaji(kana, getRomanizationSystem());
-                    if (romaji != null) {
-                        out.append(kanaMapping.removeMacrons(romaji));
-                    } else {
-                        out.append(kana);
-                    }
+                String romaji = kanaMapping.toRomaji(kana, getRomanizationSystem());
+                if (romaji != null) {
+                    out.append(kanaMapping.removeMacrons(romaji));
                 } else {
                     out.append(kana);
                 }
@@ -49,15 +45,4 @@ public class MapKatakana extends JMapper {
         }
         setString(out.toString());
     }
-
-    private boolean isKatakana(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (!(c >= '\u30A1' && c <= '\u30F6')) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 }
