@@ -16,6 +16,7 @@ public class MapKatakana extends JMapper {
         super(kanada);
     }
 
+    @Override
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
         int thisChar = str.codePointAt(0);

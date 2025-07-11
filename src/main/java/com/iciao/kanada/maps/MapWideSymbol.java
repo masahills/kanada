@@ -28,6 +28,7 @@ public class MapWideSymbol extends JMapper {
             "~", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(repeat)", "(postal mark circle)", "XX",
             "10", "11", "12", "(repeat)", "(square)", "^", " "};
 
+    @Override
     protected void process(String str, int param) {
         StringBuilder out = new StringBuilder();
         int thisChar = str.codePointAt(0);
