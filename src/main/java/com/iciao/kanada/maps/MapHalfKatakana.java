@@ -2,6 +2,8 @@ package com.iciao.kanada.maps;
 
 import com.iciao.kanada.JMapper;
 
+import java.util.Objects;
+
 /**
  * Remap non-kanji characters.<br>
  *
@@ -15,32 +17,41 @@ U+FF9x	ﾐ	ﾑ	ﾒ	ﾓ	ﾔ	ﾕ	ﾖ	ﾗ	ﾘ	ﾙ	ﾚ	ﾛ	ﾜ	ﾝ	ﾞ	ﾟ
  */
 public class MapHalfKatakana extends JMapper {
 
+    private static final KanaMapping kanaMapping = KanaMapping.getInstance();
+
     @Override
     protected void process(String str, int param) {
-        StringBuilder result = new StringBuilder();
+        StringBuilder out = new StringBuilder();
 
         for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-
+            char thisChar = str.charAt(i);
             // Check for dakuten/handakuten combination
             if (i + 1 < str.length()) {
                 char next = str.charAt(i + 1);
                 if (next == 'ﾞ' || next == 'ﾟ') {
-                    String combined = combineDakuten(c, next);
+                    String combined = combineDakuten(thisChar, next);
                     if (combined != null) {
-                        result.append(combined);
+                        out.append(combined);
                         i++; // skip next character
                         continue;
                     }
                 }
             }
 
-            // Convert individual character
-            String converted = convertChar(c, param);
-            result.append(converted != null ? converted : c);
+            String converted = convertChar(thisChar, param);
+            if (param == TO_ASCII || param == TO_WIDE_ASCII) {
+                String romaji = kanaMapping.toRomaji(converted, getRomanizationSystem());
+                if (romaji != null) {
+                    out.append(kanaMapping.removeMacrons(romaji));
+                } else {
+                    out.append(converted);
+                }
+            } else {
+                out.append(Objects.requireNonNullElse(converted, thisChar));
+            }
         }
 
-        setString(result.toString());
+        setString(out.toString());
     }
 
     private String combineDakuten(char base, char mark) {
@@ -103,6 +114,4 @@ public class MapHalfKatakana extends JMapper {
 
         return null;
     }
-
-
 }
