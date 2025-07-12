@@ -58,6 +58,14 @@ public class JWriter {
                 } else {
                     mappedStr.appendCodePoint(thisChar);
                 }
+            } else if (block == Character.UnicodeBlock.LATIN_1_SUPPLEMENT) {
+                if (kanada.optionAscii == JMapper.TO_WIDE_ASCII) {
+                    JMapper halfSymbol = new MapHalfSymbol();
+                    halfSymbol.process(workStr, kanada.optionAscii);
+                    mappedMapper = halfSymbol;
+                } else {
+                    mappedStr.appendCodePoint(thisChar);
+                }
             } else if (block == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS) {
                 if (thisChar < 0xff61) {
                     if (kanada.optionWideAscii == JMapper.TO_ASCII) {
