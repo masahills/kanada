@@ -1,6 +1,7 @@
 package com.iciao.kanada.maps;
 
 import com.iciao.kanada.JMapper;
+import com.iciao.kanada.Kanada;
 
 /**
  * Remap non-kanji characters.<br>
@@ -8,6 +9,10 @@ import com.iciao.kanada.JMapper;
  * @author Masahiko Sato
  */
 public class MapHalfSymbol extends JMapper {
+
+    public MapHalfSymbol(Kanada kanada) {
+        super(kanada);
+    }
 
     @Override
     protected void process(String str, int param) {

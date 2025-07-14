@@ -60,6 +60,8 @@ public class KanadaExample {
         Kanada hiragana = new Kanada().toHiragana().withSpaces();
         Kanada katakana = new Kanada().toKatakana().withSpaces();
         Kanada fullwidth = new Kanada().toFullWidthAll().withSpaces();
+        Kanada hankaku = new Kanada().toHankakuKatakana().withSpaces();
+
 
         System.out.println("Original:");
         System.out.println(TEST_TEXT);
@@ -72,6 +74,9 @@ public class KanadaExample {
 
         System.out.println("To Katakana:");
         convert(katakana, TEST_TEXT);
+
+        System.out.println("To Hankaku Katakana:");
+        convert(hankaku, TEST_TEXT);
 
         System.out.println("To Romaji UcFirst:");
         convert(romaji.upperCaseFirst(), TEST_TEXT);

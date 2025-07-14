@@ -1,6 +1,7 @@
 package com.iciao.kanada.maps;
 
 import com.iciao.kanada.JMapper;
+import com.iciao.kanada.Kanada;
 
 import java.util.Objects;
 
@@ -16,8 +17,11 @@ U+FF8x	ﾀ	ﾁ	ﾂ	ﾃ	ﾄ	ﾅ	ﾆ	ﾇ	ﾈ	ﾉ	ﾊ	ﾋ	ﾌ	ﾍ	ﾎ	ﾏ
 U+FF9x	ﾐ	ﾑ	ﾒ	ﾓ	ﾔ	ﾕ	ﾖ	ﾗ	ﾘ	ﾙ	ﾚ	ﾛ	ﾜ	ﾝ	ﾞ	ﾟ
  */
 public class MapHalfKatakana extends JMapper {
-
     private static final KanaMapping kanaMapping = KanaMapping.getInstance();
+
+    public MapHalfKatakana(Kanada kanada) {
+        super(kanada);
+    }
 
     @Override
     protected void process(String str, int param) {
@@ -42,7 +46,7 @@ public class MapHalfKatakana extends JMapper {
             if (param == TO_ASCII || param == TO_WIDE_ASCII) {
                 String romaji = kanaMapping.toRomaji(converted, getRomanizationSystem());
                 if (romaji != null) {
-                    out.append(kanaMapping.removeMacrons(romaji));
+                    out.append(modeMacron() ? romaji : kanaMapping.removeMacrons(romaji));
                 } else {
                     out.append(converted);
                 }

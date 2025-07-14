@@ -35,7 +35,7 @@ public class MapHiragana extends JMapper {
             case TO_WIDE_ASCII:
                 String romaji = kanaMapping.toRomaji(kana, getRomanizationSystem());
                 if (romaji != null) {
-                    out.append(kanaMapping.removeMacrons(romaji));
+                    out.append(modeMacron() ? romaji : kanaMapping.removeMacrons(romaji));
                 } else {
                     out.append(kana);
                 }

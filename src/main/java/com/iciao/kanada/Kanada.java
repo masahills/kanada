@@ -39,6 +39,7 @@ public class Kanada {
     protected boolean modeAddSpace = false;
     protected boolean modeUcFirst = false;
     protected boolean modeUcAll = false;
+    protected boolean modeMacron = false;
     protected KanaMapping.RomanizationSystem romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
     protected boolean modeShowAllYomi = false;
     protected boolean modeFurigana = false;
@@ -130,6 +131,19 @@ public class Kanada {
         return this;
     }
 
+    public Kanada toHankakuKatakana() {
+        setParam(
+                JMapper.TO_HALF_KATAKANA,
+                JMapper.TO_HALF_KATAKANA,
+                JMapper.TO_HALF_KATAKANA,
+                JMapper.TO_ASCII,
+                JMapper.TO_HALF_SYMBOL,
+                JMapper.TO_HALF_KATAKANA,
+                JMapper.AS_IS,
+                JMapper.AS_IS);
+        return this;
+    }
+
     public Kanada toFullWidthKana() {
         setParam(
                 JMapper.AS_IS,
@@ -153,6 +167,11 @@ public class Kanada {
                 JMapper.TO_WIDE_ASCII,
                 JMapper.TO_KATAKANA,
                 JMapper.TO_WIDE_SYMBOL);
+        return this;
+    }
+
+    public Kanada withMacrons() {
+        modeMacron = false;
         return this;
     }
 

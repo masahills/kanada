@@ -20,7 +20,7 @@ public abstract class JMapper {
     protected Kanada kanada;
     protected String outStr;
 
-    public JMapper() {
+    private JMapper() {
         this.kanada = null;
     }
 
@@ -30,6 +30,10 @@ public abstract class JMapper {
 
     protected KanaMapping.RomanizationSystem getRomanizationSystem() {
         return kanada.romanizationSystem;
+    }
+
+    protected boolean modeMacron() {
+        return kanada.modeMacron;
     }
 
     protected String getString() {

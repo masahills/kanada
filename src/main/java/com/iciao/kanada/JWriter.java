@@ -52,7 +52,7 @@ public class JWriter {
 
             if (block == Character.UnicodeBlock.BASIC_LATIN) {
                 if (kanada.optionAscii == JMapper.TO_WIDE_ASCII) {
-                    JMapper ascii = new MapAscii();
+                    JMapper ascii = new MapAscii(kanada);
                     ascii.process(workStr, kanada.optionAscii);
                     mappedMapper = ascii;
                 } else {
@@ -60,7 +60,7 @@ public class JWriter {
                 }
             } else if (block == Character.UnicodeBlock.LATIN_1_SUPPLEMENT) {
                 if (kanada.optionAscii == JMapper.TO_WIDE_ASCII) {
-                    JMapper halfSymbol = new MapHalfSymbol();
+                    JMapper halfSymbol = new MapHalfSymbol(kanada);
                     halfSymbol.process(workStr, kanada.optionAscii);
                     mappedMapper = halfSymbol;
                 } else {
@@ -69,7 +69,7 @@ public class JWriter {
             } else if (block == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS) {
                 if (thisChar < 0xff61) {
                     if (kanada.optionWideAscii == JMapper.TO_ASCII) {
-                        JMapper wideAscii = new MapWideAscii();
+                        JMapper wideAscii = new MapWideAscii(kanada);
                         wideAscii.process(workStr, kanada.optionWideAscii);
                         mappedMapper = wideAscii;
                     } else {
@@ -81,7 +81,7 @@ public class JWriter {
                         case JMapper.TO_ASCII:
                         case JMapper.TO_KATAKANA:
                         case JMapper.TO_HIRAGANA:
-                            JMapper halfKatakana = new MapHalfKatakana();
+                            JMapper halfKatakana = new MapHalfKatakana(kanada);
                             halfKatakana.process(workStr, kanada.optionHalfKatakana);
                             mappedMapper = halfKatakana;
                             break;
@@ -94,7 +94,7 @@ public class JWriter {
                 switch (kanada.optionWideSymbol) {
                     case JMapper.TO_ASCII:
                     case JMapper.TO_HALF_SYMBOL:
-                        JMapper wideSymbol = new MapWideSymbol();
+                        JMapper wideSymbol = new MapWideSymbol(kanada);
                         wideSymbol.process(workStr, kanada.optionWideSymbol);
                         mappedMapper = wideSymbol;
                         break;
