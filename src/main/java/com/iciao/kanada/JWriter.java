@@ -67,7 +67,7 @@ public class JWriter {
                     mappedStr.appendCodePoint(thisChar);
                 }
             } else if (block == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS) {
-                if (thisChar < 0xff61) {
+                if (thisChar < 0xff61 || thisChar > 0xffdf) {
                     if (kanada.optionWideAscii == JMapper.TO_ASCII) {
                         JMapper wideAscii = new MapWideAscii(kanada);
                         wideAscii.process(workStr, kanada.optionWideAscii);
