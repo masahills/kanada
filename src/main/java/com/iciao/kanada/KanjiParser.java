@@ -29,9 +29,21 @@ public class KanjiParser {
         for (int i = 0; i < strLen; i++) {
             int thisChar = inputString.codePointAt(i);
 
+            if (i > 0 && kanada.modeAddSpace && !outputBuffer.isEmpty()) {
+                int prevChar = inputString.codePointAt(i - 1);
+                Character.UnicodeBlock prevBlock = Character.UnicodeBlock.of(prevChar);
+                Character.UnicodeBlock currentBlock = Character.UnicodeBlock.of(thisChar);
+                if (prevBlock != currentBlock && thisChar != ' ' && outputBuffer.charAt(outputBuffer.length() - 1) != ' ') {
+                    jWriter.append(' ');
+                }
+            }
+
             if (!Pattern.matches("[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]",
                     String.valueOf(Character.toChars(thisChar)))) {
                 jWriter.append(thisChar);
+                StringBuilder nonDicStr = jWriter.map();
+                outputBuffer.append(nonDicStr);
+                jWriter.clear();
                 continue;
             }
 
@@ -44,6 +56,9 @@ public class KanjiParser {
 
             if (valueList.isEmpty()) {
                 jWriter.append(thisChar);
+                StringBuilder nonDicStr = jWriter.map();
+                outputBuffer.append(nonDicStr);
+                jWriter.clear();
                 continue;
             }
 
@@ -51,7 +66,7 @@ public class KanjiParser {
                 if (kanada.modeAddSpace && !outputBuffer.isEmpty()) {
                     int nextChar = 0;
                     if (i < strLen - 1) {
-                        nextChar = inputString.codePointAt(i);
+                        nextChar = inputString.codePointAt(i + 1);
                     }
                     if (!Pattern.matches("[\\p{Cntrl}\\p{IsCommon}]", String.valueOf(Character.toChars(nextChar)))
                             && !Pattern.matches("(?s).*?\\p{IsCommon}$", jWriter.buffer.toString())) {
@@ -106,7 +121,7 @@ public class KanjiParser {
                 if (!jWriter.buffer.isEmpty()) {
                     int nextChar = 0;
                     if (kanada.modeAddSpace && tail == ' ') {
-                        if (i < strLen - matchedLen - 1) {
+                        if (i + matchedLen < strLen) {
                             nextChar = inputString.codePointAt(i + matchedLen);
                         }
                         if (!Pattern.matches("[\\p{Cntrl}\\p{IsCommon}]", String.valueOf(Character.toChars(nextChar)))) {
@@ -131,7 +146,3 @@ public class KanjiParser {
         return outputBuffer.toString();
     }
 }
-
-/*
- * $History: $
- */
