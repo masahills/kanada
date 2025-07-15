@@ -43,8 +43,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Kana mapping data including romanization and half-width conversion.
- * Generated from kanatable.tsv - DO NOT EDIT MANUALLY
+ * Contains kana mapping data for multiple romanization systems.
+ * Auto-generated from kanatable.tsv - DO NOT EDIT MANUALLY
  */
 class KanaMappingData {{
 
@@ -63,7 +63,7 @@ class KanaMappingData {{
         }}
         for (Map.Entry<String, String[]> entry : katakanaMap.entrySet()) {{
             trie.insert(entry.getKey(), entry.getValue());
-            }}
+        }}
     }}
 
     private void initializeMappings() {{
