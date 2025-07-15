@@ -21,10 +21,6 @@ public abstract class JMapper {
     protected String outStr;
     protected int matchedLength = 1;
 
-    private JMapper() {
-        this.kanada = null;
-    }
-
     public JMapper(Kanada kanada) {
         this.kanada = kanada;
     }

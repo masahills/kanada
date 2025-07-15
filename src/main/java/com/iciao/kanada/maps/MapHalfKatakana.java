@@ -77,7 +77,6 @@ public class MapHalfKatakana extends JMapper {
     }
 
     private String convertChar(char c, int param) {
-        // Punctuation conversion
         switch (c) {
             case '｡':
                 return "。"; // period
@@ -93,7 +92,6 @@ public class MapHalfKatakana extends JMapper {
                 return "ー"; // long vowel mark
         }
 
-        // Determine target base
         int smallBase, normalBase;
         switch (param) {
             case TO_KATAKANA:

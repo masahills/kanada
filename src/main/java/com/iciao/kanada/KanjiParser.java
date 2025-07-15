@@ -47,8 +47,8 @@ public class KanjiParser {
                 continue;
             }
 
-            if (jWriter.buffer.length() > 0) {
-                if (kanada.modeAddSpace && outputBuffer.length() > 0) {
+            if (!jWriter.buffer.isEmpty()) {
+                if (kanada.modeAddSpace && !outputBuffer.isEmpty()) {
                     int nextChar = 0;
                     if (i < strLen - 1) {
                         nextChar = inputString.codePointAt(i);
@@ -80,16 +80,16 @@ public class KanjiParser {
 
                 String searchWord = inputString.substring(i, i + searchLen);
 
-                if (searchWord.equals(term.getKanji())) {
-                    if (term.getTail() == ' ') {
-                        kanji = term.getKanji();
-                        yomi = term.getYomi();
-                        tail = term.getTail();
+                if (searchWord.equals(term.kanji())) {
+                    if (term.tail() == ' ') {
+                        kanji = term.kanji();
+                        yomi = term.yomi();
+                        tail = term.tail();
                         matchedLen = searchLen;
                     } else if (inputString.length() > searchWord.length()) {
-                        kanji = term.getKanji();
-                        yomi = term.getYomi();
-                        tail = term.getTail();
+                        kanji = term.kanji();
+                        yomi = term.yomi();
+                        tail = term.tail();
                         matchedLen = searchLen;
                     }
                 }
@@ -103,7 +103,7 @@ public class KanjiParser {
                 } else {
                     jWriter.append(yomi);
                 }
-                if (jWriter.buffer.length() > 0) {
+                if (!jWriter.buffer.isEmpty()) {
                     int nextChar = 0;
                     if (kanada.modeAddSpace && tail == ' ') {
                         if (i < strLen - matchedLen - 1) {
@@ -123,7 +123,7 @@ public class KanjiParser {
             jWriter.tail = tail;
         }
 
-        if (jWriter.buffer.length() > 0) {
+        if (!jWriter.buffer.isEmpty()) {
             outputBuffer.append(jWriter.map());
             jWriter.clear();
         }

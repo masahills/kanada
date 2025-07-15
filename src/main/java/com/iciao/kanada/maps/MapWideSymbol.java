@@ -54,22 +54,14 @@ public class MapWideSymbol extends JMapper {
     }
 
     private String cjkSymbolsAndPunctuationToHalfSymbol(char ch) {
-        switch (ch) {
-            case '　':
-                return " "; // space
-            case '、':
-                return "､"; // comma
-            case '。':
-                return "｡"; // period
-            case '「':
-                return "｢"; // left bracket
-            case '」':
-                return "｣"; // right bracket
-            case '〜':
-            case '〰':
-                return "ｰ"; // long vowel mark
-            default:
-                return String.valueOf(ch);
-        }
+        return switch (ch) {
+            case '　' -> " "; // space
+            case '、' -> "､"; // comma
+            case '。' -> "｡"; // period
+            case '「' -> "｢"; // left bracket
+            case '」' -> "｣"; // right bracket
+            case '〜', '〰' -> "ｰ"; // long vowel mark
+            default -> String.valueOf(ch);
+        };
     }
 }

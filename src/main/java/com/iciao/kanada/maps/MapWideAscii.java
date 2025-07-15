@@ -31,23 +31,15 @@ public class MapWideAscii extends JMapper {
     }
 
     private char fullwidthSymbolToHalf(char ch) {
-        switch (ch) {
-            case '￠':
-                return '¢'; // FULLWIDTH CENT SIGN → CENT SIGN
-            case '￡':
-                return '£'; // FULLWIDTH POUND SIGN → POUND SIGN
-            case '￢':
-                return '¬'; // FULLWIDTH NOT SIGN → NOT SIGN
-            case '￣':
-                return '¯'; // FULLWIDTH MACRON → MACRON
-            case '￤':
-                return '¦'; // FULLWIDTH BROKEN BAR → BROKEN BAR
-            case '￥':
-                return '¥'; // FULLWIDTH YEN SIGN → YEN SIGN
-            case '￦':
-                return '₩'; // FULLWIDTH WON SIGN → WON SIGN
-            default:
-                return ch;
-        }
+        return switch (ch) {
+            case '￠' -> '¢'; // FULLWIDTH CENT SIGN → CENT SIGN
+            case '￡' -> '£'; // FULLWIDTH POUND SIGN → POUND SIGN
+            case '￢' -> '¬'; // FULLWIDTH NOT SIGN → NOT SIGN
+            case '￣' -> '¯'; // FULLWIDTH MACRON → MACRON
+            case '￤' -> '¦'; // FULLWIDTH BROKEN BAR → BROKEN BAR
+            case '￥' -> '¥'; // FULLWIDTH YEN SIGN → YEN SIGN
+            case '￦' -> '₩'; // FULLWIDTH WON SIGN → WON SIGN
+            default -> ch;
+        };
     }
 }

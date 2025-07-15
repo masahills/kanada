@@ -217,7 +217,7 @@ public class Kanada {
 
     public String process(String str) {
         if (str == null) {
-            return str;
+            return null;
         }
 
         String parsedStr;

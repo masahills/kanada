@@ -27,23 +27,15 @@ public class MapHalfSymbol extends JMapper {
     }
 
     private char halfwidthSymbolToFull(char ch) {
-        switch (ch) {
-            case '¢':
-                return '￠'; // CENT SIGN → FULLWIDTH CENT SIGN
-            case '£':
-                return '￡'; // POUND SIGN → FULLWIDTH POUND SIGN
-            case '¬':
-                return '￢'; // NOT SIGN → FULLWIDTH NOT SIGN
-            case '¯':
-                return '￣'; // MACRON → FULLWIDTH MACRON
-            case '¦':
-                return '￤'; // BROKEN BAR → FULLWIDTH BROKEN BAR
-            case '¥':
-                return '￥'; // YEN SIGN → FULLWIDTH YEN SIGN
-            case '₩':
-                return '￦'; // WON SIGN → FULLWIDTH WON SIGN
-            default:
-                return ch;
-        }
+        return switch (ch) {
+            case '¢' -> '￠'; // CENT SIGN → FULLWIDTH CENT SIGN
+            case '£' -> '￡'; // POUND SIGN → FULLWIDTH POUND SIGN
+            case '¬' -> '￢'; // NOT SIGN → FULLWIDTH NOT SIGN
+            case '¯' -> '￣'; // MACRON → FULLWIDTH MACRON
+            case '¦' -> '￤'; // BROKEN BAR → FULLWIDTH BROKEN BAR
+            case '¥' -> '￥'; // YEN SIGN → FULLWIDTH YEN SIGN
+            case '₩' -> '￦'; // WON SIGN → FULLWIDTH WON SIGN
+            default -> ch;
+        };
     }
 }

@@ -307,8 +307,7 @@ public class Kanwadict {
         }
 
         public boolean equals(Object obj) {
-            if (obj instanceof KanwaKey) {
-                KanwaKey thisKey = (KanwaKey) obj;
+            if (obj instanceof KanwaKey thisKey) {
                 return (this.key == thisKey.key);
             }
             return false;
@@ -319,37 +318,15 @@ public class Kanwadict {
         }
     }
 
-    public static class YomiKanjiData implements Serializable {
-        private final String yomi;
-        private final int tail;
-        private final String kanji;
-
-        public YomiKanjiData(String yomi, int tail, String kanji) {
-            this.yomi = yomi;
-            this.tail = tail;
-            this.kanji = kanji;
-        }
-
-        public String getYomi() {
-            return yomi;
-        }
-
-        public String getKanji() {
-            return kanji;
-        }
+    public record YomiKanjiData(String yomi, int tail, String kanji) implements Serializable {
 
         public int getLength() {
             return kanji.length();
         }
 
-        public int getTail() {
-            return tail;
-        }
-
         public boolean equals(Object obj) {
-            if (obj instanceof YomiKanjiData) {
-                YomiKanjiData data = (YomiKanjiData) obj;
-                return (yomi.equals(data.getYomi()) && tail == data.getTail() && kanji.equals(data.getKanji()));
+            if (obj instanceof YomiKanjiData data) {
+                return (yomi.equals(data.yomi()) && tail == data.tail() && kanji.equals(data.kanji()));
             }
             return false;
         }

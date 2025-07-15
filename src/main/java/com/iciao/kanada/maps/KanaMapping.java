@@ -86,20 +86,14 @@ public class KanaMapping {
         return result.toString();
     }
 
-
     private String getHalfWidthKanaSpecial(char c) {
-        switch (c) {
-            case '。':
-                return "｡";
-            case '、':
-                return "､";
-            case '「':
-                return "｢";
-            case '」':
-                return "｣";
-            default:
-                return String.valueOf(c);
-        }
+        return switch (c) {
+            case '。' -> "｡";
+            case '、' -> "､";
+            case '「' -> "｢";
+            case '」' -> "｣";
+            default -> String.valueOf(c);
+        };
     }
 
     /*
