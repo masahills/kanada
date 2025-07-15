@@ -44,9 +44,11 @@ public class MapHalfKatakana extends JMapper {
 
             String converted = convertChar(thisChar, param);
             if (param == TO_ASCII || param == TO_WIDE_ASCII) {
-                String romaji = kanaMapping.toRomaji(converted, getRomanizationSystem());
+                KanaTrie.MatchResult result = kanaMapping.toRomaji(str);
+                String romaji = result != null ? result.values()[getRomanizationSystem().getColumnIndex() - 2] : null;
                 if (romaji != null) {
                     out.append(modeMacron() ? romaji : kanaMapping.removeMacrons(romaji));
+                    matchedLength = result.length();
                 } else {
                     out.append(converted);
                 }

@@ -19,6 +19,7 @@ public abstract class JMapper {
 
     protected Kanada kanada;
     protected String outStr;
+    protected int matchedLength = 1;
 
     private JMapper() {
         this.kanada = null;
@@ -38,6 +39,10 @@ public abstract class JMapper {
 
     protected String getString() {
         return outStr;
+    }
+
+    protected int getProcessedLength() {
+        return matchedLength;
     }
 
     protected void setString(String str) {

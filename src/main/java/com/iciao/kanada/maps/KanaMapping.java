@@ -46,13 +46,8 @@ public class KanaMapping {
     private KanaMapping() {
     }
 
-    public String toRomaji(String kana, RomanizationSystem system) {
-        String[] romanizations = mappingData.getRomanizations(kana);
-        if (romanizations != null) {
-            String result = romanizations[system.getColumnIndex() - 2];
-            return result.isEmpty() ? null : result;
-        }
-        return null;
+    public KanaTrie.MatchResult toRomaji(String str) {
+        return mappingData.getRomanizations(str);
     }
 
     public String removeMacrons(String text) {

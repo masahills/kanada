@@ -137,6 +137,7 @@ public class JWriter {
 
             if (mappedMapper != null) {
                 mappedStr.append(mappedMapper.getString());
+                i = i + mappedMapper.getProcessedLength() - 1;
             }
             outStr.append(mappedStr);
             mappedStr.setLength(0);
