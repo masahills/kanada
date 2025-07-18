@@ -29,21 +29,19 @@ public class KanjiParser {
         for (int i = 0; i < strLen; i++) {
             int thisChar = inputString.codePointAt(i);
 
-            if (i > 0 && kanada.modeAddSpace && !outputBuffer.isEmpty()) {
+            if (i > 0 && kanada.modeAddSpace) {
                 int prevChar = inputString.codePointAt(i - 1);
                 Character.UnicodeBlock prevBlock = Character.UnicodeBlock.of(prevChar);
                 Character.UnicodeBlock currentBlock = Character.UnicodeBlock.of(thisChar);
-                if (prevBlock != currentBlock && thisChar != ' ' && outputBuffer.charAt(outputBuffer.length() - 1) != ' ') {
-                    jWriter.append(' ');
+                if (prevBlock != currentBlock) {
+                    // Flush the buffer at the word boundary.
+                    flushBuffer(true);
                 }
             }
 
             if (!Pattern.matches("[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]",
                     String.valueOf(Character.toChars(thisChar)))) {
                 jWriter.append(thisChar);
-                StringBuilder nonDicStr = jWriter.map();
-                outputBuffer.append(nonDicStr);
-                jWriter.clear();
                 continue;
             }
 
@@ -56,27 +54,11 @@ public class KanjiParser {
 
             if (valueList.isEmpty()) {
                 jWriter.append(thisChar);
-                StringBuilder nonDicStr = jWriter.map();
-                outputBuffer.append(nonDicStr);
-                jWriter.clear();
                 continue;
             }
 
-            if (!jWriter.buffer.isEmpty()) {
-                if (kanada.modeAddSpace && !outputBuffer.isEmpty()) {
-                    int nextChar = 0;
-                    if (i < strLen - 1) {
-                        nextChar = inputString.codePointAt(i + 1);
-                    }
-                    if (!Pattern.matches("[\\p{Cntrl}\\p{IsCommon}]", String.valueOf(Character.toChars(nextChar)))
-                            && !Pattern.matches("(?s).*?\\p{IsCommon}$", jWriter.buffer.toString())) {
-                        jWriter.append(' ');
-                    }
-                }
-                StringBuilder nonDicStr = jWriter.map();
-                outputBuffer.append(nonDicStr);
-                jWriter.clear();
-            }
+            // Flush non-dictionary characters before looking up the dictionary.
+            flushBuffer(false);
 
             Iterator<Kanwadict.YomiKanjiData> dicIterator = valueList.iterator();
 
@@ -109,40 +91,35 @@ public class KanjiParser {
                     }
                 }
             }
+            jWriter.tail = tail;
 
-            if (matchedLen == 0 || yomi.isEmpty()) {
-                outputBuffer.appendCodePoint(thisChar);
-            } else {
+            if (matchedLen > 0 && !yomi.isEmpty()) {
                 if (kanada.optionKanji == JMapper.AS_IS) {
                     jWriter.append(kanji);
                 } else {
                     jWriter.append(yomi);
                 }
-                if (!jWriter.buffer.isEmpty()) {
-                    int nextChar = 0;
-                    if (kanada.modeAddSpace && tail == ' ') {
-                        if (i + matchedLen < strLen) {
-                            nextChar = inputString.codePointAt(i + matchedLen);
-                        }
-                        if (!Pattern.matches("[\\p{Cntrl}\\p{IsCommon}]", String.valueOf(Character.toChars(nextChar)))) {
-                            jWriter.append(' ');
-                        }
-                    }
-                }
-                StringBuilder dicStr = jWriter.map();
-                outputBuffer.append(dicStr);
-                jWriter.clear();
+                flushBuffer(true);
                 i = i + matchedLen - 1;
+            } else {
+                outputBuffer.appendCodePoint(thisChar);
             }
-
-            jWriter.tail = tail;
         }
 
-        if (!jWriter.buffer.isEmpty()) {
-            outputBuffer.append(jWriter.map());
-            jWriter.clear();
-        }
+        // Flush the remaining characters in the buffer.
+        flushBuffer(false);
 
         return outputBuffer.toString();
+    }
+
+    private void flushBuffer(boolean isBoundary) {
+        if (!jWriter.buffer.isEmpty()) {
+            if (isBoundary && kanada.modeAddSpace && jWriter.tail == ' ') {
+                jWriter.append(' ');
+            }
+            StringBuilder str = jWriter.map();
+            outputBuffer.append(str);
+            jWriter.clear();
+        }
     }
 }
