@@ -55,7 +55,7 @@ public class KanadaExample {
 
     public static void main(String[] args) throws Exception {
 
-        Kanada romaji = new Kanada().toRomaji().withSpaces();
+        Kanada romaji = new Kanada().toRomaji().withSpaces().withMacrons();
         Kanada wakatigaki = new Kanada().withSpaces();
         Kanada hiragana = new Kanada().toHiragana().withSpaces();
         Kanada katakana = new Kanada().toKatakana().withSpaces();

@@ -58,7 +58,7 @@ public class KanjiParser {
             }
 
             // Flush non-dictionary characters before looking up the dictionary.
-            flushBuffer(false);
+            flushBuffer(true);
 
             Iterator<Kanwadict.YomiKanjiData> dicIterator = valueList.iterator();
 

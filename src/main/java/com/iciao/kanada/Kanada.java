@@ -41,8 +41,8 @@ public class Kanada {
     protected boolean modeUcAll = false;
     protected boolean modeMacron = false;
     protected KanaMapping.RomanizationSystem romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
-    protected boolean modeShowAllYomi = false;
-    protected boolean modeFurigana = false;
+    protected boolean modeShowAllYomi = false; // TODO: To be implemented.
+    protected boolean modeFurigana = false; // TODO: To be implemented.
 
     public Kanada() throws java.io.IOException {
         setParam(
@@ -171,7 +171,7 @@ public class Kanada {
     }
 
     public Kanada withMacrons() {
-        modeMacron = false;
+        modeMacron = true;
         return this;
     }
 
