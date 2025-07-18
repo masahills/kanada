@@ -14,12 +14,13 @@ public class JWriter {
     protected Kanada kanada;
     protected StringBuilder buffer = new StringBuilder();
     protected int tail;
-
+    private boolean isTail;
 
     public JWriter(Kanada thisKanada) {
         this.clear();
         kanada = thisKanada;
         tail = ' ';
+        isTail = false;
     }
 
     public StringBuilder append(int codePoint) {
@@ -143,7 +144,7 @@ public class JWriter {
             mappedStr.setLength(0);
         }
 
-        if (kanada.modeUcFirst && tail == ' ') {
+        if (kanada.modeUcFirst && !isTail) {
             StringBuilder sb = new StringBuilder();
             StringTokenizer token = new StringTokenizer(outStr.toString(), " \t\n\r\f", true);
             while (token.hasMoreTokens()) {
@@ -154,6 +155,7 @@ public class JWriter {
             outStr.append(sb);
         }
 
+        isTail = tail != ' ';
         tail = ' ';
 
         return outStr;
