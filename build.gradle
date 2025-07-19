@@ -44,6 +44,11 @@ task applyLicense(dependsOn: 'licenseFormat') {
     group 'License'
 }
 
+// Ensure licenseMain runs after generateMapping
+tasks.named('licenseMain') {
+    dependsOn generateMapping
+}
+
 // Task to check license headers
 task checkLicense(dependsOn: 'license') {
     description 'Check if all source files have license headers'
@@ -71,10 +76,10 @@ license {
     include "**/*.java"
     exclude "**/generated/**"
     exclude "**/KanaMappingData.java"  // Exclude auto-generated files
-    
+
     ext.year = Calendar.getInstance().get(Calendar.YEAR)
     ext.name = "Masahiko Sato"
-    
+
     // Enable verbose output to detect files without license headers
     ext.verbose = true
 }
