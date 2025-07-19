@@ -82,4 +82,9 @@ license {
 
     // Enable verbose output to detect files without license headers
     ext.verbose = true
+    
+    // Use block comment style instead of Javadoc
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * MIT License
  *
  * Copyright (C) 2025 Masahiko Sato
@@ -71,6 +71,39 @@ public class KanaMapping {
                 .replace("ū", "uu")
                 .replace("ē", "ee")
                 .replace("ō", "oo");
+    }
+
+    public String processLongVowels(String romaji, RomanizationSystem system) {
+        if (romaji == null || romaji.isEmpty()) return romaji;
+
+        char lastChar = romaji.charAt(romaji.length() - 1);
+        char vowel = switch (lastChar) {
+            case 'a' -> 'ā';
+            case 'i' -> 'ī';
+            case 'u' -> 'ū';
+            case 'e' -> 'ē';
+            case 'o' -> 'ō';
+            default -> 0;
+        };
+
+        if (vowel == 0) {
+            return romaji;
+        }
+
+        StringBuilder sb = new StringBuilder(romaji);
+        switch (system) {
+            case MODIFIED_HEPBURN:
+            case GAIMUSHO_HEPBURN:
+            case STATION_HEPBURN:
+            case ROAD_SIGN_HEPBURN:
+                sb.setCharAt(sb.length() - 1, vowel);
+                break;
+            case KUNREI:
+            case NIHON:
+                sb.append('-');
+                break;
+        }
+        return sb.toString();
     }
 
     public String toHalfWidthKana(String text) {
