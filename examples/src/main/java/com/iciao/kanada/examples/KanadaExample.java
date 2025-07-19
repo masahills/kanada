@@ -6,12 +6,16 @@
  * To change template for new class use
  * Code Style | Class Templates options (Tools | IDE Options).
  */
-package com.iciao.kanada;
+package com.iciao.kanada.examples;
 
-import java.io.IOException;
+import com.iciao.kanada.Kanada;
+
 import java.util.Calendar;
 
-public class kanada_test {
+/**
+ * Example usage of Kanada library
+ */
+public class KanadaExample {
 
     private static final String TEST_TEXT =
             "第二次安倍改造内閣は3日夕方、皇居での認証式を経て正式に発足した。\n" +
@@ -51,40 +55,48 @@ public class kanada_test {
 
     public static void main(String[] args) throws Exception {
 
-        kanada roomaji = null;
-        kanada wakatigaki = null;
-        kanada hiragana = null;
-        kanada katakana = null;
-        kanada fullwidth = null;
+        Kanada romaji = new Kanada().toRomaji().withSpaces().withMacrons();
+        Kanada wakatigaki = new Kanada().withSpaces();
+        Kanada hiragana = new Kanada().toHiragana().withSpaces();
+        Kanada katakana = new Kanada().toKatakana().withSpaces();
+        Kanada fullwidth = new Kanada().toFullWidthAll().withSpaces();
+        Kanada hankaku = new Kanada().toHankakuKatakana().withSpaces();
 
-        try {
-            roomaji = new kanada(kanada.CONFIG_GET_ROMAJI);
-            wakatigaki = new kanada(kanada.CONFIG_GET_AS_IS);
-            hiragana = new kanada(kanada.CONFIG_GET_HIRAGANA);
-            katakana = new kanada(kanada.CONFIG_GET_KATAKANA);
-            fullwidth = new kanada(kanada.CONFIG_HALF_TO_WIDE_ALL);
-        } catch (IOException e) {
-            System.out.println(e);
-        }
 
-        roomaji.set_mode(kanada.FLAG_UC_FIRST);
-
+        System.out.println("Original:");
         System.out.println(TEST_TEXT);
 
-        process(wakatigaki, TEST_TEXT);
-        process(hiragana, TEST_TEXT);
-        process(katakana, TEST_TEXT);
-        process(roomaji, TEST_TEXT);
-        process(roomaji, TEST_ROMAJI);
-        process(fullwidth, TEST_TEXT_TO_WIDE);
+        System.out.println("Wakatigaki:");
+        convert(wakatigaki, TEST_TEXT);
+
+        System.out.println("To Hiragana:");
+        convert(hiragana, TEST_TEXT);
+
+        System.out.println("To Katakana:");
+        convert(katakana, TEST_TEXT);
+
+        System.out.println("To Hankaku Katakana:");
+        convert(hankaku, TEST_TEXT);
+
+        System.out.println("To Romaji UcFirst:");
+        convert(romaji.upperCaseFirst(), TEST_TEXT);
+
+        System.out.println("To Romaji UcAll:");
+        convert(romaji.upperCaseAll(), TEST_TEXT);
+
+        System.out.println("To Romaji 2:");
+        convert(romaji, TEST_ROMAJI);
+
+        System.out.println("To Full Width All:");
+        convert(fullwidth, TEST_TEXT_TO_WIDE);
     }
 
-    private static void process(kanada obj, String str) {
+    private static void convert(Kanada obj, String str) {
         Calendar t0 = Calendar.getInstance();
-        String result = obj.process(str, true);
+        String result = obj.process(str);
         Calendar t1 = Calendar.getInstance();
-        int lap_time = (int) Math.ceil(t1.getTime().getTime() - t0.getTime().getTime());
-        System.out.println("" + lap_time + " ms: " + "'" + result + "'");
+        int lapTime = (int) Math.ceil(t1.getTime().getTime() - t0.getTime().getTime());
+        System.out.println("> " + lapTime + " ms: " + "'" + result + "'");
     }
 
 }

@@ -1,2 +1,34 @@
 .idea
 *.iml
+
+# Compiled class files
+*.class
+out/
+target/
+build/
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Generated dictionary files
+dictionary/japanese/kanwadict.dat
+
+# Generated mapping files
+src/main/java/com/iciao/kanada/maps/KanaMappingData.java
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+
+# Excel files
+*.xlsx
+*.xls

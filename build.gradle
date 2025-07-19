@@ -1,0 +1,80 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'com.github.hierynomus.license' version '0.16.1'
+}
+
+group = 'com.iciao'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}
+
+task generateMapping(type: Exec) {
+    description 'Generate KanaMapping.java from kanatable.tsv'
+    commandLine 'python3', 'tools/generate-mapping.py'
+    inputs.file 'tools/mappings/kanatable.tsv'
+    outputs.file 'src/main/java/com/iciao/kanada/maps/KanaMappingData.java'
+}
+
+compileJava.dependsOn generateMapping
+
+task reallyClean(type: Delete) {
+    description 'Clean build artifacts and regenerate dictionary files'
+    delete layout.buildDirectory.get().asFile
+    delete 'dictionary/japanese/kanwadict.dat'
+    delete 'src/main/java/com/iciao/kanada/maps/KanaMappingData.java'
+}
+
+reallyClean.dependsOn clean
+
+// Task to apply license headers
+task applyLicense(dependsOn: 'licenseFormat') {
+    description 'Apply license headers to all source files'
+    group 'License'
+}
+
+// Task to check license headers
+task checkLicense(dependsOn: 'license') {
+    description 'Check if all source files have license headers'
+    group 'License'
+}
+
+jar {
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+license {
+    header = file('LICENSE_HEADER')
+    strictCheck = true
+    include "**/*.java"
+    exclude "**/generated/**"
+    exclude "**/KanaMappingData.java"  // Exclude auto-generated files
+    
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    ext.name = "Masahiko Sato"
+    
+    // Enable verbose output to detect files without license headers
+    ext.verbose = true
+}

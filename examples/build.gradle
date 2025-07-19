@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+dependencies {
+    implementation project(':')
+}
+
+application {
+    mainClass = 'com.iciao.kanada.examples.KanadaExample'
+}
+
+run {
+    workingDir = rootProject.projectDir
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
