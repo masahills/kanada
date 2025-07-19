@@ -81,4 +81,9 @@ Alternatively, use the stub file for basic functionality:
 
 ## License
 
-GPL v2 - See LICENSE file for details.
+This project is distributed under dual licenses:
+
+- **Kanada Library Source Code**: MIT License - See MIT-LICENSE file for details.
+- **Dictionary Files**: GPL v2 - The dictionary files in the `dictionary/japanese/` directory are derived from KAKASI and are licensed under GPL v2. See LICENSE file for details.
+
+This dual licensing allows you to use the Kanada library in both open source and proprietary projects, while respecting the original license of the dictionary files.

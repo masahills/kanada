@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'com.github.hierynomus.license' version '0.16.1'
 }
 
 group = 'com.iciao'
@@ -37,6 +38,18 @@ task reallyClean(type: Delete) {
 
 reallyClean.dependsOn clean
 
+// Task to apply license headers
+task applyLicense(dependsOn: 'licenseFormat') {
+    description 'Apply license headers to all source files'
+    group 'License'
+}
+
+// Task to check license headers
+task checkLicense(dependsOn: 'license') {
+    description 'Check if all source files have license headers'
+    group 'License'
+}
+
 jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
@@ -50,4 +63,18 @@ publishing {
             from components.java
         }
     }
+}
+
+license {
+    header = file('LICENSE_HEADER')
+    strictCheck = true
+    include "**/*.java"
+    exclude "**/generated/**"
+    exclude "**/KanaMappingData.java"  // Exclude auto-generated files
+    
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    ext.name = "Masahiko Sato"
+    
+    // Enable verbose output to detect files without license headers
+    ext.verbose = true
 }

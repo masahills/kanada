@@ -1,21 +1,8 @@
-;; Kanada (Kanji-Kana Transliteration Library for Java)
-;; Copyright (C) 2002-2014 Masahiko Sato
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2 of the License, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License along
-;; with this program; if not, write to the Free Software Foundation, Inc.,
-;; 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-;;
-;; This dictionary data is based on the following copyrighted works.
-;; -----------------------------------------------------------------
+;; Kanada - Japanese Text Transliteration Library
+;; Copyright (C) 2025 Masahiko Sato
+;; Licensed under GPL v2 - See LICENSE terms below for details
+;; This dictionary file is derived from KAKASI (Kanji Kana Simple inversion program)
+;; ---------------------------------------------------------------------------
 ;; KAKASI (Kanji Kana Simple inversion program)
 ;; $Id: kakasidict,v 1.2 2002-10-02 06:32:28 knok Exp $
 ;; Copyright (C) 1992 1993 1994
@@ -413,7 +400,6 @@
 いし 石
 いしずえ 礎
 いしづか 石塚
-いじょう 移譲
 いずくんぞ 焉
 いずみ 泉
 いずれ 何れ
@@ -1609,7 +1595,6 @@
 しんじょう 新城
 しんじん 信心
 しんぜん 神前
-しんぞう 晋三
 しんたい 身体
 しんねんかい 新年会
 しんばん 新版
@@ -2758,7 +2743,6 @@
 へきが 壁画
 へそ 臍
 へた 下手
-へて 経て
 へび 蛇
 へや 部屋
 へり 縁
