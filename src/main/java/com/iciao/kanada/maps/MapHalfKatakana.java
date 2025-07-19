@@ -1,4 +1,4 @@
-/**
+/*
  * MIT License
  *
  * Copyright (C) 2025 Masahiko Sato
@@ -70,8 +70,14 @@ public class MapHalfKatakana extends JMapper {
                 KanaTrie.MatchResult result = kanaMapping.toRomaji(str);
                 String romaji = result != null ? result.values()[getRomanizationSystem().getColumnIndex() - 2] : null;
                 if (romaji != null) {
+                    int nextChar = str.codePointAt(1);
+                    if (nextChar == 0xFF70) {
+                        romaji = kanaMapping.processLongVowels(romaji, getRomanizationSystem());
+                        matchedLength = result.length() + 1;
+                    } else {
+                        matchedLength = result.length();
+                    }
                     out.append(modeMacron() ? romaji : kanaMapping.removeMacrons(romaji));
-                    matchedLength = result.length();
                 } else {
                     out.append(converted);
                 }

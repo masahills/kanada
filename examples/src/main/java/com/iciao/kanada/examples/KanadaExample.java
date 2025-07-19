@@ -1,60 +1,119 @@
 /*
- * Created by IntelliJ IDEA.
- * User: masahikos
- * Date: Nov 23, 2001
- * Time: 9:29:02 PM
- * To change template for new class use
- * Code Style | Class Templates options (Tools | IDE Options).
+ * MIT License
+ * <p>
+ * Copyright (C) 2025 Masahiko Sato
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package com.iciao.kanada.examples;
 
 import com.iciao.kanada.Kanada;
 
-import java.util.Calendar;
 
 /**
- * Example usage of Kanada library
+ * Example usage of Kanada library demonstrating various text conversion features.
+ * <p>
+ * This class provides examples of:
+ * - Converting Japanese text to Hiragana, Katakana, and Romaji
+ * - Adding spaces between words (wakati-gaki)
+ * - Converting between full-width and half-width characters
+ * - Applying different capitalization styles
  */
 public class KanadaExample {
 
-    private static final String TEST_TEXT =
-            "第二次安倍改造内閣は3日夕方、皇居での認証式を経て正式に発足した。\n" +
-                    "安倍晋三首相はこの後、首相官邸で記者会見し、改造内閣を「実行実現内閣」と命名するとともに、\n" +
-                    "「引き続き経済最優先でデフレからの脱却を目指し、成長戦略の実行に全力を尽くす」と表明。\n" +
-                    "地方創生、安全保障法制の整備についても重点的に取り組む方針を打ち出した。(時事通信) 完\n\n";
+    /**
+     * Sample Japanese text about Tokyo Skytree for conversion examples
+     */
+    private static final String SAMPLE_JAPANESE_TEXT =
+            "東京スカイツリーは日本の代表的な観光スポットで、多くの旅行者が訪れる人気の名所です。\n" +
+                    "高さ634メートルの展望台からは、東京の素晴らしい街並みを360度見渡すことができます。\n" +
+                    "特に夜のライトアップは幻想的で、多くの写真愛好家が素晴らしい風景を撮影しに訪れます。\n" +
+                    "また、地上階にはショッピングモールやレストランもあり、一日中楽しめるスポットとなっています。\n\n";
 
-    private static final String TEST_ROMAJI =
-            "あ い う え お\nか き く け こ\nさ し す せ そ\nた ち つ て と\nな に ぬ ね の\n" +
-                    "は ひ ふ へ ほ\nま み む め も\nや い ゆ いぇ よ\nら り る れ ろ\nわ ゐ う ゑ を\n" +
-                    "が ぎ ぐ げ ご\nざ じ ず ぜ ぞ\nだ ぢ づ で ど\nば び ぶ べ ぼ\nぱ ぴ ぷ ぺ ぽ\nう゛ぁ う゛ぃ う゛ う゛ぇ う゛ぉ\nん\n" +
-                    "きゃ きぃ きゅ きぇ きょ\nしゃ しぃ しゅ しぇ しょ\nちゃ ちぃ ちゅ ちぇ ちょ\nにゃ にぃ にゅ にぇ にょ\n" +
-                    "ひゃ ひぃ ひゅ ひぇ ひょ\nみゃ みぃ みゅ みぇ みょ\nりゃ りぃ りゅ りぇ りょ\n" +
-                    "ぎゃ ぎぃ ぎゅ ぎぇ ぎょ\nじゃ じぃ じゅ じぇ じょ\nぢゃ ぢぃ ぢゅ ぢぇ ぢょ\n" +
-                    "びゃ びぃ びゅ びぇ びょ\nぴゃ ぴぃ ぴゅ ぴぇ ぴょ\nう゛ゃ う゛ぃ う゛ゅ う゛ぇ う゛ょ\n" +
-                    "くぁ くぃ くぅ くぇ くぉ\nつぁ つぃ つぅ つぇ つぉ\nふぁ ふぃ ふぅ ふぇ ふぉ\n" +
-                    "ぐぁ ぐぃ ぐぅ ぐぇ ぐぉ\nてゅ ふゅ でゅ\n\n" +
+    /**
+     * Comprehensive kana chart for testing romanization
+     */
+    private static final String KANA_CHART =
+            "// 基本ひらがな (Basic Hiragana)\n" +
+                    "あ い う え お\nか き く け こ\nさ し す せ そ\nた ち つ て と\nな に ぬ ね の\n" +
+                    "は ひ ふ へ ほ\nま み む め も\nや   ゆ   よ\nら り る れ ろ\nわ       を\n" +
+                    "ん\n\n" +
+                    "// 濁音・半濁音 (Dakuten and Handakuten)\n" +
+                    "が ぎ ぐ げ ご\nざ じ ず ぜ ぞ\nだ ぢ づ で ど\nば び ぶ べ ぼ\nぱ ぴ ぷ ぺ ぽ\n\n" +
+                    "// 拗音 (Youon - Contracted Sounds)\n" +
+                    "きゃ  きゅ  きょ\nしゃ  しゅ  しょ\nちゃ  ちゅ  ちょ\nにゃ  にゅ  にょ\n" +
+                    "ひゃ  ひゅ  ひょ\nみゃ  みゅ  みょ\nりゃ  りゅ  りょ\n" +
+                    "ぎゃ  ぎゅ  ぎょ\nじゃ  じゅ  じょ\nびゃ  びゅ  びょ\nぴゃ  ぴゅ  ぴょ\n\n" +
+                    "// 外来語音 (Foreign Sounds)\n" +
+                    "ふぁ ふぃ  ふぇ ふぉ\nゔぁ ゔぃ ゔ ゔぇ ゔぉ\n\n" +
+                    "// 基本カタカナ (Basic Katakana)\n" +
                     "ア イ ウ エ オ\nカ キ ク ケ コ\nサ シ ス セ ソ\nタ チ ツ テ ト\nナ ニ ヌ ネ ノ\n" +
-                    "ハ ヒ フ ヘ ホ\nマ ミ ム メ モ\nヤ イ ユ イェ ヨ\nラ リ ル レ ロ\nワ ヰ ウ ヱ ヲ\n" +
-                    "ガ ギ グ ゲ ゴ\nザ ジ ズ ゼ ゾ\nダ ヂ ヅ デ ド\nバ ビ ブ ベ ボ\nパ ピ プ ペ ポ\nヴァ ヴィ ヴ ヴェ ヴォ\nン\n" +
-                    "キャ キィ キュ キェ キョ\nシャ シィ シュ シェ ショ\nチャ チィ チュ チェ チョ\nニャ ニィ ニュ ニェ ニョ\n" +
-                    "ヒャ ヒィ ヒュ ヒェ ヒョ\nミャ ミィ ミュ ミェ ミョ\nリャ リィ リュ リェ リョ\n" +
-                    "ギャ ギィ ギュ ギェ ギョ\nジャ ジィ ジュ ジェ ジョ\nヂャ ヂィ ヂュ ヂェ ヂョ\n" +
-                    "ビャ ビィ ビュ ビェ ビョ\nピャ ピィ ピュ ピェ ピョ\nヴャ ヴィ ヴュ ヴェ ヴョ\n" +
-                    "クァ クィ クゥ クェ クォ\nツァ ツィ ツゥ ツェ ツォ\nファ フィ フゥ フェ フォ\n" +
-                    "グァ グィ グゥ グェ グォ\nテュ フュ デュ\n" +
-                    "ソニー かあさん 東京放送 きいろ おもう ＡＢＣ";
+                    "ハ ヒ フ ヘ ホ\nマ ミ ム メ モ\nヤ   ユ   ヨ\nラ リ ル レ ロ\nワ       ヲ\n" +
+                    "ン\n\n" +
+                    "// カタカナ拗音 (Katakana Youon)\n" +
+                    "キャ  キュ  キョ\nシャ  シュ  ショ\nチャ  チュ  チョ\nニャ  ニュ  ニョ\n" +
+                    "ヒャ  ヒュ  ヒョ\nミャ  ミュ  ミョ\nリャ  リュ  リョ\n\n" +
+                    "// 外来語用カタカナ (Katakana for Foreign Words)\n" +
+                    "ファ フィ  フェ フォ\nヴァ ヴィ ヴ ヴェ ヴォ\nウェ ウォ\nティ トゥ\nディ ドゥ\n\n" +
+                    "// 単語サンプル (Word Samples)\n" +
+                    "こんにちは さようなら ありがとう\nトウキョウ ニホン サクラ\nスマートフォン コンピューター インターネット";
 
-    private static final String TEST_TEXT_TO_WIDE =
-            "“Organize the world’s information and make it universally accessible and useful.”\n" +
-                    "Since the beginning, our goal has been to develop services that significantly improve the lives of as many people as possible.\n" +
+    /**
+     * Sample English text about Japan for width conversion examples
+     */
+    private static final String SAMPLE_ENGLISH_TEXT =
+            "“Japan is known for its unique blend of traditional culture and modern innovation.”\n" +
+                    "From ancient temples and gardens to cutting-edge technology and fashion trends,\n" +
+                    "visitors can experience a fascinating contrast between old and new throughout the country.\n" +
                     "\n" +
-                    "Not just for some. For everyone.";
+                    "The four distinct seasons also offer different experiences for travelers year-round.";
 
-    private static final String TEST_CHINESE =
+    // Sample text with special characters for additional tests if needed
+    private static final String SPECIAL_CHARACTERS =
             "\u008ex\u00a1x\u00a2x\u00a3x\u00a4x\u00a5x\u00a6x\u00a7x\u00a8x\u00adx";
 
     public static void main(String[] args) throws Exception {
+        // Display menu and get user choice
+        if (args.length > 0) {
+            // Process command line arguments if provided
+            processCommandLineArgs(args);
+        } else {
+            // Run demo examples
+            runAllExamples();
+        }
+    }
 
+    /**
+     * Run all example conversions to demonstrate Kanada functionality
+     *
+     * @throws java.io.IOException if there is an error initializing Kanada
+     */
+    private static void runAllExamples() throws java.io.IOException {
+        System.out.println("===== Kanada Library Examples =====\n");
+
+        // Basic conversions with Japanese news text
+        System.out.println("===== Basic Japanese Text Conversions =====\n");
+        System.out.println("Original Text:");
+        System.out.println(SAMPLE_JAPANESE_TEXT);
+        System.out.println();
+
+        // Create converters with different settings
         Kanada romaji = new Kanada().toRomaji().withSpaces().withMacrons();
         Kanada wakatigaki = new Kanada().withSpaces();
         Kanada hiragana = new Kanada().toHiragana().withSpaces();
@@ -62,41 +121,88 @@ public class KanadaExample {
         Kanada fullwidth = new Kanada().toFullWidthAll().withSpaces();
         Kanada hankaku = new Kanada().toHankakuKatakana().withSpaces();
 
+        // Demonstrate different conversions
+        System.out.println("Wakatigaki (Word Separation):");
+        convert(wakatigaki, SAMPLE_JAPANESE_TEXT);
 
-        System.out.println("Original:");
-        System.out.println(TEST_TEXT);
+        System.out.println("\nTo Hiragana:");
+        convert(hiragana, SAMPLE_JAPANESE_TEXT);
 
-        System.out.println("Wakatigaki:");
-        convert(wakatigaki, TEST_TEXT);
+        System.out.println("\nTo Katakana:");
+        convert(katakana, SAMPLE_JAPANESE_TEXT);
 
-        System.out.println("To Hiragana:");
-        convert(hiragana, TEST_TEXT);
+        System.out.println("\nTo Hankaku Katakana (Half-width):");
+        convert(hankaku, SAMPLE_JAPANESE_TEXT);
 
-        System.out.println("To Katakana:");
-        convert(katakana, TEST_TEXT);
+        System.out.println("\nTo Romaji (First Letter Capitalized):");
+        convert(romaji.upperCaseFirst(), SAMPLE_JAPANESE_TEXT);
 
-        System.out.println("To Hankaku Katakana:");
-        convert(hankaku, TEST_TEXT);
+        System.out.println("\nTo Romaji (All Caps):");
+        convert(romaji.upperCaseAll(), SAMPLE_JAPANESE_TEXT);
 
-        System.out.println("To Romaji UcFirst:");
-        convert(romaji.upperCaseFirst(), TEST_TEXT);
+        // Kana chart examples
+        System.out.println("\n\n===== Kana Chart Romanization =====\n");
+        System.out.println("Converting Kana Chart to Romaji:");
+        convert(romaji, KANA_CHART);
 
-        System.out.println("To Romaji UcAll:");
-        convert(romaji.upperCaseAll(), TEST_TEXT);
-
-        System.out.println("To Romaji 2:");
-        convert(romaji, TEST_ROMAJI);
-
-        System.out.println("To Full Width All:");
-        convert(fullwidth, TEST_TEXT_TO_WIDE);
+        // Width conversion examples
+        System.out.println("\n\n===== Width Conversion Examples =====\n");
+        System.out.println("Original English Text:");
+        System.out.println(SAMPLE_ENGLISH_TEXT);
+        System.out.println("\nConverted to Full Width:");
+        convert(fullwidth, SAMPLE_ENGLISH_TEXT);
     }
 
-    private static void convert(Kanada obj, String str) {
-        Calendar t0 = Calendar.getInstance();
-        String result = obj.process(str);
-        Calendar t1 = Calendar.getInstance();
-        int lapTime = (int) Math.ceil(t1.getTime().getTime() - t0.getTime().getTime());
-        System.out.println("> " + lapTime + " ms: " + "'" + result + "'");
+    /**
+     * Process command line arguments for specific conversions
+     *
+     * @throws java.io.IOException if there is an error initializing Kanada
+     */
+    private static void processCommandLineArgs(String[] args) throws java.io.IOException {
+        String mode = args[0].toLowerCase();
+        String text = args.length > 1 ? args[1] : SAMPLE_JAPANESE_TEXT;
+
+        switch (mode) {
+            case "romaji":
+                convert(new Kanada().toRomaji().withSpaces(), text);
+                break;
+            case "hiragana":
+                convert(new Kanada().toHiragana(), text);
+                break;
+            case "katakana":
+                convert(new Kanada().toKatakana(), text);
+                break;
+            case "wakati":
+                convert(new Kanada().withSpaces(), text);
+                break;
+            case "fullwidth":
+                convert(new Kanada().toFullWidthAll(), text);
+                break;
+            case "halfwidth":
+                convert(new Kanada().toHankakuKatakana(), text);
+                break;
+            default:
+                System.out.println("Unknown conversion mode: " + mode);
+                System.out.println("Available modes: romaji, hiragana, katakana, wakati, fullwidth, halfwidth");
+        }
+    }
+
+    /**
+     * Convert text using the specified Kanada converter and measure execution time
+     *
+     * @param converter The Kanada converter to use
+     * @param text      The text to convert
+     */
+    private static void convert(Kanada converter, String text) {
+        // Measure conversion time
+        long startTime = System.currentTimeMillis();
+        String result = converter.process(text);
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+
+        // Print result with execution time
+        System.out.println("Execution time: " + executionTime + " ms");
+        System.out.println(result);
     }
 
 }
