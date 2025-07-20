@@ -10,6 +10,7 @@ A pure Java library for converting Japanese text between Kanji, Hiragana, Kataka
 - **Flexible formatting** - Space insertion, case conversion
 - **Character width conversion** - Half-width ↔ Full-width
 - **Pure Java** - No external dependencies or native libraries
+- **Lightweight** - No morphological analysis required
 
 ## Quick Start
 
@@ -40,11 +41,29 @@ Kanada converter = Kanada.create()
     .withSpaces()
     .upperCaseFirst();
     
-String result = converter.process("東京都"); // "Tokyo To"
+String result = converter.process("進撃の巨人"); // "Shingeki No Kyojin"
 
 // Or as a one-liner
-String result = Kanada.create().toRomaji().withSpaces().process("東京都");
+String result = Kanada.create().toRomaji().withSpaces().process("進撃の巨人");
 ```
+
+## Implementation Details
+
+### Dictionary-based Approach
+
+Kanada uses a dictionary-based approach for all conversions (kana conversion, romanization, and word segmentation) without relying on morphological analysis. This means:
+
+- **Dictionary-based pattern matching** - Text is processed using dictionary lookups for character patterns
+- **Simplified word boundary estimation** - Word boundaries are estimated based on character type transitions
+
+### Limitations
+
+- Without morphological analysis, context-dependent conversions may not be perfect
+- Homonyms in kanji cannot be disambiguated without context
+- Word segmentation may not match linguistic word boundaries precisely
+- Proper nouns may not follow standard conversion rules
+- Compound words may be incorrectly segmented
+- Conversion results can be improved by editing the kanwadict dictionary file in the `dictionary/japanese/` directory
 
 
 
@@ -84,6 +103,6 @@ Alternatively, use the stub file for basic functionality:
 This project is distributed under dual licenses:
 
 - **Kanada Library Source Code**: MIT License - See MIT-LICENSE file for details.
-- **Dictionary Files**: GPL v2 - The dictionary files in the `dictionary/japanese/` directory are derived from KAKASI and are licensed under GPL v2. See LICENSE file for details.
+- **Dictionary File**: GPL v2 - The kanwadict dictionary file in the `dictionary/japanese/` directory is from KAKASI and is licensed under GPL v2. See LICENSE file for details.
 
 This dual licensing allows you to use the Kanada library in both open source and proprietary projects, while respecting the original license of the dictionary files.
