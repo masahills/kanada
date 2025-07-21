@@ -137,7 +137,8 @@ public class KanjiParser {
 
     private void flushBuffer(boolean isBoundary) {
         if (!jWriter.buffer.isEmpty()) {
-            if (isBoundary && kanada.modeAddSpace && jWriter.tail == ' ') {
+            if (isBoundary && kanada.modeAddSpace && jWriter.tail == ' '
+                    && !Pattern.matches("(?s).*?[\r\n]$", jWriter.buffer.toString())) {
                 jWriter.append(' ');
             }
             StringBuilder str = jWriter.map();
