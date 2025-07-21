@@ -66,42 +66,35 @@ public class KanaMapping {
     }
 
     public String removeMacrons(String text) {
-        return text.replace("ā", "aa")
-                .replace("ī", "ii")
-                .replace("ū", "uu")
-                .replace("ē", "ee")
-                .replace("ō", "oo");
+        return text.replace("ā", "a")
+                .replace("ī", "i")
+                .replace("ū", "u")
+                .replace("ē", "e")
+                .replace("ō", "o");
     }
 
     public String processLongVowels(String romaji, RomanizationSystem system) {
         if (romaji == null || romaji.isEmpty()) return romaji;
 
         char lastChar = romaji.charAt(romaji.length() - 1);
-        char vowel = switch (lastChar) {
-            case 'a' -> 'ā';
-            case 'i' -> 'ī';
-            case 'u' -> 'ū';
-            case 'e' -> 'ē';
-            case 'o' -> 'ō';
-            default -> 0;
+        String vowel = switch (lastChar) {
+            case 'a' -> "āâ";
+            case 'i' -> "īî";
+            case 'u' -> "ūû";
+            case 'e' -> "ēê";
+            case 'o' -> "ōô";
+            default -> null;
         };
 
-        if (vowel == 0) {
+        if (vowel == null) {
             return romaji;
         }
 
         StringBuilder sb = new StringBuilder(romaji);
         switch (system) {
-            case MODIFIED_HEPBURN:
-            case GAIMUSHO_HEPBURN:
-            case STATION_HEPBURN:
-            case ROAD_SIGN_HEPBURN:
-                sb.setCharAt(sb.length() - 1, vowel);
-                break;
-            case KUNREI:
-            case NIHON:
-                sb.append('-');
-                break;
+            case MODIFIED_HEPBURN -> sb.setCharAt(sb.length() - 1, vowel.charAt(0));
+            case KUNREI, NIHON -> sb.setCharAt(sb.length() - 1, vowel.charAt(1));
+            // long vowel marks are omitted in other cases
         }
         return sb.toString();
     }
