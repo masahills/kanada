@@ -25,10 +25,10 @@ package com.iciao.kanada;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Japanese dictionary class.<br>
@@ -36,9 +36,15 @@ import java.util.regex.Pattern;
  * @author Masahiko Sato
  */
 public class Kanwadict {
+    private static final Logger LOGGER = Logger.getLogger(Kanwadict.class.getName());
+    
     private static final String DICTIONARY_PATH = getDictionaryPath();
     private static final String DICTIONARY_SRC = "kanwadict";
     private static final String DICTIONARY_DAT = "kanwadict.dat";
+    
+    // Unicode ranges for CJK characters
+    private static final int CJK_UNIFIED_IDEOGRAPHS_FIRST = 0x4e;
+    private static final int CJK_UNIFIED_IDEOGRAPHS_LAST = 0x9f;
 
     private static final int INDEX_ENTRY_SIZE = Integer.BYTES;
 
@@ -52,45 +58,45 @@ public class Kanwadict {
         File kanwaDict = new File(DICTIONARY_PATH, DICTIONARY_DAT);
 
         if (kanwaDict.exists()) {
-            System.out.println("Kanada: Found a pre-built Japanese dictionary.");
+            LOGGER.info("Kanada: Found a pre-built Japanese dictionary.");
             try {
                 KANWADICT.loadIndex(kanwaDict);
-                System.out.println("Kanada: Init completed!");
+                LOGGER.info("Kanada: Init completed!");
             } catch (Exception e) {
-                System.out.println("Kanada: Error!! Could not load the dictionary index: " + e);
+                LOGGER.log(Level.SEVERE, "Kanada: Could not load the dictionary index", e);
                 initFailed = true;
             }
         } else {
-            System.out.println("Kanada: Building Japanese dictionary...");
+            LOGGER.info("Kanada: Building Japanese dictionary...");
 
-            Calendar start = Calendar.getInstance();
+            long start = System.currentTimeMillis();
             StringTokenizer token = new StringTokenizer(DICTIONARY_SRC, ",");
 
             try {
-                Calendar lap = start;
+                long lap = start;
                 while (token.hasMoreTokens()) {
                     String sourceFile = token.nextToken();
-                    System.out.print("-> Loading Data: " + DICTIONARY_PATH + sourceFile + "... ");
+                    LOGGER.info("-> Loading Data: " + DICTIONARY_PATH + sourceFile + "... ");
                     KANWADICT.loadData();
-                    Calendar now = Calendar.getInstance();
-                    int lapTime = (int) Math.ceil(now.getTime().getTime() - lap.getTime().getTime());
-                    System.out.println("Done (" + lapTime + " ms)");
+                    long now = System.currentTimeMillis();
+                    int lapTime = (int) Math.ceil(now - lap);
+                    LOGGER.info("Done (" + lapTime + " ms)");
                     lap = now;
                 }
             } catch (IOException e) {
-                System.out.println("Kanada: Error!! Could not build dictionary: " + e);
+                LOGGER.log(Level.SEVERE, "Kanada: Could not build dictionary", e);
                 initFailed = true;
             }
 
             if (!initFailed) {
-                int loadingTime = (int) Math.ceil((Calendar.getInstance().getTime().getTime() - start.getTime().getTime()));
-                System.out.println("Kanada: Build Completed! (" + loadingTime + " ms)");
+                int loadingTime = (int) Math.ceil(System.currentTimeMillis() - start);
+                LOGGER.info("Kanada: Build Completed! (" + loadingTime + " ms)");
                 try {
                     KANWADICT.buildDict(KANWADICT.kanwaMap);
                     KANWADICT.loadIndex(kanwaDict);
-                    System.out.println("Kanada: Init completed!");
+                    LOGGER.info("Kanada: Init completed!");
                 } catch (IOException e) {
-                    System.out.println("Kanada: Error!! Could not load the dictionary index: " + e);
+                    LOGGER.log(Level.SEVERE, "Kanada: Could not load the dictionary index", e);
                     initFailed = true;
                 }
             }
@@ -102,33 +108,28 @@ public class Kanwadict {
     }
 
     private static String getDictionaryPath() {
-        // Try the current directory first
-        File dictDir = new File("dictionary/japanese/");
-        if (dictDir.exists()) {
-            return "dictionary/japanese/";
+        String[] possiblePaths = {
+            "dictionary/japanese/",
+            "../dictionary/japanese/",
+            "../../dictionary/japanese/"
+        };
+        
+        // Try each possible path
+        for (String path : possiblePaths) {
+            File dictDir = new File(path);
+            if (dictDir.exists()) {
+                return path;
+            }
         }
-
-        // Try the parent directory (for when running from build/)
-        dictDir = new File("../dictionary/japanese/");
-        if (dictDir.exists()) {
-            return "../dictionary/japanese/";
-        }
-
-        // Try the two levels up
-        dictDir = new File("../../dictionary/japanese/");
-        if (dictDir.exists()) {
-            return "../../dictionary/japanese/";
-        }
-
+        
         // Default fallback
-        return "dictionary/japanese/";
+        return possiblePaths[0];
     }
 
     private void loadIndex(File objFile) throws IOException {
-        FileInputStream fileStream = new FileInputStream(objFile);
-
-        try (fileStream; DataInputStream dataStream = new DataInputStream(fileStream)) {
-            for (int i = 0x4e; i <= 0x9f; ++i) {
+        try (FileInputStream fileStream = new FileInputStream(objFile);
+             DataInputStream dataStream = new DataInputStream(fileStream)) {
+            for (int i = CJK_UNIFIED_IDEOGRAPHS_FIRST; i <= CJK_UNIFIED_IDEOGRAPHS_LAST; ++i) {
                 for (int j = 0x00; j <= 0xff; ++j) {
                     KanwaKey thisKey = new KanwaKey(((i << 8) | j));
                     KanwaAddress thisAddress = new KanwaAddress();
@@ -154,13 +155,13 @@ public class Kanwadict {
                     new ByteArrayInputStream(data))) {
 
                 Object obj = objectStream.readObject();
-                if (obj instanceof ArrayList) {
+                if (obj instanceof ArrayList<?> list) {
                     @SuppressWarnings("unchecked")
-                    ArrayList<YomiKanjiData> valueList = (ArrayList<YomiKanjiData>) obj;
+                    ArrayList<YomiKanjiData> valueList = (ArrayList<YomiKanjiData>) list;
                     kanwaMap.put(key, valueList);
                 }
             } catch (ClassNotFoundException e) {
-                throw new Exception(e.toString());
+                throw new Exception("Failed to deserialize dictionary object", e);
             }
         }
     }
@@ -169,39 +170,35 @@ public class Kanwadict {
         File outFile = new File(DICTIONARY_PATH, DICTIONARY_DAT);
 
         if (outFile.exists() && outFile.delete() && outFile.createNewFile()) {
-            System.out.println("Creating a new dictionary...");
+            LOGGER.info("Creating a new dictionary...");
         }
 
-        RandomAccessFile dictFile = new RandomAccessFile(outFile, "rw");
+        try (RandomAccessFile dictFile = new RandomAccessFile(outFile, "rw")) {
+            // Create a space for key indices.
+            for (int i = CJK_UNIFIED_IDEOGRAPHS_FIRST; i <= CJK_UNIFIED_IDEOGRAPHS_LAST; ++i) {
+                for (int j = 0x00; j <= 0xff; ++j) {
+                    dictFile.writeInt(0);
+                }
+            }
 
-        // Create a space for key indices.
-        for (int i = 0x4e; i <= 0x9f; ++i) {
-            for (int j = 0x00; j <= 0xff; ++j) {
-                dictFile.writeInt(0);
+            for (KanwaKey key : map.keySet()) {
+                int pos = (key.key - 0x4e00) * INDEX_ENTRY_SIZE;
+
+                // Move to the key address.
+                dictFile.seek(pos);
+                dictFile.writeInt((int) dictFile.length());
+
+                try (ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
+                     ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream)) {
+                    
+                    objectStream.writeObject(map.get(key));
+
+                    // Move to the end and append data.
+                    dictFile.seek(dictFile.length());
+                    dictFile.write(byteArrayStream.toByteArray());
+                }
             }
         }
-
-        for (KanwaKey key : map.keySet()) {
-            int pos = (key.key - 0x4e00) * INDEX_ENTRY_SIZE;
-
-            // Move to the key address.
-            dictFile.seek(pos);
-            dictFile.writeInt((int) dictFile.length());
-
-            ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
-            ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
-
-            objectStream.writeObject(map.get(key));
-
-            // Move to the end and append data.
-            dictFile.seek(dictFile.length());
-            dictFile.write(byteArrayStream.toByteArray());
-
-            byteArrayStream.close();
-            objectStream.close();
-        }
-
-        dictFile.close();
     }
 
     public KanwaKey getKey(int codepoint) {
@@ -224,48 +221,44 @@ public class Kanwadict {
         File kanwaFile = new File(DICTIONARY_PATH, DICTIONARY_SRC);
 
         if (!kanwaFile.exists()) {
-            System.out.println("Dictionary File Not Found: " + DICTIONARY_PATH + DICTIONARY_SRC);
-            System.out.println("Current working directory: " + System.getProperty("user.dir"));
-            System.out.println("Absolute path attempted: " + kanwaFile.getAbsolutePath());
+            LOGGER.severe("Dictionary File Not Found: " + DICTIONARY_PATH + DICTIONARY_SRC);
+            LOGGER.info("Current working directory: " + System.getProperty("user.dir"));
+            LOGGER.info("Absolute path attempted: " + kanwaFile.getAbsolutePath());
             initFailed = true;
             return;
         }
 
-        InputStreamReader fileStream = new InputStreamReader(new FileInputStream(kanwaFile), "JISAutoDetect");
-        try (fileStream) {
-            BufferedReader reader = new BufferedReader(fileStream);
-            for (; ; ) {
-                String line = reader.readLine();
-
-                if (line == null) {
-                    return;
-                }
-
+        try (InputStreamReader fileStream = new InputStreamReader(new FileInputStream(kanwaFile), "JISAutoDetect");
+             BufferedReader reader = new BufferedReader(fileStream)) {
+            
+            String line;
+            while ((line = reader.readLine()) != null) {
                 line = line.trim();
-
                 if (!line.isEmpty()) {
                     parseLine(line);
                 }
             }
         } catch (IOException e) {
-            throw new IOException();
+            throw new IOException("Error reading dictionary file", e);
         }
     }
 
     private void parseLine(String line) {
+        // Check if the line starts with a Japanese character (hiragana/katakana)
         int firstChar = line.codePointAt(0);
         Character.UnicodeBlock block = Character.UnicodeBlock.of(firstChar);
 
-
+        // Only process lines that start with Japanese phonetic characters
         if (block != Character.UnicodeBlock.HIRAGANA
                 && block != Character.UnicodeBlock.KATAKANA
                 && block != Character.UnicodeBlock.KATAKANA_PHONETIC_EXTENSIONS) {
             return;
         }
 
-        line = line.replace('/', ' ');
-        line = line.replace(',', ' ');
-        line = line.replace('\t', ' ');
+        // Normalize separators to spaces
+        line = line.replace('/', ' ')
+                  .replace(',', ' ')
+                  .replace('\t', ' ');
 
         StringTokenizer tokenizer = new StringTokenizer(line, " ");
         int count = tokenizer.countTokens();
@@ -273,17 +266,22 @@ public class Kanwadict {
             return;
         }
 
+        // First token is the reading (yomi)
         String yomi = tokenizer.nextToken();
         int yomiLen = yomi.length();
         int tail = yomi.codePointAt(yomiLen - 1);
 
+        // Check if the reading has a Latin character suffix (used for part of speech)
         if ((tail > 0x40 && tail < 0x5b) || (tail > 0x60 && tail < 0x7b)) {
+            // Remove the suffix character but keep it as the 'tail' marker
             yomiLen = yomiLen - 1;
             yomi = yomi.substring(0, yomiLen);
         } else {
+            // No special suffix
             tail = ' ';
         }
 
+        // Process all kanji entries for this reading
         while (tokenizer.hasMoreTokens()) {
             String kanji = tokenizer.nextToken();
             if (yomiLen > 0 && !kanji.isEmpty()) {
@@ -295,11 +293,13 @@ public class Kanwadict {
     private void addEntry(String yomi, String kanji, int tail) {
         ArrayList<YomiKanjiData> valueList;
 
-        if (!Pattern.matches("^\\p{IsHiragana}+$", yomi)) {
+        // Validate that yomi contains only hiragana
+        if (!yomi.matches("^\\p{IsHiragana}+$")) {
             return;
         }
 
-        if (!Pattern.matches("^[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]+$", kanji)) {
+        // Validate that kanji contains only valid Japanese characters
+        if (!kanji.matches("^[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]+$")) {
             return;
         }
 
