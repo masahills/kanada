@@ -37,11 +37,11 @@ import java.util.logging.Logger;
  */
 public class Kanwadict {
     private static final Logger LOGGER = Logger.getLogger(Kanwadict.class.getName());
-    
+
     private static final String DICTIONARY_PATH = getDictionaryPath();
-    private static final String DICTIONARY_SRC = "kanwadict";
+    private static final String DICTIONARY_SRC = System.getProperty("dictionaries", "kakasidict");
     private static final String DICTIONARY_DAT = "kanwadict.dat";
-    
+
     // Unicode ranges for CJK characters
     private static final int CJK_UNIFIED_IDEOGRAPHS_FIRST = 0x4e;
     private static final int CJK_UNIFIED_IDEOGRAPHS_LAST = 0x9f;
@@ -49,56 +49,66 @@ public class Kanwadict {
     private static final int INDEX_ENTRY_SIZE = Integer.BYTES;
 
     private static final Kanwadict KANWADICT = new Kanwadict();
-    private static boolean initFailed = false;
 
     private final HashMap<KanwaKey, ArrayList<YomiKanjiData>> kanwaMap = new HashMap<>();
     private final HashMap<KanwaKey, KanwaAddress> kanwaIndex = new HashMap<>();
 
     static {
+        boolean initState = false;
         File kanwaDict = new File(DICTIONARY_PATH, DICTIONARY_DAT);
 
         if (kanwaDict.exists()) {
             LOGGER.info("Kanada: Found a pre-built Japanese dictionary.");
-            try {
-                KANWADICT.loadIndex(kanwaDict);
-                LOGGER.info("Kanada: Init completed!");
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Kanada: Could not load the dictionary index", e);
-                initFailed = true;
-            }
+            initState = true;
         } else {
-            LOGGER.info("Kanada: Building Japanese dictionary...");
+            LOGGER.info("Kanada: Building a Japanese dictionary...");
 
             long start = System.currentTimeMillis();
-            StringTokenizer token = new StringTokenizer(DICTIONARY_SRC, ",");
+            long lap = start;
 
-            try {
-                long lap = start;
-                while (token.hasMoreTokens()) {
-                    String sourceFile = token.nextToken();
-                    LOGGER.info("-> Loading Data: " + DICTIONARY_PATH + sourceFile + "... ");
-                    KANWADICT.loadData();
+            StringTokenizer token = new StringTokenizer(DICTIONARY_SRC, ",");
+            while (token.hasMoreTokens()) {
+                String sourceFile = token.nextToken();
+                File kanwaFile = new File(DICTIONARY_PATH, sourceFile);
+                if (!kanwaFile.exists()) {
+                    LOGGER.warning("--> The file not found: " + DICTIONARY_PATH + sourceFile);
+                    continue;
+                }
+                try {
+                    LOGGER.info("--> Loading dictionary data from " + DICTIONARY_PATH + sourceFile + "...");
+                    KANWADICT.loadData(kanwaFile);
+                    initState = true;
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "--> Failed to load data from " + sourceFile, e);
+                }
+                long now = System.currentTimeMillis();
+                int lapTime = (int) Math.ceil(now - lap);
+                LOGGER.info("Done (" + lapTime + " ms)");
+                lap = now;
+            }
+
+            if (initState) {
+                int loadingTime = (int) Math.ceil(System.currentTimeMillis() - start);
+                LOGGER.info("Kanada: Finished reading data form the source files. (" + loadingTime + " ms)");
+                try {
+                    LOGGER.info("Kanada: Compling a dictionary...");
+                    KANWADICT.buildDict(KANWADICT.kanwaMap);
                     long now = System.currentTimeMillis();
                     int lapTime = (int) Math.ceil(now - lap);
                     LOGGER.info("Done (" + lapTime + " ms)");
-                    lap = now;
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Kanada: Could not build dictionary", e);
-                initFailed = true;
-            }
-
-            if (!initFailed) {
-                int loadingTime = (int) Math.ceil(System.currentTimeMillis() - start);
-                LOGGER.info("Kanada: Build Completed! (" + loadingTime + " ms)");
-                try {
-                    KANWADICT.buildDict(KANWADICT.kanwaMap);
-                    KANWADICT.loadIndex(kanwaDict);
-                    LOGGER.info("Kanada: Init completed!");
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Kanada: Could not load the dictionary index", e);
-                    initFailed = true;
+                    LOGGER.log(Level.SEVERE, "Kanada: Failed to build a dictionary.", e);
+                    initState = false;
                 }
+            }
+        }
+
+        if (initState) {
+            try {
+                KANWADICT.loadIndex(kanwaDict);
+                LOGGER.info("Kanada: The dictionary index has been loaded successfully.");
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Kanada: Failed to load the dictionary index.", e);
             }
         }
     }
@@ -109,11 +119,11 @@ public class Kanwadict {
 
     private static String getDictionaryPath() {
         String[] possiblePaths = {
-            "dictionary/japanese/",
-            "../dictionary/japanese/",
-            "../../dictionary/japanese/"
+                "dictionary/japanese/",
+                "../dictionary/japanese/",
+                "../../dictionary/japanese/"
         };
-        
+
         // Try each possible path
         for (String path : possiblePaths) {
             File dictDir = new File(path);
@@ -121,7 +131,7 @@ public class Kanwadict {
                 return path;
             }
         }
-        
+
         // Default fallback
         return possiblePaths[0];
     }
@@ -190,7 +200,7 @@ public class Kanwadict {
 
                 try (ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
                      ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream)) {
-                    
+
                     objectStream.writeObject(map.get(key));
 
                     // Move to the end and append data.
@@ -217,20 +227,11 @@ public class Kanwadict {
         return kanwaMap.containsKey(key);
     }
 
-    private void loadData() throws IOException {
-        File kanwaFile = new File(DICTIONARY_PATH, DICTIONARY_SRC);
-
-        if (!kanwaFile.exists()) {
-            LOGGER.severe("Dictionary File Not Found: " + DICTIONARY_PATH + DICTIONARY_SRC);
-            LOGGER.info("Current working directory: " + System.getProperty("user.dir"));
-            LOGGER.info("Absolute path attempted: " + kanwaFile.getAbsolutePath());
-            initFailed = true;
-            return;
-        }
+    private void loadData(File kanwaFile) throws IOException {
 
         try (InputStreamReader fileStream = new InputStreamReader(new FileInputStream(kanwaFile), "JISAutoDetect");
              BufferedReader reader = new BufferedReader(fileStream)) {
-            
+
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -255,10 +256,16 @@ public class Kanwadict {
             return;
         }
 
+        // Remove SKK annotations from the line
+        if (line.contains("/")) {
+            line = line.replaceAll(";[^/]*", "");
+        }
+
         // Normalize separators to spaces
         line = line.replace('/', ' ')
-                  .replace(',', ' ')
-                  .replace('\t', ' ');
+                .replace(',', ' ')
+                .replace('\t', ' ')
+                .trim();
 
         StringTokenizer tokenizer = new StringTokenizer(line, " ");
         int count = tokenizer.countTokens();
@@ -266,7 +273,7 @@ public class Kanwadict {
             return;
         }
 
-        // First token is the reading (yomi)
+        // The first token is the reading (yomi)
         String yomi = tokenizer.nextToken();
         int yomiLen = yomi.length();
         int tail = yomi.codePointAt(yomiLen - 1);
@@ -294,16 +301,16 @@ public class Kanwadict {
         ArrayList<YomiKanjiData> valueList;
 
         // Validate that yomi contains only hiragana
-        if (!yomi.matches("^\\p{IsHiragana}+$")) {
-            return;
-        }
-
-        // Validate that kanji contains only valid Japanese characters
-        if (!kanji.matches("^[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]+$")) {
+        if (!yomi.matches("^[\\p{Script=Hiragana}\\u30FC]+$")) {
             return;
         }
 
         int cp = kanji.codePointAt(0);
+
+        // The key must be greater than the lower bound of the CJK Unified Ideographs range (0x4E00-0x9FFF)
+        if (cp < 0x4e00) {
+            return;
+        }
 
         KanwaKey key = new KanwaKey(cp);
         YomiKanjiData value = new YomiKanjiData(yomi, tail, kanji);
