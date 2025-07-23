@@ -1,8 +1,3 @@
-;; Kanada - Japanese Text Transliteration Library
-;; Copyright (C) 2025 Masahiko Sato
-;; Licensed under GPL v2 - See LICENSE terms below for details
-;; This dictionary file is derived from KAKASI (Kanji Kana Simple inversion program)
-;; ---------------------------------------------------------------------------
 ;; KAKASI (Kanji Kana Simple inversion program)
 ;; $Id: kakasidict,v 1.2 2002-10-02 06:32:28 knok Exp $
 ;; Copyright (C) 1992 1993 1994
