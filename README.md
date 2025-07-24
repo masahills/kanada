@@ -1,13 +1,14 @@
 # Kanada - Japanese Text Transliteration Library
 
-A pure Java library for converting Japanese text between Kanji, Hiragana, Katakana, and Romaji.
+A pure Java library for converting Japanese text containing kanji characters into hiragana, katakana, or romaji text, as
+well as for performing word segmentation.
 
 ## Features
 
 - **Kanji to Kana conversion** - Convert Kanji to Hiragana or Katakana
 - **Romanization** - Convert Japanese text to Latin alphabet
-- **Multiple romanization systems** - Hepburn and Kunrei-shiki
-- **Flexible formatting** - Space insertion, case conversion
+- **Multiple romanization systems** - Hepburn, Kunrei, and other romanization systems
+- **Word segmentation** - Automatic spacing between Japanese words for improved readability
 - **Character width conversion** - Half-width ↔ Full-width
 - **Pure Java** - No external dependencies or native libraries
 - **Lightweight** - No morphological analysis required
@@ -22,7 +23,7 @@ dependencies {
 }
 ```
 
-### Simple Usage (Recommended)
+### Simple Usage
 
 ```java
 import com.iciao.kanada.Kanada;
@@ -76,13 +77,6 @@ For development, first generate the mapping file:
 ```bash
 # Generate KanaMapping.java from TSV
 ./gradlew generateMapping
-```
-
-Alternatively, use the stub file for basic functionality:
-
-```bash
-# Development stub is available as KanaMappingStub.java (minimal functionality)
-# The actual KanaMapping.java will be generated during build
 ```
 
 ## Building
