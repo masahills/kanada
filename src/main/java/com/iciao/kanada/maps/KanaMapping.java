@@ -99,6 +99,15 @@ public class KanaMapping {
         return sb.toString();
     }
 
+    public char getRomajiInitial(char c, RomanizationSystem system) {
+        KanaTrie.MatchResult result = toRomaji(String.valueOf(c));
+        String romaji = result != null ? result.values()[system.getColumnIndex() - 2] : null;
+        if (romaji == null) {
+            return 0;
+        }
+        return romaji.charAt(0);
+    }
+
     public String toHalfWidthKana(String text) {
         if (text == null || text.isEmpty()) return text;
 
