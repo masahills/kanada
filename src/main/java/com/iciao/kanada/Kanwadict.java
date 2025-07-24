@@ -24,9 +24,8 @@
 package com.iciao.kanada;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.StringTokenizer;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -321,7 +320,15 @@ public class Kanwadict {
             valueList = new ArrayList<>();
         }
 
-        valueList.add(value);
+        // Insert the new word into the valueList, placing the longer words before the shorter ones.
+        int insertIdx = 0;
+        for (; insertIdx < valueList.size(); insertIdx++) {
+            if (value.kanji().length() > valueList.get(insertIdx).kanji().length()) {
+                break;
+            }
+        }
+        valueList.add(insertIdx, value);
+        //valueList.add(value);
         kanwaMap.put(key, valueList);
     }
 
@@ -346,6 +353,42 @@ public class Kanwadict {
         public int hashCode() {
             return key;
         }
+    }
+
+    public void exportAllEntries() {
+        try (PrintWriter writer = new PrintWriter(DICTIONARY_PATH + "kanwadict_export.txt", StandardCharsets.UTF_8)) {
+            List<KanwaKey> keyList = new ArrayList<>(kanwaIndex.keySet());
+            keyList.sort(Comparator.comparingInt(k -> k.key));
+            for (KanwaKey key : keyList) {
+                try {
+                    if (searchKey(key)) {
+                        ArrayList<YomiKanjiData> valueList = getValue(key);
+                        StringBuilder line = new StringBuilder();
+                        line.append("U+")
+                                .append(Integer.toHexString(key.key).toUpperCase())
+                                .append(" ")
+                                .append(Character.toString(key.key));
+                        for (YomiKanjiData data : valueList) {
+                            line.append(",")
+                                    .append(data.kanji())
+                                    .append("/")
+                                    .append(data.yomi)
+                                    .append(data.tail() == ' ' ? "" : (char) data.tail());
+                        }
+                        writer.println(line);
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to load or process key: " + key, e);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void main(String[] args) {
+        Kanwadict kanwadict = Kanwadict.getKanwadict();
+        kanwadict.exportAllEntries();
     }
 
     public record YomiKanjiData(String yomi, int tail, String kanji) implements Serializable {

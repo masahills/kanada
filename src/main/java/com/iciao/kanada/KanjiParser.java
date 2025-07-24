@@ -23,6 +23,8 @@
  */
 package com.iciao.kanada;
 
+import com.iciao.kanada.maps.KanaMapping;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -89,31 +91,50 @@ public class KanjiParser {
             String yomi = "";
             String kanji = "";
             int tail = ' ';
+            String yomiKeep = "";
+            String kanjiKeep = "";
 
             while (dicIterator.hasNext()) {
                 Kanwadict.YomiKanjiData term = dicIterator.next();
 
                 int searchLen = term.getLength();
-                if ((i + searchLen) > inputString.length() || searchLen <= matchedLen) {
+                if ((i + searchLen) > inputString.length() || searchLen < matchedLen) {
                     continue;
                 }
 
                 String searchWord = inputString.substring(i, i + searchLen);
 
+                int possibleTail = 0;
+                if (i + searchWord.length() < inputString.length()) {
+                    char nextChar = inputString.charAt(i + searchWord.length());
+                    if (Character.UnicodeBlock.of(nextChar) == Character.UnicodeBlock.HIRAGANA) {
+                        // The tail letters from the SKK dictionary are assumed to be based on the Hepburn system.
+                        possibleTail = KanaMapping.getInstance().getRomajiInitial(nextChar, KanaMapping.RomanizationSystem.MODIFIED_HEPBURN);
+                    }
+                }
+
                 if (searchWord.equals(term.kanji())) {
                     if (term.tail() == ' ') {
+                        if (kanjiKeep.isEmpty()) {
+                            kanjiKeep = term.kanji();
+                            yomiKeep = term.yomi();
+                            matchedLen = searchLen;
+                        }
+                    } else if (term.tail() == possibleTail) {
                         kanji = term.kanji();
                         yomi = term.yomi();
                         tail = term.tail();
-                        matchedLen = searchLen;
-                    } else if (inputString.length() > searchWord.length()) {
-                        kanji = term.kanji();
-                        yomi = term.yomi();
-                        tail = term.tail();
-                        matchedLen = searchLen;
+                        matchedLen = searchLen + 1;
+                        break;
                     }
                 }
             }
+
+            if (kanji.isEmpty() && !kanjiKeep.isEmpty()) {
+                kanji = kanjiKeep;
+                yomi = yomiKeep;
+            }
+
             jWriter.tail = tail;
 
             if (matchedLen > 0 && !yomi.isEmpty()) {
