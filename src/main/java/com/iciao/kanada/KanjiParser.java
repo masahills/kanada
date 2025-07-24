@@ -114,15 +114,17 @@ public class KanjiParser {
                 }
 
                 if (searchWord.equals(term.kanji())) {
-                    if (term.tail() == ' ' && kanjiKeep.isEmpty()) {
-                        kanjiKeep = term.kanji();
-                        yomiKeep = term.yomi();
-                        matchedLen = searchLen;
+                    if (term.tail() == ' ') {
+                        if (kanjiKeep.isEmpty()) {
+                            kanjiKeep = term.kanji();
+                            yomiKeep = term.yomi();
+                            matchedLen = searchLen;
+                        }
                     } else if (term.tail() == possibleTail) {
                         kanji = term.kanji();
                         yomi = term.yomi();
                         tail = term.tail();
-                        matchedLen = searchLen;
+                        matchedLen = searchLen + 1;
                         break;
                     }
                 }
