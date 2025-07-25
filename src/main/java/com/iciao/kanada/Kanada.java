@@ -23,6 +23,7 @@
  */
 package com.iciao.kanada;
 
+import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
 import java.util.Locale;
@@ -63,9 +64,10 @@ public class Kanada {
     protected boolean modeUcFirst = false;
     protected boolean modeUcAll = false;
     protected boolean modeMacron = false;
+    protected boolean modeShowAllYomi = false;
+    protected boolean modeFurigana = false;
+    protected LlmClient llmClient = null;
     protected KanaMapping.RomanizationSystem romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
-    protected boolean modeShowAllYomi = false; // TODO: To be implemented.
-    protected boolean modeFurigana = false; // TODO: To be implemented.
 
     public Kanada() throws java.io.IOException {
         setParam(
@@ -203,6 +205,23 @@ public class Kanada {
         return this;
     }
 
+    public Kanada withFurigana() {
+        modeShowAllYomi = false;
+        modeFurigana = true;
+        return this;
+    }
+
+    public Kanada withAllYomi() {
+        modeShowAllYomi = true;
+        modeFurigana = false;
+        return this;
+    }
+
+    public Kanada withLlmClient(LlmClient llmClient) {
+        this.llmClient = llmClient;
+        return this;
+    }
+
     public Kanada upperCaseFirst() {
         modeUcFirst = true;
         modeUcAll = false;
@@ -246,7 +265,7 @@ public class Kanada {
         String parsedStr;
         try {
             JWriter writer = new JWriter(this);
-            KanjiParser parser = new KanjiParser(writer);
+            KanjiParser parser = new KanjiParser(writer, llmClient);
             parsedStr = parser.parse(str);
             if (modeUcAll) {
                 parsedStr = parsedStr.toUpperCase(Locale.ENGLISH);

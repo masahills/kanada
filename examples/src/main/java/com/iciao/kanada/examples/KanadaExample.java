@@ -24,6 +24,8 @@
 package com.iciao.kanada.examples;
 
 import com.iciao.kanada.Kanada;
+import com.iciao.kanada.llm.LlmClient;
+import com.iciao.kanada.llm.LlmClientFactory;
 
 
 /**
@@ -41,52 +43,103 @@ public class KanadaExample {
      * Sample Japanese text about Tokyo Skytree for conversion examples
      */
     private static final String SAMPLE_JAPANESE_TEXT =
-            "東京スカイツリーは日本の代表的な観光スポットで、多くの旅行者が訪れる人気の名所です。\n" +
-                    "高さ634メートルの展望台からは、東京の素晴らしい街並みを360度見渡すことができます。\n" +
-                    "特に夜のライトアップは幻想的で、多くの写真愛好家が素晴らしい風景を撮影しに訪れます。\n" +
-                    "また、地上階にはショッピングモールやレストランもあり、一日中楽しめるスポットとなっています。\n\n";
+            """
+                    東京スカイツリーは日本の代表的な観光スポットで、多くの旅行者が訪れる人気の名所です。
+                    高さ634メートルの展望台からは、東京の素晴らしい街並みを360度見渡すことができます。
+                    特に夜のライトアップは幻想的で、多くの写真愛好家が素晴らしい風景を撮影しに訪れます。
+                    また、地上階にはショッピングモールやレストランもあり、一日中楽しめるスポットとなっています。
+                    """;
 
     /**
      * Comprehensive kana chart for testing romanization
      */
     private static final String KANA_CHART =
-            "// 基本ひらがな (Basic Hiragana)\n" +
-                    "あ い う え お\nか き く け こ\nさ し す せ そ\nた ち つ て と\nな に ぬ ね の\n" +
-                    "は ひ ふ へ ほ\nま み む め も\nや   ゆ   よ\nら り る れ ろ\nわ       を\n" +
-                    "ん\n\n" +
-                    "// 濁音・半濁音 (Dakuten and Handakuten)\n" +
-                    "が ぎ ぐ げ ご\nざ じ ず ぜ ぞ\nだ ぢ づ で ど\nば び ぶ べ ぼ\nぱ ぴ ぷ ぺ ぽ\n\n" +
-                    "// 拗音 (Youon - Contracted Sounds)\n" +
-                    "きゃ  きゅ  きょ\nしゃ  しゅ  しょ\nちゃ  ちゅ  ちょ\nにゃ  にゅ  にょ\n" +
-                    "ひゃ  ひゅ  ひょ\nみゃ  みゅ  みょ\nりゃ  りゅ  りょ\n" +
-                    "ぎゃ  ぎゅ  ぎょ\nじゃ  じゅ  じょ\nびゃ  びゅ  びょ\nぴゃ  ぴゅ  ぴょ\n\n" +
-                    "// 外来語音 (Foreign Sounds)\n" +
-                    "ふぁ ふぃ  ふぇ ふぉ\nゔぁ ゔぃ ゔ ゔぇ ゔぉ\n\n" +
-                    "// 基本カタカナ (Basic Katakana)\n" +
-                    "ア イ ウ エ オ\nカ キ ク ケ コ\nサ シ ス セ ソ\nタ チ ツ テ ト\nナ ニ ヌ ネ ノ\n" +
-                    "ハ ヒ フ ヘ ホ\nマ ミ ム メ モ\nヤ   ユ   ヨ\nラ リ ル レ ロ\nワ       ヲ\n" +
-                    "ン\n\n" +
-                    "// カタカナ拗音 (Katakana Youon)\n" +
-                    "キャ  キュ  キョ\nシャ  シュ  ショ\nチャ  チュ  チョ\nニャ  ニュ  ニョ\n" +
-                    "ヒャ  ヒュ  ヒョ\nミャ  ミュ  ミョ\nリャ  リュ  リョ\n\n" +
-                    "// 外来語用カタカナ (Katakana for Foreign Words)\n" +
-                    "ファ フィ  フェ フォ\nヴァ ヴィ ヴ ヴェ ヴォ\nウェ ウォ\nティ トゥ\nディ ドゥ\n\n" +
-                    "// 単語サンプル (Word Samples)\n" +
-                    "こんにちは さようなら ありがとう\nトウキョウ ニホン サクラ\nスマートフォン コンピューター インターネット";
+            """
+                    // 基本ひらがな (Basic Hiragana)
+                    あ い う え お
+                    か き く け こ
+                    さ し す せ そ
+                    た ち つ て と
+                    な に ぬ ね の
+                    は ひ ふ へ ほ
+                    ま み む め も
+                    や   ゆ   よ
+                    ら り る れ ろ
+                    わ       を
+                    ん
+                    
+                    // 濁音・半濁音 (Dakuten and Handakuten)
+                    が ぎ ぐ げ ご
+                    ざ じ ず ぜ ぞ
+                    だ ぢ づ で ど
+                    ば び ぶ べ ぼ
+                    ぱ ぴ ぷ ぺ ぽ
+                    
+                    // 拗音 (Youon - Contracted Sounds)
+                    きゃ  きゅ  きょ
+                    しゃ  しゅ  しょ
+                    ちゃ  ちゅ  ちょ
+                    にゃ  にゅ  にょ
+                    ひゃ  ひゅ  ひょ
+                    みゃ  みゅ  みょ
+                    りゃ  りゅ  りょ
+                    ぎゃ  ぎゅ  ぎょ
+                    じゃ  じゅ  じょ
+                    びゃ  びゅ  びょ
+                    ぴゃ  ぴゅ  ぴょ
+                    
+                    // 外来語音 (Foreign Sounds)
+                    ふぁ ふぃ  ふぇ ふぉ
+                    ゔぁ ゔぃ ゔ ゔぇ ゔぉ
+                    
+                    // 基本カタカナ (Basic Katakana)
+                    ア イ ウ エ オ
+                    カ キ ク ケ コ
+                    サ シ ス セ ソ
+                    タ チ ツ テ ト
+                    ナ ニ ヌ ネ ノ
+                    ハ ヒ フ ヘ ホ
+                    マ ミ ム メ モ
+                    ヤ   ユ   ヨ
+                    ラ リ ル レ ロ
+                    ワ       ヲ
+                    ン
+                    
+                    // カタカナ拗音 (Katakana Youon)
+                    キャ  キュ  キョ
+                    シャ  シュ  ショ
+                    チャ  チュ  チョ
+                    ニャ  ニュ  ニョ
+                    ヒャ  ヒュ  ヒョ
+                    ミャ  ミュ  ミョ
+                    リャ  リュ  リョ
+                    
+                    // 外来語用カタカナ (Katakana for Foreign Words)
+                    ファ フィ  フェ フォ
+                    ヴァ ヴィ ヴ ヴェ ヴォ
+                    ウェ ウォ
+                    ティ トゥ
+                    ディ ドゥ
+                    
+                    // 単語サンプル (Word Samples)
+                    こんにちは さようなら ありがとう
+                    トウキョウ ニホン サクラ
+                    スマートフォン コンピューター インターネット
+                    """;
 
     /**
      * Sample English text about Japan for width conversion examples
      */
     private static final String SAMPLE_ENGLISH_TEXT =
-            "“Japan is known for its unique blend of traditional culture and modern innovation.”\n" +
-                    "From ancient temples and gardens to cutting-edge technology and fashion trends,\n" +
-                    "visitors can experience a fascinating contrast between old and new throughout the country.\n" +
-                    "\n" +
-                    "The four distinct seasons also offer different experiences for travelers year-round.";
+            """
+                    “Japan is known for its unique blend of traditional culture and modern innovation.”
+                    From ancient temples and gardens to cutting-edge technology and fashion trends,
+                    visitors can experience a fascinating contrast between old and new throughout the country.
+                    
+                    The four distinct seasons also offer different experiences for travelers year-round.
+                    """;
 
-    // Sample text with special characters for additional tests if needed
-    private static final String SPECIAL_CHARACTERS =
-            "\u008ex\u00a1x\u00a2x\u00a3x\u00a4x\u00a5x\u00a6x\u00a7x\u00a8x\u00adx";
+    private static LlmClient llmClient = null;
 
     public static void main(String[] args) throws Exception {
         // Display menu and get user choice
@@ -116,17 +169,31 @@ public class KanadaExample {
         // Create converters with different settings
         Kanada romaji = new Kanada().toRomaji().withSpaces().withMacrons();
         Kanada wakatigaki = new Kanada().withSpaces();
+        Kanada wakatiallyomi = new Kanada().withSpaces().withAllYomi();
+        Kanada wakatifurigana = new Kanada().withSpaces().withFurigana();
         Kanada hiragana = new Kanada().toHiragana().withSpaces();
         Kanada katakana = new Kanada().toKatakana().withSpaces();
         Kanada fullwidth = new Kanada().toFullWidthAll().withSpaces();
         Kanada hankaku = new Kanada().toHankakuKatakana().withSpaces();
 
-        // Demonstrate different conversions
-        System.out.println("Wakatigaki (Word Separation):");
+        initLlmClient();
+        Kanada hiraganallm = Kanada.create().toHiragana().withSpaces().withLlmClient(llmClient);
+
+        System.out.println("Wakatigaki (Word Segmentation):");
         convert(wakatigaki, SAMPLE_JAPANESE_TEXT);
+
+        System.out.println("\nWakatigaki with Furigana:");
+        convert(wakatifurigana, SAMPLE_JAPANESE_TEXT);
+
+        System.out.println("\nWakatigaki with all Yomi:");
+        convert(wakatiallyomi, SAMPLE_JAPANESE_TEXT);
 
         System.out.println("\nTo Hiragana:");
         convert(hiragana, SAMPLE_JAPANESE_TEXT);
+
+        System.out.println("\nTo Hiragana with LLM assist:");
+        convert(hiraganallm, SAMPLE_JAPANESE_TEXT);
+        System.out.println();
 
         System.out.println("\nTo Katakana:");
         convert(katakana, SAMPLE_JAPANESE_TEXT);
@@ -181,9 +248,13 @@ public class KanadaExample {
             case "halfwidth":
                 convert(new Kanada().toHankakuKatakana(), text);
                 break;
+            case "llm":
+                initLlmClient();
+                convert(new Kanada().toHiragana().withSpaces().withLlmClient(llmClient), text);
+                break;
             default:
                 System.out.println("Unknown conversion mode: " + mode);
-                System.out.println("Available modes: romaji, hiragana, katakana, wakati, fullwidth, halfwidth");
+                System.out.println("Available modes: romaji, hiragana, katakana, wakati, fullwidth, halfwidth, llm");
         }
     }
 
@@ -205,4 +276,32 @@ public class KanadaExample {
         System.out.println(result);
     }
 
+    private static void initLlmClient() {
+        if (llmClient != null) {
+            return;
+        }
+        System.out.println("Setting up an LLM client...");
+        try {
+            // Create LLM client and test connection
+            llmClient = LlmClientFactory.createClient(LlmClientFactory.LlmProvider.OLLAMA);
+
+            // Test connection if it's an OllamaClient
+            if (llmClient instanceof com.iciao.kanada.llm.OllamaClient ollamaClient) {
+                System.out.println("Testing Ollama connection...");
+                System.out.println("Using model: " + ollamaClient.getModel());
+
+                if (ollamaClient.testConnection()) {
+                    System.out.println("✓ Ollama connection successful");
+                } else {
+                    System.out.println("✗ Ollama connection failed");
+                    System.out.println("Make sure Ollama is running: ollama serve");
+                    return;
+                }
+                System.out.println();
+            }
+
+        } catch (Exception e) {
+            System.out.println("LLM setup failed: " + e.getMessage());
+        }
+    }
 }
