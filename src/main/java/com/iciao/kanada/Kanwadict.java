@@ -278,10 +278,12 @@ public class Kanwadict {
         int tail = yomi.codePointAt(yomiLen - 1);
 
         // Check if the reading has a Latin character suffix (used for part of speech)
+        // Not sure if tail markers can be uppercased but include them just in case
         if ((tail > 0x40 && tail < 0x5b) || (tail > 0x60 && tail < 0x7b)) {
             // Remove the suffix character but keep it as the 'tail' marker
             yomiLen = yomiLen - 1;
             yomi = yomi.substring(0, yomiLen);
+            tail = Character.toLowerCase(tail);
         } else {
             // No special suffix
             tail = ' ';
@@ -306,8 +308,8 @@ public class Kanwadict {
 
         int cp = kanji.codePointAt(0);
 
-        // The key must be greater than the lower bound of the CJK Unified Ideographs range (0x4E00-0x9FFF)
-        if (cp < 0x4e00) {
+        // The codepoint must be within the CJK Unified Ideographs range (0x4E00-0x9FFF)
+        if (cp < 0x4e00 || cp > 0x9fff) {
             return;
         }
 
