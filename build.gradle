@@ -17,6 +17,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.google.code.gson:gson:2.10.1'
     testImplementation 'junit:junit:4.13.2'
 }
 
@@ -82,7 +83,7 @@ license {
 
     // Enable verbose output to detect files without license headers
     ext.verbose = true
-    
+
     // Use block comment style instead of Javadoc
     mapping {
         java = 'SLASHSTAR_STYLE'
