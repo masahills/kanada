@@ -23,9 +23,12 @@
  */
 package com.iciao.kanada;
 
+import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Japanese text transliteration library for converting between Kanji, Hiragana, Katakana, and Romaji.
@@ -49,6 +52,7 @@ import java.util.Locale;
  * @author Masahiko Sato
  */
 public class Kanada {
+    private static final Logger LOGGER = Logger.getLogger(Kanada.class.getName());
 
     protected int optionKanji;
     protected int optionHiragana;
@@ -63,9 +67,10 @@ public class Kanada {
     protected boolean modeUcFirst = false;
     protected boolean modeUcAll = false;
     protected boolean modeMacron = false;
+    protected boolean modeShowAllYomi = false;
+    protected boolean modeFurigana = false;
+    protected LlmClient llmClient = null;
     protected KanaMapping.RomanizationSystem romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
-    protected boolean modeShowAllYomi = false; // TODO: To be implemented.
-    protected boolean modeFurigana = false; // TODO: To be implemented.
 
     public Kanada() throws java.io.IOException {
         setParam(
@@ -203,6 +208,23 @@ public class Kanada {
         return this;
     }
 
+    public Kanada withFurigana() {
+        modeShowAllYomi = false;
+        modeFurigana = true;
+        return this;
+    }
+
+    public Kanada withAllYomi() {
+        modeShowAllYomi = true;
+        modeFurigana = false;
+        return this;
+    }
+
+    public Kanada withLlmClient(LlmClient llmClient) {
+        this.llmClient = llmClient;
+        return this;
+    }
+
     public Kanada upperCaseFirst() {
         modeUcFirst = true;
         modeUcAll = false;
@@ -246,13 +268,13 @@ public class Kanada {
         String parsedStr;
         try {
             JWriter writer = new JWriter(this);
-            KanjiParser parser = new KanjiParser(writer);
+            KanjiParser parser = new KanjiParser(writer, llmClient);
             parsedStr = parser.parse(str);
             if (modeUcAll) {
                 parsedStr = parsedStr.toUpperCase(Locale.ENGLISH);
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage());
             return str;
         }
 
