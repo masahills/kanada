@@ -5,13 +5,39 @@ well as for performing word segmentation.
 
 ## Features
 
-- **Kanji to Kana conversion** - Convert Kanji to Hiragana or Katakana
-- **Romanization** - Convert Japanese text to Latin alphabet
-- **Multiple romanization systems** - Hepburn, Kunrei, and other romanization systems
-- **Word segmentation** - Automatic spacing between Japanese words for improved readability
-- **Character width conversion** - Half-width ↔ Full-width
-- **Pure Java** - No external dependencies or native libraries
-- **Lightweight** - No morphological analysis required
+- **Kanji to Kana Conversion**
+  Effortlessly convert kanji characters into hiragana or katakana.
+
+- **Romanization**
+  Transform Japanese text into the romaji equivalent.
+
+- **Multiple Romanization Systems**
+  Supports Hepburn, Kunrei, and other romanization standards.
+
+- **Word Segmentation**
+  Automatically adds spaces between Japanese words for better readability.
+
+- **Furigana Mode**
+  Generate furigana (ruby text) for kanji characters.
+
+- **Character Width Conversion**
+  Seamlessly switch between half-width and full-width characters.
+
+- **Pure Java**
+  Minimal external dependencies, implemented entirely in Java with no native (JNI) code required
+
+- **Lightweight**
+  Designed for speed and efficiency without requiring morphological analysis.
+
+### Experimental Features
+
+- **AI-Assisted Reading Selection**  
+  Leverages Generative AI to disambiguate kanji readings in context.
+    - Supports integration with OpenAI API and Ollama.
+    - Resolves homonym disambiguation challenges effectively.
+    - Queries AI selectively for ambiguous kanji readings, ensuring high processing speed.
+    - Optimizes token usage by limiting AI consultations to necessary cases.
+    - Enhances accuracy while maintaining a lightweight, dictionary-based approach.
 
 ## Quick Start
 
