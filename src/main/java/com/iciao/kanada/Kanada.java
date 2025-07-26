@@ -27,6 +27,8 @@ import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Japanese text transliteration library for converting between Kanji, Hiragana, Katakana, and Romaji.
@@ -50,6 +52,7 @@ import java.util.Locale;
  * @author Masahiko Sato
  */
 public class Kanada {
+    private static final Logger LOGGER = Logger.getLogger(Kanada.class.getName());
 
     protected int optionKanji;
     protected int optionHiragana;
@@ -271,7 +274,7 @@ public class Kanada {
                 parsedStr = parsedStr.toUpperCase(Locale.ENGLISH);
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage());
             return str;
         }
 
