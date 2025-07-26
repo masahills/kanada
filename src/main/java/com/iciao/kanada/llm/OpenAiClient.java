@@ -23,12 +23,15 @@
  */
 package com.iciao.kanada.llm;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -84,43 +87,43 @@ public class OpenAiClient implements LlmClient {
         if (possibleReadings.size() <= 1) {
             return possibleReadings.isEmpty() ? "" : possibleReadings.get(0);
         }
-
-        String prompt = buildPrompt(kanji, possibleReadings, context);
-        String response = generateCompletion(prompt);
+        String systemMessage = """
+                あなたは日本語の文章の最適な読み方を文脈から判断するAIです。
+                文章中の回答対象部分の読み方を、送り仮名を含めずに判断してください。
+                与えられた選択肢からひらがな1語を選んでください。
+                その他の説明は一切不要です。
+                """;
+        String userMessage = "回答対象: [" + kanji + "] （この部分のみの読み）\n\n" +
+                "文章: " + context.replace("\n", "") + "\n" +
+                "選択肢: " + String.join(" / ", possibleReadings) + "\n\n";
+        String response = generateCompletion(systemMessage, userMessage);
         return parseResponse(response, possibleReadings);
-    }
-
-    /**
-     * Builds a prompt for the LLM to determine the best reading.
-     */
-    private String buildPrompt(String kanji, List<String> possibleReadings, String context) {
-        StringBuilder prompt = new StringBuilder();
-        prompt.append("あなたは日本語の文章の読み方を教えてくれるAIです。\n")
-                .append("指定文の文脈に最も適切な [").append(kanji).append("] の読み方を選んでください。\n\n")
-                .append("指定文: ").append(context.replace("\n", "")).append("\n")
-                .append("選択肢: ").append(String.join(" / ", possibleReadings)).append("\n\n")
-                .append("ひらがなのみで出力してください。説明は不要です。");
-        return prompt.toString();
     }
 
     /**
      * Sends a request to the OpenAI API and gets the completion.
      */
-    private String generateCompletion(String prompt) throws IOException, InterruptedException {
-        String requestBody = String.format(
-                "{\"model\":\"%s\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
+    private String generateCompletion(String systemMessage, String userMessage) throws IOException, InterruptedException {
+        Gson gson = new Gson();
+
+        OpenAiRequest request = new OpenAiRequest(
                 model,
-                prompt.replace("\"", "\\\"").replace("\n", "\\n")
+                List.of(
+                        new Message("system", systemMessage),
+                        new Message("user", userMessage)
+                )
         );
 
-        HttpRequest request = HttpRequest.newBuilder()
+        String requestBody = gson.toJson(request);
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl + "/chat/completions"))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + apiKey)
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
             throw new IOException("API request failed with status code: " + response.statusCode());
@@ -133,15 +136,36 @@ public class OpenAiClient implements LlmClient {
      * Parses the LLM response to extract the best reading.
      */
     private String parseResponse(String response, List<String> possibleReadings) {
-        // Simple parsing logic - find the first reading that appears in the response
-        // In a production environment, you would parse the JSON response properly
-        for (String reading : possibleReadings) {
-            if (response.contains(reading)) {
-                return reading;
+        try {
+            OpenAiResponse openAiResponse = new Gson().fromJson(response, OpenAiResponse.class);
+            String content = openAiResponse.choices.get(0).message.content.trim();
+
+            // Check longer readings first to avoid partial matches
+            List<String> sortedReadings = possibleReadings.stream()
+                    .sorted(Comparator.comparing(String::length).reversed())
+                    .toList();
+
+            for (String reading : sortedReadings) {
+                if (content.contains(reading)) {
+                    return reading;
+                }
             }
+        } catch (Exception e) {
+            // Fall back to default on any error
         }
 
-        // Default to first reading if no match found
         return possibleReadings.get(0);
+    }
+
+    private record OpenAiRequest(String model, List<Message> messages) {
+    }
+
+    private record Message(String role, String content) {
+    }
+
+    private record OpenAiResponse(List<Choice> choices) {
+    }
+
+    private record Choice(Message message) {
     }
 }

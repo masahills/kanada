@@ -23,12 +23,15 @@
  */
 package com.iciao.kanada.llm;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -116,14 +119,15 @@ public class OllamaClient implements LlmClient {
      * Builds a prompt for the LLM to determine the best reading.
      */
     private String buildPrompt(String kanji, List<String> possibleReadings, String context) {
-        // Probably get better results by prompting in English for LLMs with fewer parameters.
+        // You will get better results by prompting in English for LLMs with fewer parameters.
         StringBuilder prompt = new StringBuilder();
-        prompt.append("You are an AI that teaches how to read Japanese sentences.\n")
-                .append("Choose the most appropriate reading of [").append(kanji).append("] for the context of the following sentence.\n")
-                .append("Select one from the options.\n\n")
-                .append("Sentence: ").append(context.replace("\n", "")).append("\n")
+        prompt.append("You are an AI designed to teach people how to read Japanese sentences.\n")
+                .append("Choose the correct reading of the target word that is best fits in the given context.\n")
+                .append("Context: ").append(context.replace("\n", "")).append("\n\n")
+                .append("Target word: [").append(kanji).append("] (A reading of this word that best fits to the context.）\n\n")
+                .append("Select the best reading from the options below:\n")
                 .append("Options: ").append(String.join(" / ", possibleReadings)).append("\n\n")
-                .append("Do not explain. Just show the answer in hiragana.\n");
+                .append("Do not explain. Just show the answer only in hiragana.\n");
         return prompt.toString();
     }
 
@@ -133,26 +137,20 @@ public class OllamaClient implements LlmClient {
      * If the specified model does not exist, throws an IOException with a helpful message.
      */
     private String generateCompletion(String prompt) throws IOException, InterruptedException {
-        // Ollama API expects raw prompt string, so escape only necessary characters
-        String requestBody = String.format(
-                "{\"model\":\"%s\",\"prompt\":\"%s\",\"stream\":false}",
-                model,
-                prompt.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
-        );
+        Gson gson = new Gson();
 
-        HttpRequest request = HttpRequest.newBuilder()
+        OllamaRequest request = new OllamaRequest(model, prompt, false);
+        String requestBody = gson.toJson(request);
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl + "/api/generate"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            // Check for model not found error and provide a helpful message
-            if (response.body() != null && response.body().contains("model '")) {
-                throw new IOException("Ollama API error: " + response.body());
-            }
             throw new IOException("API request failed with status code: " + response.statusCode() + ", body: " + response.body());
         }
 
@@ -163,16 +161,30 @@ public class OllamaClient implements LlmClient {
      * Parses the LLM response to extract the best reading.
      */
     private String parseResponse(String response, List<String> possibleReadings) {
-        // Simple parsing logic - find the first reading that appears in the response
-        // In a production environment, you might want more sophisticated parsing
-        //System.out.println(response);
-        for (String reading : possibleReadings) {
-            if (response.contains(reading)) {
-                return reading;
+        try {
+            OllamaResponse ollamaResponse = new Gson().fromJson(response, OllamaResponse.class);
+            String content = ollamaResponse.response.trim();
+
+            // Check longer readings first to avoid partial matches
+            List<String> sortedReadings = possibleReadings.stream()
+                    .sorted(Comparator.comparing(String::length).reversed())
+                    .toList();
+
+            for (String reading : sortedReadings) {
+                if (content.contains(reading)) {
+                    return reading;
+                }
             }
+        } catch (Exception e) {
+            // Fall back to default on any error
         }
 
-        // Default to first reading if no match found
         return possibleReadings.get(0);
+    }
+
+    private record OllamaRequest(String model, String prompt, boolean stream) {
+    }
+
+    private record OllamaResponse(String response) {
     }
 }
