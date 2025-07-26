@@ -43,6 +43,7 @@ public class KanjiParser {
     private final StringBuilder outputBuffer;
     private final LlmClient llmClient;
 
+    @SuppressWarnings("unused")
     public KanjiParser(JWriter writer) {
         this(writer, null);
     }
@@ -93,7 +94,7 @@ public class KanjiParser {
             flushBuffer(true);
 
             int matchedLen = 0;
-            String yomi = "";
+            String yomi;
             String kanji = "";
             int tail = ' ';
             String yomiWithTail = "";
@@ -204,29 +205,7 @@ public class KanjiParser {
                         .distinct()
                         .collect(Collectors.toList());
 
-                // Extract context (25 characters before and after)
-                sentence = sentence.replace("\r", "").replace("\n", "");
-                int contextStart = Math.max(0, position - 25);
-                int contextEnd = Math.min(sentence.length(), position + targetKanji.length() + 30);
-
-                // Look for a preceding punctuation mark
-                for (int i = contextStart; i < position; i++) {
-                    char c = sentence.charAt(i);
-                    if (c == '。' || c == '、') {
-                        contextStart = i + 1;
-                    }
-                }
-
-                // Look for the next punctuation mark
-                for (int i = position + targetKanji.length(); i < contextEnd; i++) {
-                    char c = sentence.charAt(i);
-                    if (c == '。' || c == '、') {
-                        contextEnd = i;
-                        break;
-                    }
-                }
-
-                String context = sentence.substring(contextStart, contextEnd);
+                String context = extractContext(sentence, targetKanji, position);
 
                 String bestReading = llmClient.selectBestReading(targetKanji, possibleReadings, context);
                 for (Kanwadict.YomiKanjiData candidate : candidates) {
@@ -241,6 +220,33 @@ public class KanjiParser {
 
         // Default: return the first candidate
         return candidates.get(0);
+    }
+
+    private String extractContext(String sentence, String targetKanji, int position) {
+        sentence = sentence.replace("\r", "").replace("\n", "");
+
+        // Find positions 25 characters before and after
+        int contextStart = Math.max(0, position - 25);
+        int contextEnd = Math.min(sentence.length(), position + targetKanji.length() + 25);
+
+        // Look for a preceding punctuation mark
+        for (int i = contextStart; i < position; i++) {
+            char c = sentence.charAt(i);
+            if (c == '。' || c == '、') {
+                contextStart = i + 1;
+            }
+        }
+
+        // Look for the next punctuation mark
+        for (int i = position + targetKanji.length(); i < contextEnd; i++) {
+            char c = sentence.charAt(i);
+            if (c == '。' || c == '、') {
+                contextEnd = i;
+                break;
+            }
+        }
+
+        return sentence.substring(contextStart, contextEnd);
     }
 
     private void flushBuffer(boolean isBoundary) {
