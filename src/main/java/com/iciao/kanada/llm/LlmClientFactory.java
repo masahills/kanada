@@ -23,6 +23,8 @@
  */
 package com.iciao.kanada.llm;
 
+import java.io.IOException;
+
 /**
  * Factory for creating LLM clients based on configuration.
  *
@@ -35,26 +37,44 @@ public class LlmClientFactory {
      */
     public enum LlmProvider {
         OLLAMA,
-        OPENAI
+        OPENAI,
+        CLAUDE
     }
 
     /**
-     * Creates an LLM client based on the specified provider.
+     * Creates an LLM client based on the specified provider using config.json settings.
      *
      * @param provider The LLM provider to use
      * @return An LlmClient instance
      */
     public static LlmClient createClient(LlmProvider provider) {
-        return switch (provider) {
-            case OLLAMA -> new OllamaClient("gemma2:2b");
-            case OPENAI -> {
-                String apiKey = System.getenv("OPENAI_API_KEY");
-                if (apiKey == null || apiKey.isEmpty()) {
-                    throw new IllegalStateException("OPENAI_API_KEY environment variable not set");
+        try {
+            LlmConfig config = LlmConfig.getInstance();
+            return switch (provider) {
+                case OLLAMA -> {
+                    LlmConfig.OllamaConfig ollamaConfig = config.getOllama();
+                    yield new OllamaClient(ollamaConfig.apiUrl, ollamaConfig.defaultModel);
                 }
-                yield new OpenAiClient(apiKey, "gpt-4o");
-            }
-        };
+                case OPENAI -> {
+                    String apiKey = System.getenv("OPENAI_API_KEY");
+                    if (apiKey == null || apiKey.isEmpty()) {
+                        throw new IllegalStateException("OPENAI_API_KEY environment variable not set");
+                    }
+                    LlmConfig.OpenAiConfig openAiConfig = config.getOpenAi();
+                    yield new OpenAiClient(openAiConfig.apiUrl, apiKey, openAiConfig.defaultModel);
+                }
+                case CLAUDE -> {
+                    String apiKey = System.getenv("ANTHROPIC_API_KEY");
+                    if (apiKey == null || apiKey.isEmpty()) {
+                        throw new IllegalStateException("ANTHROPIC_API_KEY environment variable not set");
+                    }
+                    LlmConfig.ClaudeConfig claudeConfig = config.getClaude();
+                    yield new ClaudeClient(claudeConfig.apiUrl, apiKey, claudeConfig.defaultModel);
+                }
+            };
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load configuration", e);
+        }
     }
 
     /**

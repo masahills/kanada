@@ -32,3 +32,6 @@ gradle-app.setting
 # Excel files
 *.xlsx
 *.xls
+
+# Local configuration files
+src/main/resources/config.local.json
