@@ -137,7 +137,9 @@ public class KanjiParser {
                             if (candidates.isEmpty() || candidates.get(0).getLength() < searchLen) {
                                 candidates.clear();
                             }
-                            candidates.add(term);
+                            if (term.tail() == ' ') {
+                                candidates.add(term);
+                            }
                         }
                     } else if (!yomiWithTail.isEmpty()) {
                         // Otherwise, finish the search if yomi with tail is found
@@ -155,7 +157,7 @@ public class KanjiParser {
             }
 
             // Use LLM for disambiguation if multiple candidates exist
-            if (llmClient != null && candidates.size() > 1) {
+            if (tail == ' ' && llmClient != null && candidates.size() > 1) {
                 Kanwadict.YomiKanjiData selectedTerm = askGenerativeAI(candidates, inputString, i);
                 yomi = selectedTerm.yomi();
                 jWriter.tail = selectedTerm.tail();
