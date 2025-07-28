@@ -43,6 +43,7 @@ public class OllamaClient implements LlmClient {
     private final String apiUrl;
     private final String model;
     private final HttpClient httpClient;
+    private final LlmConfig.OllamaConfig config;
 
     /**
      * Creates a new Ollama client with default settings.
@@ -63,6 +64,11 @@ public class OllamaClient implements LlmClient {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
+        try {
+            this.config = LlmConfig.getInstance().getOllama();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load Ollama configuration", e);
+        }
     }
 
     /**
@@ -110,25 +116,16 @@ public class OllamaClient implements LlmClient {
             return "";
         }
 
-        String prompt = buildPrompt(kanji, possibleReadings, context);
+        LlmConfig.ModelConfig modelConfig = config.models.get(model);
+        String template = getConfigValue(modelConfig, m -> m.promptTemplate, config.promptTemplate);
+            
+        String prompt = template
+            .replace("{kanji}", kanji)
+            .replace("{context}", context.replace("\n", ""))
+            .replace("{readings}", String.join(" / ", possibleReadings));
+
         String response = generateCompletion(prompt);
         return parseResponse(response, possibleReadings);
-    }
-
-    /**
-     * Builds a prompt for the LLM to determine the best reading.
-     */
-    private String buildPrompt(String kanji, List<String> possibleReadings, String context) {
-        // You will get better results by prompting in English for LLMs with fewer parameters.
-        StringBuilder prompt = new StringBuilder();
-        prompt.append("You are an AI designed to teach people how to read Japanese sentences.\n")
-                .append("Choose the correct reading of the target word that is best fits in the given context.\n")
-                .append("Context: ").append(context.replace("\n", "")).append("\n\n")
-                .append("Target word: [").append(kanji).append("] (A reading of this word that best fits to the context.）\n\n")
-                .append("Select the best reading from the options below:\n")
-                .append("Options: ").append(String.join(" / ", possibleReadings)).append("\n\n")
-                .append("Do not explain. Just show the answer only in hiragana.\n");
-        return prompt.toString();
     }
 
     /**
@@ -186,5 +183,9 @@ public class OllamaClient implements LlmClient {
     }
 
     private record OllamaResponse(String response) {
+    }
+
+    private static <T> T getConfigValue(LlmConfig.ModelConfig modelConfig, java.util.function.Function<LlmConfig.ModelConfig, T> getter, T defaultValue) {
+        return modelConfig != null && getter.apply(modelConfig) != null ? getter.apply(modelConfig) : defaultValue;
     }
 }

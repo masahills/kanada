@@ -35,35 +35,25 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Client for interacting with OpenAI API to get context-aware readings for kanji.
+ * Client for interacting with Claude API to get context-aware readings for kanji.
  *
  * @author Masahiko Sato
  */
-public class OpenAiClient implements LlmClient {
+public class ClaudeClient implements LlmClient {
     private final String apiUrl;
     private final String apiKey;
     private final String model;
     private final HttpClient httpClient;
-    private final LlmConfig.OpenAiConfig config;
+    private final LlmConfig.ClaudeConfig config;
 
     /**
-     * Creates a new OpenAI client with custom settings.
+     * Creates a new Claude client with custom settings.
      *
-     * @param apiKey The OpenAI API key
-     * @param model  The model to use for inference (e.g., "gpt-4")
-     */
-    public OpenAiClient(String apiKey, String model) {
-        this("https://api.openai.com/v1", apiKey, model);
-    }
-
-    /**
-     * Creates a new OpenAI client with custom settings.
-     *
-     * @param apiUrl The URL of the OpenAI API
-     * @param apiKey The OpenAI API key
+     * @param apiUrl The URL of the Claude API
+     * @param apiKey The Claude API key
      * @param model  The model to use for inference
      */
-    public OpenAiClient(String apiUrl, String apiKey, String model) {
+    public ClaudeClient(String apiUrl, String apiKey, String model) {
         this.apiUrl = apiUrl;
         this.apiKey = apiKey;
         this.model = model;
@@ -71,61 +61,46 @@ public class OpenAiClient implements LlmClient {
                 .connectTimeout(Duration.ofSeconds(30))
                 .build();
         try {
-            this.config = LlmConfig.getInstance().getOpenAi();
+            this.config = LlmConfig.getInstance().getClaude();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load OpenAI configuration", e);
+            throw new RuntimeException("Failed to load Claude configuration", e);
         }
     }
 
-    /**
-     * Gets the best reading for a kanji word based on context.
-     *
-     * @param kanji            The kanji word to get readings for
-     * @param possibleReadings List of possible readings
-     * @param context          The surrounding text for context
-     * @return The best reading based on context
-     * @throws IOException          If an I/O error occurs
-     * @throws InterruptedException If the operation is interrupted
-     */
     @Override
     public String selectBestReading(String kanji, List<String> possibleReadings, String context)
             throws IOException, InterruptedException {
         if (possibleReadings.size() <= 1) {
             return possibleReadings.isEmpty() ? "" : possibleReadings.get(0);
         }
-        
-        LlmConfig.ModelConfig modelConfig = config.models.get(model);
-        String systemMessage = getConfigValue(modelConfig, m -> m.systemPrompt, config.systemPrompt);
-        String template = getConfigValue(modelConfig, m -> m.userPromptTemplate, config.userPromptTemplate);
-            
-        String userMessage = template
+
+        String systemMessage = config.systemPrompt;
+        String userMessage = config.userPromptTemplate
             .replace("{kanji}", kanji)
             .replace("{context}", context.replace("\n", ""))
             .replace("{readings}", String.join(" / ", possibleReadings));
+
         String response = generateCompletion(systemMessage, userMessage);
         return parseResponse(response, possibleReadings);
     }
 
-    /**
-     * Sends a request to the OpenAI API and gets the completion.
-     */
     private String generateCompletion(String systemMessage, String userMessage) throws IOException, InterruptedException {
         Gson gson = new Gson();
 
-        OpenAiRequest request = new OpenAiRequest(
+        ClaudeRequest request = new ClaudeRequest(
                 model,
-                List.of(
-                        new Message("system", systemMessage),
-                        new Message("user", userMessage)
-                )
+                1000,
+                systemMessage,
+                List.of(new Message("user", userMessage))
         );
 
         String requestBody = gson.toJson(request);
 
         HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl + "/chat/completions"))
+                .uri(URI.create(apiUrl + "/messages"))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + apiKey)
+                .header("x-api-key", apiKey)
+                .header("anthropic-version", "2023-06-01")
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
@@ -138,15 +113,11 @@ public class OpenAiClient implements LlmClient {
         return response.body();
     }
 
-    /**
-     * Parses the LLM response to extract the best reading.
-     */
     private String parseResponse(String response, List<String> possibleReadings) {
         try {
-            OpenAiResponse openAiResponse = new Gson().fromJson(response, OpenAiResponse.class);
-            String content = openAiResponse.choices.get(0).message.content.trim();
+            ClaudeResponse claudeResponse = new Gson().fromJson(response, ClaudeResponse.class);
+            String content = claudeResponse.content.get(0).text.trim();
 
-            // Check longer readings first to avoid partial matches
             List<String> sortedReadings = possibleReadings.stream()
                     .sorted(Comparator.comparing(String::length).reversed())
                     .toList();
@@ -163,19 +134,8 @@ public class OpenAiClient implements LlmClient {
         return possibleReadings.get(0);
     }
 
-    private record OpenAiRequest(String model, List<Message> messages) {
-    }
-
-    private record Message(String role, String content) {
-    }
-
-    private record OpenAiResponse(List<Choice> choices) {
-    }
-
-    private record Choice(Message message) {
-    }
-
-    private static <T> T getConfigValue(LlmConfig.ModelConfig modelConfig, java.util.function.Function<LlmConfig.ModelConfig, T> getter, T defaultValue) {
-        return modelConfig != null && getter.apply(modelConfig) != null ? getter.apply(modelConfig) : defaultValue;
-    }
+    private record ClaudeRequest(String model, int max_tokens, String system, List<Message> messages) {}
+    private record Message(String role, String content) {}
+    private record ClaudeResponse(List<Content> content) {}
+    private record Content(String text) {}
 }
