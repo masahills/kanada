@@ -2,8 +2,8 @@
   "openai": {
     "defaultModel": "gpt-4o-mini",
     "apiUrl": "https://api.openai.com/v1",
-    "systemPrompt": "あなたは日本語の文章の最適な読み方を文脈から判断するAIです。\n文章中の回答対象部分の読み方を、送り仮名を含めずに判断してください。\n与えられた選択肢からひらがな1語を選んでください。\nその他の説明は一切不要です。",
-    "userPromptTemplate": "回答対象: [{kanji}] （この部分のみの読み）\n\n文章: {context}\n選択肢: {readings}\n\n",
+    "systemPrompt": "あなたは日本語の文章の最適な読み方を文脈から判断するAIです。\n指定した語句のふりがなとして適切なものを選択肢から１つ選んでください。\n選択したふりがなだけを回答してください。説明は不要です。",
+    "userPromptTemplate": "文章: {context}\n語句: {kanji} （この部分だけのふりがな）\n選択肢: {readings}",
     "models": {
       "gpt-4o-mini": {
         "modelName": "GPT-4o Mini",
@@ -16,7 +16,7 @@
     }
   },
   "ollama": {
-    "defaultModel": "qwen3:1.7b",
+    "defaultModel": "Qwen 3 (1.7B)",
     "apiUrl": "http://localhost:11434",
     "promptTemplate": "You are an AI that teaches how to read Japanese sentences.\nChoose the most appropriate reading of [{kanji}] for the context of the following sentence.\nSelect one from the options.\n\nSentence: {context}\nOptions: {readings}\n\nDo not explain. Just show the answer in hiragana.\n",
     "models": {
@@ -33,14 +33,14 @@
       "qwen3:1.7b": {
         "modelName": "Qwen 3 (1.7B)",
         "modelDescription": "Alibaba's 1.7B parameter model with strong multilingual capabilities",
-        "promptTemplate": "あなたは日本語の漢字の読み方を判断するAIです。\n文章の文脈から判断し、回答対象の読み方を選択肢から１つ選んでください。\nその他の説明は一切不要です。\n\n回答対象: [{kanji}]\n\n文章: {context}\n選択肢: {readings}\n\n/no_think"
+        "promptTemplate": "指定した語句の ふりがな として適切なものを選択肢から１つ選んでください。\n\n文章: {context}\n語句: {kanji} （この部分だけの ふりがな）\n選択肢: {readings}\n\n選択した ふりがな だけを回答してください。説明は不要です。\n/no_think"
       }
     }
   },
   "claude": {
     "defaultModel": "claude-3-haiku-20240307",
     "apiUrl": "https://api.anthropic.com/v1",
-    "systemPrompt": "あなたは日本語の漢字の読み方を判断するAIです。\n文章中の回答対象部分の読み方を、送り仮名を含めずに判断してください。\n与えられた選択肢からひらがな1語を選んでください。\nその他の説明は一切不要です。",
-    "userPromptTemplate": "回答対象: [{kanji}] （この部分のみの読み）\n\n文章: {context}\n選択肢: {readings}\n\n"
+    "systemPrompt": "あなたは日本語の文章の最適な読み方を文脈から判断するAIです。\n指定した語句のふりがなとして適切なものを選択肢から１つ選んでください。\n選択したふりがなだけを回答してください。説明は不要です。",
+    "userPromptTemplate": "文章: {context}\n語句: {kanji} （この部分だけのふりがな）\n選択肢: {readings}"
   }
 }
