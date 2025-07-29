@@ -1,7 +1,8 @@
 # Kanada - Japanese Text Transliteration Library
 
-A pure Java library for converting Japanese text containing kanji characters into hiragana, katakana, or romaji text, as
-well as for performing word segmentation.
+A pure Java library, reimplemented from scratch based on KAKASI, for converting Japanese text containing kanji into
+hiragana, katakana, or romaji, and performing natural word segmentation (wakatigaki).  
+Now supercharged with AI-powered kanji reading disambiguation — think of it as "KAKASI on steroids."
 
 ## Features
 
@@ -29,13 +30,14 @@ well as for performing word segmentation.
 - **Lightweight**
     - Designed for speed and efficiency without requiring morphological analysis.
 
-### Experimental Features
+## New Features
 
-- **AI-Assisted Reading Selection**  
-  Leverages Generative AI to disambiguate kanji readings in context.
-    - Supports integration with OpenAI API and Ollama.
-    - Resolves homonym disambiguation challenges effectively.
-    - Queries AI selectively for ambiguous kanji readings, ensuring high processing speed.
+- **AI-Assisted Reading Selection (Experimental)**
+    - Leverages generative AI to disambiguate kanji readings in context.
+    - Supports integration with OpenAI API, Anthropic API (Claude) and Ollama.
+    - Prompts can be customized for each model in the settings file, `config.json`.
+    - Effectively addresses homonym disambiguation using NLP analysis by AI.
+    - Selectively queries AI for ambiguous kanji readings to ensure high processing speed.
     - Optimizes token usage by limiting AI consultations to necessary cases.
     - Enhances accuracy while maintaining a lightweight, dictionary-based approach.
 
