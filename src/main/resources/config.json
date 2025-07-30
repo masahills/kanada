@@ -16,7 +16,7 @@
     }
   },
   "ollama": {
-    "defaultModel": "Qwen 3 (1.7B)",
+    "defaultModel": "qwen3:1.7b",
     "apiUrl": "http://localhost:11434",
     "promptTemplate": "You are an AI that teaches how to read Japanese sentences.\nChoose the most appropriate reading of [{kanji}] for the context of the following sentence.\nSelect one from the options.\n\nSentence: {context}\nOptions: {readings}\n\nDo not explain. Just show the answer in hiragana.\n",
     "models": {

@@ -102,7 +102,7 @@ public class KanaMapping {
     public char getRomajiInitial(char c, RomanizationSystem system) {
         KanaTrie.MatchResult result = toRomaji(String.valueOf(c));
         String romaji = result != null ? result.values()[system.getColumnIndex() - 2] : null;
-        if (romaji == null) {
+        if (romaji == null || romaji.isEmpty()) {
             return 0;
         }
         return romaji.charAt(0);
