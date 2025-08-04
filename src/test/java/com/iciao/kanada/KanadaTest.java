@@ -71,4 +71,13 @@ public class KanadaTest {
     public void testEmptyInput() throws Exception {
         assertEquals("", romaji.process(""));
     }
+
+    @Test
+    public void testBrailleInputToHiragana() throws Exception {
+        String text = """
+                せんしゅう、GINZA 8びるにあるAppleすとあで「iPhone 16」を159,800えん（ぜいこみ）でこうにゅうしました。""";
+        String tenji = """
+                ⠻⠴⠈⠹⠉⠰⠀⠰⠠⠠⠛⠊⠝⠵⠁⠀⠼⠓⠐⠧⠙⠇⠁⠙⠰⠠⠁⠏⠏⠇⠑⠤⠹⠞⠁⠐⠟⠤⠰⠊⠠⠏⠓⠕⠝⠑⠀⠼⠁⠋⠤⠔⠼⠁⠑⠊⠄⠓⠚⠚⠤⠋⠴⠶⠐⠻⠃⠪⠷⠶⠐⠟⠪⠉⠈⠍⠉⠳⠵⠳⠕⠲\u2800\u2800""";
+        assertEquals(text, hiragana.process(tenji));
+    }
 }

@@ -62,6 +62,7 @@ public class Kanada {
     protected int optionHalfKatakana;
     protected int optionAscii;
     protected int optionHalfSymbol;
+    protected int optionBraille;
 
     protected boolean modeAddSpace = false;
     protected boolean modeUcFirst = false;
@@ -74,6 +75,7 @@ public class Kanada {
 
     public Kanada() throws java.io.IOException {
         setParam(
+                JMapper.AS_IS,
                 JMapper.AS_IS,
                 JMapper.AS_IS,
                 JMapper.AS_IS,
@@ -127,6 +129,7 @@ public class Kanada {
                 JMapper.TO_ASCII,
                 JMapper.AS_IS,
                 JMapper.TO_ASCII,
+                JMapper.TO_ASCII,
                 JMapper.TO_ASCII);
         // default to Modified Hepburn
         romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
@@ -142,7 +145,8 @@ public class Kanada {
                 JMapper.AS_IS,
                 JMapper.TO_HIRAGANA,
                 JMapper.AS_IS,
-                JMapper.AS_IS);
+                JMapper.AS_IS,
+                JMapper.TO_HIRAGANA);
         return this;
     }
 
@@ -155,7 +159,8 @@ public class Kanada {
                 JMapper.AS_IS,
                 JMapper.TO_KATAKANA,
                 JMapper.AS_IS,
-                JMapper.AS_IS);
+                JMapper.AS_IS,
+                JMapper.TO_KATAKANA);
         return this;
     }
 
@@ -168,7 +173,8 @@ public class Kanada {
                 JMapper.TO_HALF_SYMBOL,
                 JMapper.TO_HALF_KATAKANA,
                 JMapper.AS_IS,
-                JMapper.AS_IS);
+                JMapper.AS_IS,
+                JMapper.TO_HALF_KATAKANA);
         return this;
     }
 
@@ -181,7 +187,8 @@ public class Kanada {
                 JMapper.TO_HIRAGANA,
                 JMapper.AS_IS,
                 JMapper.TO_KATAKANA,
-                JMapper.TO_WIDE_SYMBOL);
+                JMapper.TO_WIDE_SYMBOL,
+                JMapper.TO_HIRAGANA);
         return this;
     }
 
@@ -194,7 +201,8 @@ public class Kanada {
                 JMapper.TO_HIRAGANA,
                 JMapper.TO_WIDE_ASCII,
                 JMapper.TO_KATAKANA,
-                JMapper.TO_WIDE_SYMBOL);
+                JMapper.TO_WIDE_SYMBOL,
+                JMapper.TO_HIRAGANA);
         return this;
     }
 
@@ -249,7 +257,8 @@ public class Kanada {
                           int paramWideSymbol,
                           int paramAscii,
                           int paramHalfKatakana,
-                          int paramHalfSymbol) {
+                          int paramHalfSymbol,
+                          int paramBraille) {
         optionKanji = paramKanji;
         optionHiragana = paramHiragana;
         optionKatakana = paramKatakana;
@@ -258,6 +267,7 @@ public class Kanada {
         optionAscii = paramAscii;
         optionHalfKatakana = paramHalfKatakana;
         optionHalfSymbol = paramHalfSymbol;
+        optionBraille = paramBraille;
     }
 
     public String process(String str) {
