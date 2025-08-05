@@ -75,6 +75,7 @@ public class MapBraille extends JMapper {
                 currentMode = BrailleMode.LATIN;
                 yield true;
             }
+            // 大文字符 / 二重大文字符（２連続で）
             case '⠠' -> {
                 if (currentMode == BrailleMode.LATIN_CAPITAL) {
                     currentMode = BrailleMode.LATIN_CAPITAL_ALL;
@@ -204,7 +205,7 @@ public class MapBraille extends JMapper {
     private String getPunctuation(char thisChar, char nextChar, char punctuation) {
         String result = null;
         if (WHITE_SPACES.indexOf(thisChar) < 0) {
-            return result;
+            return null;
         }
 
         if (punctuation == DOTS_56_TOUTEN) {
@@ -248,7 +249,7 @@ public class MapBraille extends JMapper {
         String result = null;
         if (thisChar == DOTS_36_HYPHEN || thisChar == DOTS_356_CLOSE_QUOTE) {
             resetBrailleMode();
-            return result;
+            return null;
         }
         String latin = BrailleMapping.LATIN_MAP.get(thisChar);
         if (latin != null) {
