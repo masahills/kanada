@@ -41,6 +41,13 @@ Now supercharged with AI-powered kanji reading disambiguation — think of it as
     - Optimizes token usage by limiting AI consultations to necessary cases.
     - Enhances accuracy while maintaining a lightweight, dictionary-based approach.
 
+
+- **Japanese Braille Reverse Translation (Experimental)**
+    - Convert Japanese 6-dot Braille patterns back to hiragana, katakana, or romaji text.
+    - Supports standard Japanese Braille notation for kana characters.
+    - Enables accessibility applications and Braille text processing workflows.
+    - Includes a Python script for converting BRF/BSE files into Unicode Braille patterns
+
 ## Quick Start
 
 ### Gradle

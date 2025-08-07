@@ -155,6 +155,14 @@ public class JWriter {
                         mappedStr.appendCodePoint(thisChar);
                         break;
                 }
+            } else if (block == Character.UnicodeBlock.BRAILLE_PATTERNS) {
+                if (thisChar < 0x2840) {
+                    JMapper braille = new MapBraille(kanada);
+                    braille.process(workStr, kanada.optionBraille);
+                    mappedMapper = braille;
+                } else {
+                    mappedStr.appendCodePoint(thisChar);
+                }
             } else {
                 mappedStr.appendCodePoint(thisChar);
             }

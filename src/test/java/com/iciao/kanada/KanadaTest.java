@@ -71,4 +71,34 @@ public class KanadaTest {
     public void testEmptyInput() throws Exception {
         assertEquals("", romaji.process(""));
     }
+
+    @Test
+    public void testBrailleInput() throws Exception {
+        String text = """
+                せんしゅう、GINZA 8びるにあるAppleすとあで「iPhone 16」を159,800えん（ぜいこみ）でこうにゅうしました。""";
+        String tenji = """
+                ⠻⠴⠈⠹⠉⠰⠀⠰⠠⠠⠛⠊⠝⠵⠁⠀⠼⠓⠐⠧⠙⠇⠁⠙⠰⠠⠁⠏⠏⠇⠑⠤⠹⠞⠁⠐⠟⠤⠰⠊⠠⠏⠓⠕⠝⠑⠀⠼⠁⠋⠤⠔⠼⠁⠑⠊⠄⠓⠚⠚⠤⠋⠴⠶⠐⠻⠃⠪⠷⠶⠐⠟⠪⠉⠈⠍⠉⠳⠵⠳⠕⠲\u2800\u2800""";
+        assertEquals(text, hiragana.process(tenji));
+    }
+
+    @Test
+    public void testBrailleInputSpecials() throws Exception {
+        String text = """
+                しぇ じぇ ちぇ つぁ つぇ つぉ
+                ふぁ ふぃ ふぇ ふぉ てぃ でぃ でゅ
+                いぇ うぃ うぇ うぉ くぁ くぃ くぇ くぉ ぐぁ つぃ
+                ゔぁ ゔぃ ゔぇ ゔぉ とぅ どぅ てゅ ふゅ ゔゅ ゔ
+                きぇ にぇ ひぇ ぐぃ ぐぇ ぐぉ すぃ ずぃ ふょ ゔょ
+                """;
+
+        String tenji = """
+                ⠈⠻⠀⠘⠻⠀⠈⠟⠀⠢⠕⠀⠢⠟⠀⠢⠞
+                ⠢⠥⠀⠢⠧⠀⠢⠯⠀⠢⠮⠀⠈⠗⠀⠘⠗⠀⠸⠝
+                ⠈⠋⠀⠢⠃⠀⠢⠋⠀⠢⠊⠀⠢⠡⠀⠢⠣⠀⠢⠫⠀⠢⠪⠀⠲⠡⠀⠢⠗
+                ⠲⠥⠀⠲⠧⠀⠲⠯⠀⠲⠮⠀⠢⠝⠀⠲⠝⠀⠨⠝⠀⠨⠬⠀⠸⠬⠀⠐⠉
+                ⠈⠫⠀⠈⠏⠀⠈⠯⠀⠲⠣⠀⠲⠫⠀⠲⠪⠀⠈⠳⠀⠘⠳⠀⠨⠜⠀⠸⠜
+                """;
+
+        assertEquals(text, hiragana.process(tenji));
+    }
 }
