@@ -40,11 +40,16 @@ U+283x	⠰	⠱	⠲	⠳	⠴	⠵	⠶	⠷	⠸	⠹	⠺	⠻	⠼	⠽	⠾	⠿
 public class MapBraille extends JMapper {
 
     private static final char DOTS_0_BLANK = '⠀';   // U+2800 Braille blank pattern
-    private static final char DOTS_2356_PARENTHESES = '⠶';
-    private static final char DOTS_356_CLOSE_QUOTE = '⠴';
-    private static final char DOTS_36_HYPHEN = '⠤';
-    private static final char DOTS_256_KUTEN = '⠲'; // 句点「。」改行の前以外では後ろに空白を2つ挟む
-    private static final char DOTS_56_TOUTEN = '⠰'; // 読点「、」改行の前以外では後ろに空白を挟む
+    private static final char DOTS_36_HYPHEN = '⠤'; // U+2824
+    private static final char DOTS_56_TOUTEN = '⠰'; // U+2830 読点「、」改行の前以外では後ろに空白を挟む
+    private static final char DOTS_256_KUTEN = '⠲'; // U+2832 句点「。」改行の前以外では後ろに空白を2つ挟む
+    private static final char DOTS_356_CLOSE_QUOTE = '⠴'; // U+2834
+    private static final char DOTS_2356_PARENTHESES = '⠶'; // U+2836
+
+    // 特殊音の符号
+    private static final char DOTS_26 = '⠢'; // U+2822
+    private static final char DOTS_256 = '⠲'; // U+2832
+    private static final char DOTS_456 = '⠸'; // U+2838
 
     private static final String SPACES = " " + DOTS_0_BLANK;
     private static final String CRLF = "\n\r";
@@ -75,12 +80,14 @@ public class MapBraille extends JMapper {
                 currentMode = BrailleMode.LATIN;
                 yield true;
             }
-            // 大文字符 / 二重大文字符（２連続で）
+            // 大文字符 / 二重大文字符（２連続で）/ 半濁音符
             case '⠠' -> {
-                if (currentMode == BrailleMode.LATIN_CAPITAL) {
+                if (currentMode == BrailleMode.LATIN) {
+                    currentMode = BrailleMode.LATIN_CAPITAL;
+                } else if (currentMode == BrailleMode.LATIN_CAPITAL) {
                     currentMode = BrailleMode.LATIN_CAPITAL_ALL;
                 } else {
-                    currentMode = BrailleMode.LATIN_CAPITAL;
+                    currentMode = BrailleMode.KANA_HANDAKUON;
                 }
                 yield true;
             }
@@ -194,9 +201,31 @@ public class MapBraille extends JMapper {
             }
 
             // Kana characters
+            String special = getSpecial(thisChar, nextChar);
+            if (special != null) {
+                result.append(special);
+                i++;
+                if (thisChar == DOTS_256) {
+                    punctuation = 0; // 句点ではなく特殊音のため punctuation をリセット
+                }
+                continue;
+            }
+
             String kana = getKana(thisChar);
             if (kana != null) {
                 result.append(kana);
+                continue;
+            }
+
+            if (thisChar == DOTS_256_KUTEN) {
+                // Check kuten on the next path
+                continue;
+            }
+
+            if (Character.isWhitespace(thisChar)) {
+                result.append(thisChar);
+            } else {
+                System.err.println("Unknown character: " + thisChar);
             }
         }
         return result.toString();
@@ -209,18 +238,19 @@ public class MapBraille extends JMapper {
         }
 
         if (punctuation == DOTS_56_TOUTEN) {
-            result = "、";
+            if (CRLF.indexOf(thisChar) > -1) {
+                result = "、" + thisChar;
+            } else {
+                result = "、";
+            }
             resetBrailleMode();
         }
 
         if (punctuation == DOTS_256_KUTEN) {
-            boolean addKuten = false;
             if (CRLF.indexOf(thisChar) > -1) {
-                addKuten = true;
+                result = "。" + thisChar;
+                resetBrailleMode();
             } else if (SPACES.indexOf(thisChar) > -1 && SPACES.indexOf(nextChar) > -1) {
-                addKuten = true;
-            }
-            if (addKuten) {
                 result = "。";
                 resetBrailleMode();
             }
@@ -283,6 +313,26 @@ public class MapBraille extends JMapper {
                 result = baseKana;
             }
             resetBrailleMode();
+        }
+        return result;
+    }
+
+    private String getSpecial(char thisChar, char nextChar) {
+        String result = null;
+        String kana = BrailleMapping.KANA_MAP.get(nextChar);
+        if (kana == null) {
+            return null;
+        }
+        switch (thisChar) {
+            case DOTS_26 -> {
+                result = BrailleMapping.toSpecial26(kana);
+            }
+            case DOTS_256 -> {
+                result = BrailleMapping.toSpecial256(kana);
+            }
+            case DOTS_456 -> {
+                result = BrailleMapping.toSpecial456(kana);
+            }
         }
         return result;
     }
