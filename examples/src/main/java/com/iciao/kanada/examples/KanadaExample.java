@@ -139,6 +139,22 @@ public class KanadaExample {
                     The four distinct seasons also offer different experiences for travelers year-round.
                     """;
 
+    private static final String SAMPLE_BRAILLE_TEXT =
+            """
+                    ⠀⠀⠠⠧⠴⠰⠀⠞⠀⠬⠐⠧⠐⠟⠀⠥⠐⠳⠃⠕⠑⠀⠊⠞⠐⠟⠾
+                    ⠕⠟⠺⠒⠅⠰⠀⠱⠽⠱⠎⠀⠥⠓⠝⠿⠕⠀⠜⠙⠐⠕⠂⠕⠲
+                    ⠀⠀⠼⠃⠐⠡⠝⠰⠀⠒⠒⠀⠃⠩⠑⠡⠀⠧⠄⠀⠅⠐⠡⠩⠀⠅⠂⠟⠾⠰
+                    ⠱⠽⠱⠄⠀⠃⠵⠐⠡⠀⠃⠗⠐⠥⠴⠀⠣⠐⠧⠳⠃⠲⠀⠀⠞⠩⠇⠰
+                    ⠜⠅⠡⠎⠀⠼⠁⠃⠐⠳⠞⠾⠀⠅⠙⠞⠰⠀⠝⠞⠿⠐⠡⠋⠓⠎
+                    ⠱⠑⠓⠒⠵⠴⠐⠡⠀⠃⠩⠑⠀⠞⠈⠝⠒⠐⠟⠀⠁⠙⠪⠒⠙⠔⠀⠃⠛⠟
+                    ⠣⠟⠾⠰⠀⠺⠎⠀⠤⠪⠒⠡⠤⠐⠡⠰⠀⠪⠒⠐⠡⠃⠎⠀⠃⠋⠵⠐⠟
+                    ⠾⠝⠞⠄⠰⠀⠞⠟⠾⠀⠣⠕⠃⠀⠐⠟⠣⠅⠡⠂⠕⠲
+                    ⠀⠀⠞⠀⠃⠂⠟⠰⠀⠁⠙⠪⠒⠙⠔⠀⠃⠛⠐⠹⠇⠀⠼⠁⠐⠳⠡⠴⠡
+                    ⠺⠪⠑⠀⠥⠌⠩⠀⠡⠋⠂⠟⠾⠰⠀⠕⠃⠳⠟⠀⠑⠩⠇⠄⠀⠅⠑⠅⠃⠲
+                    ⠺⠒⠀⠅⠛⠐⠥⠰⠀⠹⠣⠅⠀⠾⠎⠅⠑⠀⠝⠃⠀⠼⠁⠠⠥⠃⠀⠌⠂⠟⠡⠑
+                    ⠂⠂⠂⠲
+                    """;
+
     private static LlmClient llmClient = null;
 
     public static void main(String[] args) throws Exception {
@@ -175,6 +191,7 @@ public class KanadaExample {
         Kanada katakana = new Kanada().toKatakana().withSpaces();
         Kanada fullwidth = new Kanada().toFullWidthAll().withSpaces();
         Kanada hankaku = new Kanada().toHankakuKatakana().withSpaces();
+        Kanada brailleHiragana = new Kanada().toHiragana();
 
         initLlmClient();
         Kanada hiraganallm = Kanada.create().toHiragana().withSpaces().withLlmClient(llmClient);
@@ -194,6 +211,9 @@ public class KanadaExample {
         System.out.println("\nTo Hiragana with LLM assist:");
         convert(hiraganallm, SAMPLE_JAPANESE_TEXT);
         System.out.println();
+
+        System.out.println("\nUnicode Braille To Hiragana:");
+        convert(brailleHiragana, SAMPLE_BRAILLE_TEXT);
 
         System.out.println("\nTo Katakana:");
         convert(katakana, SAMPLE_JAPANESE_TEXT);
