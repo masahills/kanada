@@ -165,6 +165,8 @@ class BrailleMapping {
             case "ふ" -> "ぶ";
             case "へ" -> "べ";
             case "ほ" -> "ぼ";
+            // Specials
+            case "う" -> "ゔ";
             default -> kana;
         };
     }
@@ -188,6 +190,9 @@ class BrailleMapping {
             case "さ" -> "しゃ";
             case "す" -> "しゅ";
             case "そ" -> "しょ";
+            case "た" -> "ちゃ";
+            case "つ" -> "ちゅ";
+            case "と" -> "ちょ";
             case "な" -> "にゃ";
             case "ぬ" -> "にゅ";
             case "の" -> "にょ";
@@ -200,6 +205,15 @@ class BrailleMapping {
             case "ら" -> "りゃ";
             case "る" -> "りゅ";
             case "ろ" -> "りょ";
+            // specials
+            case "せ" -> "しぇ";
+            case "て" -> "ちぇ";
+            case "ち" -> "てぃ";
+            case "え" -> "いぇ";
+            case "け" -> "きぇ";
+            case "ね" -> "にぇ";
+            case "へ" -> "ひぇ";
+            case "し" -> "すぃ";
             default -> kana;
         };
     }
@@ -212,9 +226,16 @@ class BrailleMapping {
             case "さ" -> "じゃ";
             case "す" -> "じゅ";
             case "そ" -> "じょ";
+            case "た" -> "ぢゃ";
+            case "つ" -> "ぢゅ";
+            case "と" -> "ぢょ";
             case "は" -> "びゃ";
             case "ふ" -> "びゅ";
             case "ほ" -> "びょ";
+            // Specials
+            case "せ" -> "じぇ";
+            case "ち" -> "でぃ";
+            case "し" -> "ずぃ";
             default -> kana;
         };
     }
@@ -224,6 +245,56 @@ class BrailleMapping {
             case "は" -> "ぴゃ";
             case "ふ" -> "ぴゅ";
             case "ほ" -> "ぴょ";
+            // Specials
+            case "つ" -> "てゅ";
+            case "ゆ" -> "ふゅ";
+            case "よ" -> "ふょ";
+            default -> kana;
+        };
+    }
+
+    protected static String toSpecial26(String kana) {
+        return switch (kana) {
+            case "い" -> "うぃ";
+            case "え" -> "うぇ";
+            case "お" -> "うぉ";
+            case "か" -> "くぁ";
+            case "き" -> "くぃ";
+            case "け" -> "くぇ";
+            case "こ" -> "くぉ";
+            case "た" -> "つぁ";
+            case "ち" -> "つぃ";
+            case "て" -> "つぇ";
+            case "と" -> "つぉ";
+            case "は" -> "ふぁ";
+            case "ひ" -> "ふぃ";
+            case "へ" -> "ふぇ";
+            case "ほ" -> "ふぉ";
+            case "つ" -> "とぅ";
+            default -> kana;
+        };
+    }
+
+    protected static String toSpecial256(String kana) {
+        return switch (kana) {
+            case "は" -> "ゔぁ";
+            case "ひ" -> "ゔぃ";
+            case "へ" -> "ゔぇ";
+            case "ほ" -> "ゔぉ";
+            case "つ" -> "どぅ";
+            case "か" -> "ぐぁ";
+            case "き" -> "ぐぃ";
+            case "け" -> "ぐぇ";
+            case "こ" -> "ぐぉ";
+            default -> kana;
+        };
+    }
+
+    protected static String toSpecial456(String kana) {
+        return switch (kana) {
+            case "つ" -> "でゅ";
+            case "ゆ" -> "ゔゅ";
+            case "よ" -> "ゔょ";
             default -> kana;
         };
     }
