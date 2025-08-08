@@ -67,12 +67,12 @@ public class MapHalfKatakana extends JMapper {
 
             String converted = convertChar(thisChar, param);
             if (param == TO_ASCII || param == TO_WIDE_ASCII) {
-                KanaTrie.MatchResult result = kanaMapping.toRomaji(str);
-                String romaji = result != null ? result.values()[getRomanizationSystem().getColumnIndex() - 2] : null;
+                KanaTrie.MatchResult result = kanaMapping.getTransliterations(str);
+                String romaji = result != null ? result.values()[getConversionSystem().getColumnIndex() - 2] : null;
                 if (romaji != null) {
                     int nextChar = str.codePointAt(1);
                     if (nextChar == 0xFF70) {
-                        romaji = kanaMapping.processLongVowels(romaji, getRomanizationSystem());
+                        romaji = kanaMapping.processLongVowels(romaji, getConversionSystem());
                         matchedLength = result.length() + 1;
                     } else {
                         matchedLength = result.length();

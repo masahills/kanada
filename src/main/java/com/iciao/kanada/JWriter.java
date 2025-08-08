@@ -75,7 +75,7 @@ public class JWriter {
             JMapper mappedMapper = null;
 
             if (block == Character.UnicodeBlock.BASIC_LATIN) {
-                if (kanada.optionAscii == JMapper.TO_WIDE_ASCII) {
+                if (kanada.optionAscii == JMapper.TO_WIDE_ASCII || kanada.optionAscii == JMapper.TO_KANA_BRAILLE) {
                     JMapper ascii = new MapAscii(kanada);
                     ascii.process(workStr, kanada.optionAscii);
                     mappedMapper = ascii;
@@ -118,6 +118,7 @@ public class JWriter {
                 switch (kanada.optionWideSymbol) {
                     case JMapper.TO_ASCII:
                     case JMapper.TO_HALF_SYMBOL:
+                    case JMapper.TO_KANA_BRAILLE:
                         JMapper wideSymbol = new MapWideSymbol(kanada);
                         wideSymbol.process(workStr, kanada.optionWideSymbol);
                         mappedMapper = wideSymbol;
@@ -132,6 +133,7 @@ public class JWriter {
                     case JMapper.TO_HALF_KATAKANA:
                     case JMapper.TO_ASCII:
                     case JMapper.TO_WIDE_ASCII:
+                    case JMapper.TO_KANA_BRAILLE:
                         JMapper hiragana = new MapHiragana(kanada);
                         hiragana.process(workStr, kanada.optionHiragana);
                         mappedMapper = hiragana;
@@ -147,6 +149,7 @@ public class JWriter {
                     case JMapper.TO_HALF_KATAKANA:
                     case JMapper.TO_ASCII:
                     case JMapper.TO_WIDE_ASCII:
+                    case JMapper.TO_KANA_BRAILLE:
                         JMapper katakana = new MapKatakana(kanada);
                         katakana.process(workStr, kanada.optionKatakana);
                         mappedMapper = katakana;

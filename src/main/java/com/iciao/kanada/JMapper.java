@@ -39,6 +39,7 @@ public abstract class JMapper {
     public static final int TO_HALF_KATAKANA = 4;
     public static final int TO_ASCII = 5;
     public static final int TO_HALF_SYMBOL = 6;
+    public static final int TO_KANA_BRAILLE = 7;
 
     protected Kanada kanada;
     protected String outStr;
@@ -48,8 +49,8 @@ public abstract class JMapper {
         this.kanada = kanada;
     }
 
-    protected KanaMapping.RomanizationSystem getRomanizationSystem() {
-        return kanada.romanizationSystem;
+    protected KanaMapping.ConversionSystem getConversionSystem() {
+        return kanada.conversionSystem;
     }
 
     protected boolean modeMacron() {

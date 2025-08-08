@@ -192,9 +192,13 @@ public class KanadaExample {
         Kanada fullwidth = new Kanada().toFullWidthAll().withSpaces();
         Kanada hankaku = new Kanada().toHankakuKatakana().withSpaces();
         Kanada brailleHiragana = new Kanada().toHiragana();
+        Kanada kanatenji = new Kanada().toKanaTenji().withSpaces('\u2800');
 
         initLlmClient();
         Kanada hiraganallm = Kanada.create().toHiragana().withSpaces().withLlmClient(llmClient);
+
+        System.out.println("Kana Tenji:");
+        convert(kanatenji, SAMPLE_JAPANESE_TEXT);
 
         System.out.println("Wakatigaki (Word Segmentation):");
         convert(wakatigaki, SAMPLE_JAPANESE_TEXT);

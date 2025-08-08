@@ -71,7 +71,9 @@ public class Kanada {
     protected boolean modeShowAllYomi = false;
     protected boolean modeFurigana = false;
     protected LlmClient llmClient = null;
-    protected KanaMapping.RomanizationSystem romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
+    protected KanaMapping.ConversionSystem conversionSystem = KanaMapping.ConversionSystem.MODIFIED_HEPBURN;
+
+    protected char settingSeparatorChar = ' ';
 
     public Kanada() throws java.io.IOException {
         setParam(
@@ -132,7 +134,7 @@ public class Kanada {
                 JMapper.TO_ASCII,
                 JMapper.TO_ASCII);
         // default to Modified Hepburn
-        romanizationSystem = KanaMapping.RomanizationSystem.MODIFIED_HEPBURN;
+        conversionSystem = KanaMapping.ConversionSystem.MODIFIED_HEPBURN;
         return this;
     }
 
@@ -206,13 +208,32 @@ public class Kanada {
         return this;
     }
 
+    public Kanada toKanaTenji() {
+        setParam(
+                JMapper.TO_KANA_BRAILLE,
+                JMapper.TO_KANA_BRAILLE,
+                JMapper.TO_KANA_BRAILLE,
+                JMapper.TO_KANA_BRAILLE,
+                JMapper.TO_KANA_BRAILLE,
+                JMapper.TO_KANA_BRAILLE,
+                JMapper.TO_KANA_BRAILLE,
+                JMapper.TO_KANA_BRAILLE,
+                JMapper.AS_IS);
+        return this;
+    }
+
     public Kanada withMacrons() {
         modeMacron = true;
         return this;
     }
 
     public Kanada withSpaces() {
+        return this.withSpaces(' ');
+    }
+
+    public Kanada withSpaces(char separatorChar) {
         modeAddSpace = true;
+        settingSeparatorChar = separatorChar;
         return this;
     }
 
@@ -245,8 +266,8 @@ public class Kanada {
         return this;
     }
 
-    public Kanada romanizationSystem(KanaMapping.RomanizationSystem system) {
-        romanizationSystem = system;
+    public Kanada romanizationSystem(KanaMapping.ConversionSystem system) {
+        conversionSystem = system;
         return this;
     }
 

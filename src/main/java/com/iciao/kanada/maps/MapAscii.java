@@ -43,9 +43,61 @@ public class MapAscii extends JMapper {
         int thisChar = str.codePointAt(0);
         if (param == JMapper.TO_WIDE_ASCII && thisChar > 0x20 && thisChar < 0x7f) {
             out.appendCodePoint(thisChar + 0xfee0);
+        } else if (param == JMapper.TO_KANA_BRAILLE) {
+            if (thisChar >= 0x30 && thisChar <= 0x39) {
+                out.append(numbersToBrailleString(str));
+            } else if (thisChar >= 0x41 && thisChar <= 0x5a || thisChar >= 0x61 && thisChar <= 0x7a) {
+                out.append(alphabetsToBrailleString(str));
+            } else {
+                out.appendCodePoint(thisChar);
+            }
         } else {
             out.appendCodePoint(thisChar);
         }
         setString(out.toString());
     }
+
+    private String alphabetsToBrailleString(String str) {
+        int count = 0;
+        StringBuilder alphabets = new StringBuilder("⠦");
+        for (char c : str.toCharArray()) {
+            if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '.' || c == ',' || c == ' ') {
+                alphabets.append(BASIC_LATIN_TO_BRAILLE[c - 0x0020]);
+                count++;
+            } else {
+                break;
+            }
+        }
+        matchedLength = count;
+        return alphabets.toString();
+    }
+
+    private String numbersToBrailleString(String str) {
+        int count = 0;
+        StringBuilder numbers = new StringBuilder("⠼");
+        for (char c : str.toCharArray()) {
+            if (c >= '0' && c <= '9' || c == '.' || c == ',' || c == ' ' || c == '\u2800') {
+                if (c == ' ' || c == '\u2800') {
+                    numbers.append('⠤');
+                } else {
+                    numbers.append(BASIC_LATIN_TO_BRAILLE[c - 0x0020]);
+                }
+                count++;
+            } else {
+                break;
+            }
+        }
+        matchedLength = count;
+        return numbers.toString();
+    }
+
+    // TODO: Need to find out how to convert English symbols to Japanese braille.
+    private static final String[] BASIC_LATIN_TO_BRAILLE = {
+            "⠀", "⠖", "\"", "⠰⠩", "$", "⠰⠏", "⠰⠯", "'", "⠶", "⠶", "⠰⠡", "+", "⠠", "-", "⠲", "⠸⠌",
+            "⠚", "⠁", "⠃", "⠉", "⠙", "⠑", "⠋", "⠛", "⠓", "⠊", "⠒", "⡠", "<", "=", ">", "⠢",
+            "@", "⠰⠠⠁", "⠠⠃", "⠠⠉", "⠠⠙", "⠠⠑", "⠠⠋", "⠠⠛", "⠠⠓", "⠠⠊", "⠠⠚", "⠠⠅", "⠠⠇", "⠠⠍", "⠠⠝", "⠠⠕",
+            "⠠⠏", "⠠⠟", "⠠⠗", "⠠⠎", "⠠⠞", "⠠⠥", "⠠⠧", "⠠⠺", "⠠⠭", "⠠⠽", "⠠⠵", "[", "", "]", "^", "_",
+            "`", "⠁", "⠃", "⠉", "⠙", "⠑", "⠋", "⠛", "⠓", "⠊", "⠚", "⠅", "⠇", "⠍", "⠝", "⠕",
+            "⠏", "⠟", "⠗", "⠎", "⠞", "⠥", "⠧", "⠺", "⠭", "⠽", "⠵", "{", "|", "}", "~"
+    };
 }
