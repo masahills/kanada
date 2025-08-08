@@ -47,6 +47,14 @@ public class MapWideAscii extends JMapper {
             } else {
                 out.append(fullwidthSymbolToHalf(str.charAt(0)));
             }
+        } else if (param == JMapper.TO_KANA_BRAILLE) {
+            if (thisChar >= '０' && thisChar <= '９') {
+                out.append(fullwidthNumbersToBraille(str));
+            } else if (thisChar >= 'Ａ' && thisChar <= 'Ｚ' || thisChar >= 'ａ' && thisChar <= 'ｚ') {
+                out.append(fullwidthAlphabetsToBraille(str));
+            } else {
+                out.appendCodePoint(thisChar);
+            }
         } else {
             out.appendCodePoint(thisChar);
         }
@@ -65,4 +73,48 @@ public class MapWideAscii extends JMapper {
             default -> ch;
         };
     }
+
+    private String fullwidthAlphabetsToBraille(String str) {
+        int count = 0;
+        StringBuilder alphabets = new StringBuilder("⠦");
+        for (char c : str.toCharArray()) {
+            if (c >= 'A' && c <= 'Z' || c >= 'ａ' && c <= 'ｚ' || c == '，' || c == '．') {
+                alphabets.append(FULLWIDTH_LATIN_TO_BRAILLE[c - 0xff00]);
+                count++;
+            } else {
+                break;
+            }
+        }
+        matchedLength = count;
+        return alphabets.toString();
+    }
+
+    private String fullwidthNumbersToBraille(String str) {
+        int count = 0;
+        StringBuilder numbers = new StringBuilder("⠼");
+        for (char c : str.toCharArray()) {
+            if (c >= '０' && c <= '９' || c == '，' || c == '．' || c == ' ' || c == '\u2800') {
+                if (c == ' ' || c == '\u2800') {
+                    numbers.append('⠤');
+                } else {
+                    numbers.append(FULLWIDTH_LATIN_TO_BRAILLE[c - 0xff00]);
+                }
+                count++;
+            } else {
+                break;
+            }
+        }
+        matchedLength = count;
+        return numbers.toString();
+    }
+
+    // TODO: Need to find out how to convert English symbols to Japanese braille.
+    private static final String[] FULLWIDTH_LATIN_TO_BRAILLE = {
+            "⠀", "⠖", "\"", "⠰⠩", "$", "⠰⠏", "⠰⠯", "'", "⠶", "⠶", "⠰⠡", "+", "⠠", "-", "⠲", "⠸⠌",
+            "⠚", "⠁", "⠃", "⠉", "⠙", "⠑", "⠋", "⠛", "⠓", "⠊", "⠒", "⡠", "<", "=", ">", "⠢",
+            "@", "⠰⠠⠁", "⠠⠃", "⠠⠉", "⠠⠙", "⠠⠑", "⠠⠋", "⠠⠛", "⠠⠓", "⠠⠊", "⠠⠚", "⠠⠅", "⠠⠇", "⠠⠍", "⠠⠝", "⠠⠕",
+            "⠠⠏", "⠠⠟", "⠠⠗", "⠠⠎", "⠠⠞", "⠠⠥", "⠠⠧", "⠠⠺", "⠠⠭", "⠠⠽", "⠠⠵", "[", "", "]", "^", "_",
+            "`", "⠁", "⠃", "⠉", "⠙", "⠑", "⠋", "⠛", "⠓", "⠊", "⠚", "⠅", "⠇", "⠍", "⠝", "⠕",
+            "⠏", "⠟", "⠗", "⠎", "⠞", "⠥", "⠧", "⠺", "⠭", "⠽", "⠵", "{", "|", "}", "~"
+    };
 }

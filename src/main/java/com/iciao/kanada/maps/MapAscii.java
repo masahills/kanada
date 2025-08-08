@@ -44,10 +44,10 @@ public class MapAscii extends JMapper {
         if (param == JMapper.TO_WIDE_ASCII && thisChar > 0x20 && thisChar < 0x7f) {
             out.appendCodePoint(thisChar + 0xfee0);
         } else if (param == JMapper.TO_KANA_BRAILLE) {
-            if (thisChar >= 0x30 && thisChar <= 0x39) {
-                out.append(numbersToBrailleString(str));
-            } else if (thisChar >= 0x41 && thisChar <= 0x5a || thisChar >= 0x61 && thisChar <= 0x7a) {
-                out.append(alphabetsToBrailleString(str));
+            if (thisChar >= '0' && thisChar <= '9') {
+                out.append(numbersToBraille(str));
+            } else if (thisChar >= 'A' && thisChar <= 'Z' || thisChar >= 'a' && thisChar <= 'z') {
+                out.append(alphabetsToBraille(str));
             } else {
                 out.appendCodePoint(thisChar);
             }
@@ -57,7 +57,7 @@ public class MapAscii extends JMapper {
         setString(out.toString());
     }
 
-    private String alphabetsToBrailleString(String str) {
+    private String alphabetsToBraille(String str) {
         int count = 0;
         StringBuilder alphabets = new StringBuilder("⠦");
         for (char c : str.toCharArray()) {
@@ -72,7 +72,7 @@ public class MapAscii extends JMapper {
         return alphabets.toString();
     }
 
-    private String numbersToBrailleString(String str) {
+    private String numbersToBraille(String str) {
         int count = 0;
         StringBuilder numbers = new StringBuilder("⠼");
         for (char c : str.toCharArray()) {

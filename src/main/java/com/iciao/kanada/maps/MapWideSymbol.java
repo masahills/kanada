@@ -90,6 +90,7 @@ public class MapWideSymbol extends JMapper {
         };
     }
 
+    // TODO: Need to find out how to translate other symbols to braille.
     private String cjkSymbolsAndPunctuationToBraille(char ch) {
         return switch (ch) {
             case '　' -> "\u2800\u2800";
