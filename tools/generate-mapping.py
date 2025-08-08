@@ -24,12 +24,12 @@ def generate_mapping():
         next(reader)  # Skip header
 
         for row in reader:
-            if len(row) >= 8:
+            if len(row) >= 9:
                 hiragana, katakana = row[0], row[1]
-                romanizations = row[2:8]  # 6 romanization systems
+                values = row[2:9]  # 6 romanization and 1 braille systems
 
                 # Create array string
-                array_str = ', '.join(f'"{escape_java_string(r)}"' for r in romanizations)
+                array_str = ', '.join(f'"{escape_java_string(r)}"' for r in values)
 
                 hiragana_entries.append(
                     f'        hiraganaMap.put("{escape_java_string(hiragana)}", new String[]{{{array_str}}});')
@@ -96,7 +96,7 @@ class KanaMappingData {{
 {chr(10).join(katakana_entries)}
     }}
     
-    KanaTrie.MatchResult getRomanizations(String str) {{
+    KanaTrie.MatchResult getTransliterations(String str) {{
         return trie.searchLongest(str);
     }}
     

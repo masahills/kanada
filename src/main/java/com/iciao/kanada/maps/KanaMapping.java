@@ -28,17 +28,18 @@ package com.iciao.kanada.maps;
  */
 public class KanaMapping {
 
-    public enum RomanizationSystem {
+    public enum ConversionSystem {
         MODIFIED_HEPBURN(2),    // 修正ヘボン式
         KUNREI(3),              // 訓令式
         GAIMUSHO_HEPBURN(4),    // 外務省ヘボン式
         NIHON(5),               // 日本式
         STATION_HEPBURN(6),     // 駅名標ヘボン式
-        ROAD_SIGN_HEPBURN(7);   // 道路標識ヘボン式
+        ROAD_SIGN_HEPBURN(7),   // 道路標識ヘボン式
+        KANA_BRAILLE(8);        // かな6点点字
 
         private final int columnIndex;
 
-        RomanizationSystem(int columnIndex) {
+        ConversionSystem(int columnIndex) {
             this.columnIndex = columnIndex;
         }
 
@@ -61,8 +62,8 @@ public class KanaMapping {
     private KanaMapping() {
     }
 
-    public KanaTrie.MatchResult toRomaji(String str) {
-        return mappingData.getRomanizations(str);
+    public KanaTrie.MatchResult getTransliterations(String str) {
+        return mappingData.getTransliterations(str);
     }
 
     public String removeMacrons(String text) {
@@ -73,7 +74,7 @@ public class KanaMapping {
                 .replace("ō", "o");
     }
 
-    public String processLongVowels(String romaji, RomanizationSystem system) {
+    public String processLongVowels(String romaji, ConversionSystem system) {
         if (romaji == null || romaji.isEmpty()) return romaji;
 
         char lastChar = romaji.charAt(romaji.length() - 1);
@@ -99,8 +100,8 @@ public class KanaMapping {
         return sb.toString();
     }
 
-    public char getRomajiInitial(char c, RomanizationSystem system) {
-        KanaTrie.MatchResult result = toRomaji(String.valueOf(c));
+    public char getRomajiInitial(char c, ConversionSystem system) {
+        KanaTrie.MatchResult result = getTransliterations(String.valueOf(c));
         String romaji = result != null ? result.values()[system.getColumnIndex() - 2] : null;
         if (romaji == null || romaji.isEmpty()) {
             return 0;
