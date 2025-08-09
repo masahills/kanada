@@ -231,9 +231,9 @@ public class Kanada {
         return this.withSpaces(' ');
     }
 
-    public Kanada withSpaces(char separatorChar) {
+    public Kanada withSpaces(char separator) {
         modeAddSpace = true;
-        settingSeparatorChar = separatorChar;
+        settingSeparatorChar = separator;
         return this;
     }
 
