@@ -108,6 +108,14 @@ public class MapWideAscii extends JMapper {
         return numbers.toString();
     }
 
+    /* A part of Halfwidth and Fullwidth Forms block
+    U+FF0x		！	＂	＃	＄	％	＆	＇	（	）	＊	＋	，	－	．	／
+    U+FF1x	０	１	２	３	４	５	６	７	８	９	：	；	＜	＝	＞	？
+    U+FF2x	＠	Ａ	Ｂ	Ｃ	Ｄ	Ｅ	Ｆ	Ｇ	Ｈ	Ｉ	Ｊ	Ｋ	Ｌ	Ｍ	Ｎ	Ｏ
+    U+FF3x	Ｐ	Ｑ	Ｒ	Ｓ	Ｔ	Ｕ	Ｖ	Ｗ	Ｘ	Ｙ	Ｚ	［	＼	］	＾	＿
+    U+FF4x	｀	ａ	ｂ	ｃ	ｄ	ｅ	ｆ	ｇ	ｈ	ｉ	ｊ	ｋ	ｌ	ｍ	ｎ	ｏ
+    U+FF5x	ｐ	ｑ	ｒ	ｓ	ｔ	ｕ	ｖ	ｗ	ｘ	ｙ	ｚ	｛	｜	｝	～
+     */
     // TODO: Need to find out how to convert English symbols to Japanese braille.
     private static final String[] FULLWIDTH_LATIN_TO_BRAILLE = {
             "⠀", "⠖", "\"", "⠰⠩", "$", "⠰⠏", "⠰⠯", "'", "⠶", "⠶", "⠰⠡", "+", "⠠", "-", "⠲", "⠸⠌",

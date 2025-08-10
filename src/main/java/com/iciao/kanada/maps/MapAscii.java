@@ -59,9 +59,14 @@ public class MapAscii extends JMapper {
 
     private String alphabetsToBraille(String str) {
         int count = 0;
+        //TODO: 途中に空白が含まれる場合は引用なので、外字符ではなく外国語引用符をつかう
+        //TODO: 大文字が連続する場合は二重大文字符をつかう
+        //TODO: ハイフンが挟まる場合はつなぎ符をつかう
+        //TODO: スラッシュは外字付の効果をキャンセルしない
+        //TODO: 情報処理用点字とは？
         StringBuilder alphabets = new StringBuilder("⠦");
         for (char c : str.toCharArray()) {
-            if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '.' || c == ',' || c == ' ') {
+            if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '.' || c == ',' || c == ' ' || c == '/') {
                 alphabets.append(BASIC_LATIN_TO_BRAILLE[c - 0x0020]);
                 count++;
             } else {
@@ -77,6 +82,7 @@ public class MapAscii extends JMapper {
         StringBuilder numbers = new StringBuilder("⠼");
         for (char c : str.toCharArray()) {
             if (c >= '0' && c <= '9' || c == '.' || c == ',' || c == ' ' || c == '\u2800') {
+                //TODO: 次の文字がア行・ラ行以外のかな（つまり数字でなければ）であれば、つなぎ付は不要
                 if (c == ' ' || c == '\u2800') {
                     numbers.append('⠤');
                 } else {
@@ -91,6 +97,14 @@ public class MapAscii extends JMapper {
         return numbers.toString();
     }
 
+    /*
+    U+002x	SP 	!	"	#	$	%	&	'	(	)	*	+	,	-	.	/
+    U+003x	0	1	2	3	4	5	6	7	8	9	:	;	<	=	>	?
+    U+004x	@	A	B	C	D	E	F	G	H	I	J	K	L	M	N	O
+    U+005x	P	Q	R	S	T	U	V	W	X	Y	Z	[	\	]	^	_
+    U+006x	`	a	b	c	d	e	f	g	h	i	j	k	l	m	n	o
+    U+007x	p	q	r	s	t	u	v	w	x	y	z	{	|	}	~	DEL
+     */
     // TODO: Need to find out how to convert English symbols to Japanese braille.
     private static final String[] BASIC_LATIN_TO_BRAILLE = {
             "⠀", "⠖", "\"", "⠰⠩", "$", "⠰⠏", "⠰⠯", "'", "⠶", "⠶", "⠰⠡", "+", "⠠", "-", "⠲", "⠸⠌",
