@@ -34,7 +34,10 @@ Now supercharged with AI-powered kanji reading disambiguation — think of it as
 
 - **AI-Assisted Reading Selection (Experimental)**
     - Leverages generative AI to disambiguate kanji readings in context.
-    - Supports integration with OpenAI API, Anthropic API (Claude) and Ollama.
+    - Supports both cloud-based LLM providers and on-device LLM API servers:
+        - Cloud-based: OpenAI API, Anthropic API (Claude) – High accuracy, extensive language understanding, and strong
+          contextual reasoning.
+        - On-device: Ollama, LM Studio – Runs models locally for privacy, offline use, and cost control.
     - Prompts can be customized for each model in the settings file, `config.json`.
     - Effectively addresses homonym disambiguation using NLP analysis by AI.
     - Selectively queries AI for ambiguous kanji readings to ensure high processing speed.
