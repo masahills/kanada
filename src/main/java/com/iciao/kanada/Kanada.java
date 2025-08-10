@@ -219,6 +219,7 @@ public class Kanada {
                 JMapper.TO_KANA_BRAILLE,
                 JMapper.TO_KANA_BRAILLE,
                 JMapper.AS_IS);
+        conversionSystem = KanaMapping.ConversionSystem.KANA_BRAILLE;
         return this;
     }
 
