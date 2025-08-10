@@ -67,6 +67,38 @@ public class ClaudeClient implements LlmClient {
         }
     }
 
+    /**
+     * Tests connection to Claude API.
+     *
+     * @return true if the connection is successful, false otherwise
+     */
+    @Override
+    public boolean testConnection() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl + "/models"))
+                    .header("x-api-key", apiKey)
+                    .header("anthropic-version", "2023-06-01")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.statusCode() == 200;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Gets the model name being used.
+     *
+     * @return the model name
+     */
+    @Override
+    public String getModel() {
+        return model;
+    }
+
     @Override
     public String selectBestReading(String kanji, List<String> possibleReadings, String context)
             throws IOException, InterruptedException {
@@ -76,9 +108,9 @@ public class ClaudeClient implements LlmClient {
 
         String systemMessage = config.systemPrompt;
         String userMessage = config.userPromptTemplate
-            .replace("{kanji}", kanji)
-            .replace("{context}", context.replace("\n", ""))
-            .replace("{readings}", String.join(" / ", possibleReadings));
+                .replace("{kanji}", kanji)
+                .replace("{context}", context.replace("\n", ""))
+                .replace("{readings}", String.join(" / ", possibleReadings));
 
         String response = generateCompletion(systemMessage, userMessage);
         return parseResponse(response, possibleReadings);
@@ -134,8 +166,15 @@ public class ClaudeClient implements LlmClient {
         return possibleReadings.get(0);
     }
 
-    private record ClaudeRequest(String model, int max_tokens, String system, List<Message> messages) {}
-    private record Message(String role, String content) {}
-    private record ClaudeResponse(List<Content> content) {}
-    private record Content(String text) {}
+    private record ClaudeRequest(String model, int max_tokens, String system, List<Message> messages) {
+    }
+
+    private record Message(String role, String content) {
+    }
+
+    private record ClaudeResponse(List<Content> content) {
+    }
+
+    private record Content(String text) {
+    }
 }

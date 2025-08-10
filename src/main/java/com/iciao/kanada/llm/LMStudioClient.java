@@ -35,50 +35,46 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Client for interacting with OpenAI API to get context-aware readings for kanji.
+ * Client for interacting with LM Studio API to get context-aware readings for kanji.
+ * LM Studio provides an OpenAI-compatible API running locally.
  *
  * @author Masahiko Sato
  */
-public class OpenAiClient implements LlmClient {
+public class LMStudioClient implements LlmClient {
     private final String apiUrl;
-    private final String apiKey;
     private final String model;
     private final HttpClient httpClient;
-    private final LlmConfig.OpenAiConfig config;
+    private final LlmConfig.LMStudioConfig config;
 
     /**
-     * Creates a new OpenAI client with custom settings.
-     *
-     * @param apiKey The OpenAI API key
-     * @param model  The model to use for inference (e.g., "gpt-4")
+     * Creates a new LM Studio client with default settings.
      */
-    public OpenAiClient(String apiKey, String model) {
-        this("https://api.openai.com/v1", apiKey, model);
+    public LMStudioClient(String model) {
+        this("http://127.0.0.1:1234/v1", model);
     }
 
     /**
-     * Creates a new OpenAI client with custom settings.
+     * Creates a new LM Studio client with custom settings.
      *
-     * @param apiUrl The URL of the OpenAI API
-     * @param apiKey The OpenAI API key
+     * @param apiUrl The URL of the LM Studio API
      * @param model  The model to use for inference
      */
-    public OpenAiClient(String apiUrl, String apiKey, String model) {
+    public LMStudioClient(String apiUrl, String model) {
         this.apiUrl = apiUrl;
-        this.apiKey = apiKey;
         this.model = model;
         this.httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)  // Need to force HTTP/1.1
                 .connectTimeout(Duration.ofSeconds(30))
                 .build();
         try {
-            this.config = LlmConfig.getInstance().getOpenAi();
+            this.config = LlmConfig.getInstance().getLMStudio();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load OpenAI configuration", e);
+            throw new RuntimeException("Failed to load LM Studio configuration", e);
         }
     }
 
     /**
-     * Tests connection to OpenAI API.
+     * Tests connection to LM Studio API.
      *
      * @return true if the connection is successful, false otherwise
      */
@@ -87,8 +83,7 @@ public class OpenAiClient implements LlmClient {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(apiUrl + "/models"))
-                    .header("Authorization", "Bearer " + apiKey)
-                    .GET()
+                    .header("Content-Type", "application/json")
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -109,12 +104,12 @@ public class OpenAiClient implements LlmClient {
     }
 
     /**
-     * Gets the best reading for a kanji word based on context.
+     * Select the most appropriate reading for a kanji word based on context.
      *
      * @param kanji            The kanji word to get readings for
      * @param possibleReadings List of possible readings
      * @param context          The surrounding text for context
-     * @return The best reading based on context
+     * @return The selected reading based on context by Generative AI
      * @throws IOException          If an I/O error occurs
      * @throws InterruptedException If the operation is interrupted
      */
@@ -133,17 +128,18 @@ public class OpenAiClient implements LlmClient {
                 .replace("{kanji}", kanji)
                 .replace("{context}", context.replace("\n", ""))
                 .replace("{readings}", String.join(" / ", possibleReadings));
+
         String response = generateCompletion(systemMessage, userMessage);
         return parseResponse(response, possibleReadings);
     }
 
     /**
-     * Sends a request to the OpenAI API and gets the completion.
+     * Sends a request to the LM Studio API and gets the completion.
      */
     private String generateCompletion(String systemMessage, String userMessage) throws IOException, InterruptedException {
         Gson gson = new Gson();
 
-        OpenAiRequest request = new OpenAiRequest(
+        LMStudioRequest request = new LMStudioRequest(
                 model,
                 List.of(
                         new Message("system", systemMessage),
@@ -156,14 +152,13 @@ public class OpenAiClient implements LlmClient {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl + "/chat/completions"))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + apiKey)
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
         HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            throw new IOException("API request failed with status code: " + response.statusCode());
+            throw new IOException("API request failed with status code: " + response.statusCode() + ", body: " + response.body());
         }
 
         return response.body();
@@ -174,8 +169,8 @@ public class OpenAiClient implements LlmClient {
      */
     private String parseResponse(String response, List<String> possibleReadings) {
         try {
-            OpenAiResponse openAiResponse = new Gson().fromJson(response, OpenAiResponse.class);
-            String content = openAiResponse.choices.get(0).message.content.trim();
+            LMStudioResponse lmStudioResponse = new Gson().fromJson(response, LMStudioResponse.class);
+            String content = lmStudioResponse.choices.get(0).message.content.trim();
 
             // Check longer readings first to avoid partial matches
             List<String> sortedReadings = possibleReadings.stream()
@@ -194,13 +189,13 @@ public class OpenAiClient implements LlmClient {
         return possibleReadings.get(0);
     }
 
-    private record OpenAiRequest(String model, List<Message> messages) {
+    private record LMStudioRequest(String model, List<Message> messages) {
     }
 
     private record Message(String role, String content) {
     }
 
-    private record OpenAiResponse(List<Choice> choices) {
+    private record LMStudioResponse(List<Choice> choices) {
     }
 
     private record Choice(Message message) {

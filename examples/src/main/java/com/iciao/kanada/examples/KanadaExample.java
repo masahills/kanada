@@ -305,21 +305,19 @@ public class KanadaExample {
             // Create LLM client and test connection
             llmClient = LlmClientFactory.createClient(LlmClientFactory.LlmProvider.OLLAMA);
 
-            // Test connection if it's an OllamaClient
-            if (llmClient instanceof com.iciao.kanada.llm.OllamaClient ollamaClient) {
-                System.out.println("Testing Ollama connection...");
-                System.out.println("Using model: " + ollamaClient.getModel());
+            // Test connection to the LLM server
+            String clientName = llmClient.getClass().getSimpleName();
+            System.out.println("Testing " + clientName + " connection...");
+            System.out.println("Using model: " + llmClient.getModel());
 
-                if (ollamaClient.testConnection()) {
-                    System.out.println("✓ Ollama connection successful");
-                } else {
-                    System.out.println("✗ Ollama connection failed");
-                    System.out.println("Make sure Ollama is running: ollama serve");
-                    return;
-                }
+            if (llmClient.testConnection()) {
+                System.out.println("✓ Connection successful");
                 System.out.println();
+            } else {
+                System.err.println("✗ Connection failed");
+                System.err.println("Make sure the server is running and the API key is correct (if it is required): " + clientName);
+                System.err.println();
             }
-
         } catch (Exception e) {
             System.out.println("LLM setup failed: " + e.getMessage());
         }

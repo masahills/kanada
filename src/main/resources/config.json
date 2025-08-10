@@ -42,5 +42,17 @@
     "apiUrl": "https://api.anthropic.com/v1",
     "systemPrompt": "あなたは日本語の文章の最適な読み方を文脈から判断するAIです。\n指定した語句のふりがなとして適切なものを選択肢から１つ選んでください。\n選択したふりがなだけを回答してください。説明は不要です。",
     "userPromptTemplate": "文章: {context}\n語句: {kanji} （この部分だけのふりがな）\n選択肢: {readings}"
+  },
+  "lmstudio": {
+    "defaultModel": "google/gemma-3-1b",
+    "apiUrl": "http://127.0.0.1:1234/v1",
+    "systemPrompt": "You are an AI that teaches the correct way to read Japanese sentences.\nPlease select the correct furigana for the target part from the given options.\nPlease answer only with the furigana you have chosen. No explanation is necessary.",
+    "userPromptTemplate": "Sentence: {context}\nTarget: {kanji} (Furigana for this part）\nOptions: {readings}",
+    "models": {
+      "google/gemma-3-1b": {
+        "modelName": "Gemma 3 1B Instruct Qat",
+        "modelDescription": "Tiny text-only variant of Gemma 3: Google's latest open-weight model family"
+      }
+    }
   }
 }

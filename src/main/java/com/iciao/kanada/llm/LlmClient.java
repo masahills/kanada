@@ -34,6 +34,20 @@ import java.util.List;
 public interface LlmClient {
 
     /**
+     * Tests connection to LLM Server API.
+     *
+     * @return true if the connection is successful, false otherwise
+     */
+    boolean testConnection();
+
+    /**
+     * Gets the model name being used.
+     *
+     * @return the model name
+     */
+    String getModel();
+
+    /**
      * Select the most appropriate reading for a kanji word based on context.
      *
      * @param kanji            The kanji word to get readings for
