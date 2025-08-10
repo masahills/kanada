@@ -46,6 +46,14 @@ public class MapKatakana extends JMapper {
         StringBuilder out = new StringBuilder();
         int thisChar = str.codePointAt(0);
         String kana = String.valueOf(Character.toChars(thisChar));
+        String transliteration = null;
+        if (param == TO_ASCII || param == TO_WIDE_ASCII || param == TO_KANA_BRAILLE) {
+            KanaTrie.MatchResult result = kanaMapping.getTransliterations(str);
+            if (result != null) {
+                transliteration = result.values()[getConversionSystem().getColumnIndex() - 2];
+                matchedLength = result.length();
+            }
+        }
 
         switch (param) {
             case TO_HIRAGANA:
@@ -61,17 +69,22 @@ public class MapKatakana extends JMapper {
                 break;
             case TO_ASCII:
             case TO_WIDE_ASCII:
-                KanaTrie.MatchResult result = kanaMapping.toRomaji(str);
-                String romaji = result != null ? result.values()[getRomanizationSystem().getColumnIndex() - 2] : null;
-                if (romaji != null) {
+                if (transliteration != null) {
                     int nextChar = str.codePointAt(1);
                     if (nextChar == 0x30FC) {
-                        romaji = kanaMapping.processLongVowels(romaji, getRomanizationSystem());
-                        matchedLength = result.length() + 1;
-                    } else {
-                        matchedLength = result.length();
+                        transliteration = kanaMapping.processLongVowels(transliteration, getConversionSystem());
+                        matchedLength = matchedLength + 1;
                     }
-                    out.append(modeMacron() ? romaji : kanaMapping.removeMacrons(romaji));
+                    out.append(modeMacron() ? transliteration : kanaMapping.removeMacrons(transliteration));
+                } else {
+                    out.append(kana);
+                }
+                break;
+            case TO_KANA_BRAILLE:
+                if (transliteration != null) {
+                    out.append(transliteration);
+                } else if (thisChar == 0x30FC) {
+                    out.append('⠒');
                 } else {
                     out.append(kana);
                 }

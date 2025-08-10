@@ -114,7 +114,7 @@ public class KanjiParser {
                     char nextChar = inputString.charAt(i + searchWord.length());
                     if (Character.UnicodeBlock.of(nextChar) == Character.UnicodeBlock.HIRAGANA) {
                         // The tail letters from the SKK dictionary are assumed to be based on the Hepburn system.
-                        searchTail = KanaMapping.getInstance().getRomajiInitial(nextChar, KanaMapping.RomanizationSystem.MODIFIED_HEPBURN);
+                        searchTail = KanaMapping.getInstance().getRomajiInitial(nextChar, KanaMapping.ConversionSystem.MODIFIED_HEPBURN);
                     }
                 }
 
@@ -255,7 +255,7 @@ public class KanjiParser {
         if (!jWriter.buffer.isEmpty()) {
             if (isBoundary && kanada.modeAddSpace && jWriter.tail == ' '
                     && !Pattern.matches("(?s).*?[\r\n]$", jWriter.buffer.toString())) {
-                jWriter.append(' ');
+                jWriter.append(kanada.settingSeparatorChar);
             }
             StringBuilder str = jWriter.map();
             outputBuffer.append(str);

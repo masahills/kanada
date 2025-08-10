@@ -67,6 +67,8 @@ public class MapWideSymbol extends JMapper {
                 out.append(CJK_SYMBOLS_AND_PUNCTUATION_TO_ASCII[index]);
             } else if (param == JMapper.TO_HALF_SYMBOL) {
                 out.append(cjkSymbolsAndPunctuationToHalfSymbol(thisChar));
+            } else if (param == JMapper.TO_KANA_BRAILLE) {
+                out.append(cjkSymbolsAndPunctuationToBraille(thisChar));
             } else {
                 out.appendCodePoint(thisChar);
             }
@@ -84,6 +86,20 @@ public class MapWideSymbol extends JMapper {
             case '「' -> "｢"; // left bracket
             case '」' -> "｣"; // right bracket
             case '〜', '〰' -> "ｰ"; // long vowel mark
+            default -> String.valueOf(ch);
+        };
+    }
+
+    // TODO: Need to find out how to translate other symbols to braille.
+    private String cjkSymbolsAndPunctuationToBraille(char ch) {
+        return switch (ch) {
+            case '　' -> "\u2800\u2800";
+            case '、' -> "⠰\u2800";
+            case '。' -> "⠲\u2800\u2800";
+            case '「' -> "	⠤";
+            case '」' -> "	⠤";
+            case '『' -> "	⠰⠤";
+            case '』' -> "	⠤⠆";
             default -> String.valueOf(ch);
         };
     }

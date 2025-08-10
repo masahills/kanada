@@ -32,7 +32,7 @@ Now supercharged with AI-powered kanji reading disambiguation — think of it as
 
 ## New Features
 
-- **AI-Assisted Reading Selection (Experimental)**
+- **AI-Assisted Reading Selection (Beta)**
     - Leverages generative AI to disambiguate kanji readings in context.
     - Supports both cloud-based LLM providers and on-device LLM API servers:
         - Cloud-based: OpenAI API, Anthropic API (Claude) – High accuracy, extensive language understanding, and strong
@@ -45,11 +45,20 @@ Now supercharged with AI-powered kanji reading disambiguation — think of it as
     - Enhances accuracy while maintaining a lightweight, dictionary-based approach.
 
 
-- **Japanese Braille Reverse Translation (Experimental)**
+- **Japanese Braille Reverse Translation (Alpha)**
     - Convert Japanese 6-dot Braille patterns back to hiragana, katakana, or romaji text.
     - Supports standard Japanese Braille notation for kana characters.
     - Enables accessibility applications and Braille text processing workflows.
     - Includes a Python script for converting BRF/BSE files into Unicode Braille patterns
+
+
+- **Japanese Text to Braille Translation (Prototype)**
+    - Automatically translates Japanese text with kanji and kana into Unicode Braille patterns.
+        - This is a prototype feature and functionality is incomplete (e.g., particle "は" to "わ" conversion, foreign
+          quotation marks not supported).
+    - Word segmentation may not precisely match standard clause boundaries used in Braille translation.
+    - Output is not formatted for printing (no adjustment for characters per line or lines per page).
+        - A script to convert Unicode Braille patterns to BRF/BSE format files will be provided in the future.
 
 ## Quick Start
 
