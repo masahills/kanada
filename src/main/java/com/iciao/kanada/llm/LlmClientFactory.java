@@ -36,9 +36,10 @@ public class LlmClientFactory {
      * LLM provider types supported by the factory.
      */
     public enum LlmProvider {
-        OLLAMA,
         OPENAI,
-        CLAUDE
+        CLAUDE,
+        OLLAMA,
+        LMSTUDIO
     }
 
     /**
@@ -71,6 +72,10 @@ public class LlmClientFactory {
                     LlmConfig.ClaudeConfig claudeConfig = config.getClaude();
                     yield new ClaudeClient(claudeConfig.apiUrl, apiKey, claudeConfig.defaultModel);
                 }
+                case LMSTUDIO -> {
+                    LlmConfig.LMStudioConfig lmStudioConfig = config.getLMStudio();
+                    yield new LMStudioClient(lmStudioConfig.apiUrl, lmStudioConfig.defaultModel);
+                }
             };
         } catch (IOException e) {
             throw new RuntimeException("Failed to load configuration", e);
@@ -97,5 +102,16 @@ public class LlmClientFactory {
      */
     public static OpenAiClient createOpenAiClient(String apiKey, String model) {
         return new OpenAiClient(apiKey, model);
+    }
+
+    /**
+     * Creates an LM Studio client with custom settings.
+     *
+     * @param apiUrl The URL of the LM Studio API
+     * @param model  The model to use for inference
+     * @return An LMStudioClient instance
+     */
+    public static LMStudioClient createLMStudioClient(String apiUrl, String model) {
+        return new LMStudioClient(apiUrl, model);
     }
 }

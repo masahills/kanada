@@ -79,6 +79,13 @@ public class LlmConfig {
             if (localConfig.claude.systemPrompt != null) config.claude.systemPrompt = localConfig.claude.systemPrompt;
             if (localConfig.claude.userPromptTemplate != null) config.claude.userPromptTemplate = localConfig.claude.userPromptTemplate;
         }
+        if (localConfig.lmstudio != null) {
+            if (localConfig.lmstudio.defaultModel != null) config.lmstudio.defaultModel = localConfig.lmstudio.defaultModel;
+            if (localConfig.lmstudio.apiUrl != null) config.lmstudio.apiUrl = localConfig.lmstudio.apiUrl;
+            if (localConfig.lmstudio.systemPrompt != null) config.lmstudio.systemPrompt = localConfig.lmstudio.systemPrompt;
+            if (localConfig.lmstudio.userPromptTemplate != null) config.lmstudio.userPromptTemplate = localConfig.lmstudio.userPromptTemplate;
+            if (localConfig.lmstudio.models != null) config.lmstudio.models.putAll(localConfig.lmstudio.models);
+        }
     }
 
     public static LlmConfig getInstance() throws IOException {
@@ -91,11 +98,13 @@ public class LlmConfig {
     public OpenAiConfig getOpenAi() { return config.openai; }
     public OllamaConfig getOllama() { return config.ollama; }
     public ClaudeConfig getClaude() { return config.claude; }
+    public LMStudioConfig getLMStudio() { return config.lmstudio; }
 
     public static class Config {
         public OpenAiConfig openai;
         public OllamaConfig ollama;
         public ClaudeConfig claude;
+        public LMStudioConfig lmstudio;
     }
 
     public static class OpenAiConfig {
@@ -118,6 +127,14 @@ public class LlmConfig {
         public String apiUrl;
         public String systemPrompt;
         public String userPromptTemplate;
+    }
+
+    public static class LMStudioConfig {
+        public String defaultModel;
+        public String apiUrl;
+        public String systemPrompt;
+        public String userPromptTemplate;
+        public Map<String, ModelConfig> models;
     }
 
     public static class ModelConfig {
