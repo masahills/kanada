@@ -29,7 +29,7 @@ import com.iciao.kanada.Kanada;
 import java.util.Objects;
 
 /**
- * Convert katakana input to romaji using TSV-based mapping.
+ * Convert katakana characters to hiragana, half-width katakana, romaji, or Braille.
  *
  * @author Masahiko Sato
  */
@@ -70,10 +70,12 @@ public class MapKatakana extends JMapper {
             case TO_ASCII:
             case TO_WIDE_ASCII:
                 if (transliteration != null) {
-                    int nextChar = str.codePointAt(1);
-                    if (nextChar == 0x30FC) {
-                        transliteration = kanaMapping.processLongVowels(transliteration, getConversionSystem());
-                        matchedLength = matchedLength + 1;
+                    if (str.length() > matchedLength + 1) {
+                        int nextChar = str.codePointAt(matchedLength);
+                        if (nextChar == 0x30FC) {
+                            transliteration = kanaMapping.processLongVowels(transliteration, getConversionSystem());
+                            matchedLength = matchedLength + 1;
+                        }
                     }
                     out.append(modeMacron() ? transliteration : kanaMapping.removeMacrons(transliteration));
                 } else {

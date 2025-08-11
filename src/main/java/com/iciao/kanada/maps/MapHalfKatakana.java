@@ -29,7 +29,7 @@ import com.iciao.kanada.Kanada;
 import java.util.Objects;
 
 /**
- * Remap non-kanji characters.<br>
+ * Convert half-width katakana characters to hiragana, katakana, romaji, or Braille.
  *
  * @author Masahiko Sato
  */
@@ -47,104 +47,129 @@ public class MapHalfKatakana extends JMapper {
     }
 
     @Override
-    protected void process(String str, int param) {
-        StringBuilder out = new StringBuilder();
+    protected void process(String halfKana, int param) {
+        String str = toFullWidthKatakana(halfKana);
+        matchedLength = halfKana.length();
 
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < str.length(); ) {
+            int codePoint = str.codePointAt(i);
+            String kana = String.valueOf(Character.toChars(codePoint));
+            String transliteration = null;
+            if (param == TO_ASCII || param == TO_WIDE_ASCII || param == TO_KANA_BRAILLE) {
+                KanaTrie.MatchResult result = kanaMapping.getTransliterations(str.substring(i));
+                if (result != null) {
+                    transliteration = result.values()[getConversionSystem().getColumnIndex() - 2];
+                    i += result.length();
+                } else {
+                    i += Character.charCount(codePoint);
+                }
+            } else {
+                i += Character.charCount(codePoint);
+            }
+
+            switch (param) {
+                case TO_HIRAGANA:
+                    if (codePoint < 0x30F7 || codePoint == 0x30FD || codePoint == 0x30FE) {
+                        out.appendCodePoint(codePoint - 0x60);
+                    } else {
+                        out.appendCodePoint(codePoint);
+                    }
+                    break;
+                case TO_ASCII:
+                case TO_WIDE_ASCII:
+                    if (transliteration != null) {
+                        out.append(modeMacron() ? transliteration : kanaMapping.removeMacrons(transliteration));
+                    } else {
+                        String punctuation = processPunctuations(kana.charAt(0));
+                        if (punctuation != null) {
+                            if (punctuation.equals("ー")) {
+                                char prevChar = out.charAt(out.length() - 1);
+                                String longVowel = kanaMapping.processLongVowels(String.valueOf(prevChar), getConversionSystem());
+                                out.setCharAt(out.length() - 1, longVowel.charAt(0));
+                            } else {
+                                out.append(punctuation);
+                            }
+                        } else {
+                            out.append(kana);
+                        }
+                    }
+                    break;
+                case TO_KANA_BRAILLE:
+                    out.append(Objects.requireNonNullElse(transliteration, kana));
+                    break;
+                default:
+                    out.append(kana);
+                    break;
+            }
+        }
+        setString(out.toString());
+    }
+
+    private String toFullWidthKatakana(String str) {
+        StringBuilder fullWidth = new StringBuilder();
         for (int i = 0; i < str.length(); i++) {
             char thisChar = str.charAt(i);
-            // Check for dakuten/handakuten combination
             if (i + 1 < str.length()) {
                 char next = str.charAt(i + 1);
                 if (next == 'ﾞ' || next == 'ﾟ') {
-                    String combined = combineDakuten(thisChar, next);
-                    if (combined != null) {
-                        out.append(combined);
-                        i++; // skip next character
+                    char thatChar = combineDakuten(thisChar, next);
+                    if (thatChar > 0) {
+                        fullWidth.appendCodePoint(thatChar);
+                        i++;
                         continue;
                     }
                 }
             }
-
-            String converted = convertChar(thisChar, param);
-            if (param == TO_ASCII || param == TO_WIDE_ASCII) {
-                KanaTrie.MatchResult result = kanaMapping.getTransliterations(str);
-                String romaji = result != null ? result.values()[getConversionSystem().getColumnIndex() - 2] : null;
-                if (romaji != null) {
-                    int nextChar = str.codePointAt(1);
-                    if (nextChar == 0xFF70) {
-                        romaji = kanaMapping.processLongVowels(romaji, getConversionSystem());
-                        matchedLength = result.length() + 1;
-                    } else {
-                        matchedLength = result.length();
-                    }
-                    out.append(modeMacron() ? romaji : kanaMapping.removeMacrons(romaji));
-                } else {
-                    out.append(converted);
-                }
-            } else {
-                out.append(Objects.requireNonNullElse(converted, thisChar));
+            int index = thisChar - 0xff60;
+            if (index > -1 && index < FULLWIDTH_KATAKANA.length()) {
+                char thatChar = FULLWIDTH_KATAKANA.charAt(index);
+                fullWidth.appendCodePoint(thatChar);
             }
         }
-
-        setString(out.toString());
+        return fullWidth.toString();
     }
 
-    private String combineDakuten(char base, char mark) {
-        if (mark == 'ﾞ') { // dakuten
-            if ((base >= 'ｶ' && base <= 'ｺ') || // ka-ko
-                    (base >= 'ｻ' && base <= 'ｿ') || // sa-so
-                    (base >= 'ﾀ' && base <= 'ﾄ') || // ta-to
-                    (base >= 'ﾊ' && base <= 'ﾎ')) { // ha-ho
-                return String.valueOf((char) (base - 0xFF71 + 0x30AC)); // to dakuten katakana
+    private static String processPunctuations(char c) {
+        return switch (c) {
+            case '。' -> ".";
+            case '「', '」' -> "\"";
+            case '、' -> ",";
+            case '・' -> " ";
+            case 'ー' -> "ー";
+            default -> null;
+        };
+    }
+
+    private char combineDakuten(char c, char mark) {
+        int index = -1;
+        if (mark == 'ﾞ') {
+            if (c >= 'ｶ' && c <= 'ｺ') {
+                index = c - 'ｶ';
+            } else if (c >= 'ｻ' && c <= 'ｿ') {
+                index = c - 'ｶ';
+            } else if (c >= 'ﾀ' && c <= 'ﾄ') {
+                index = c - 'ｶ';
+            } else if (c >= 'ﾊ' && c <= 'ﾎ') {
+                index = c - 'ｶ' - 5;
             }
         } else if (mark == 'ﾟ') { // handakuten
-            if (base >= 'ﾊ' && base <= 'ﾎ') { // ha-ho
-                return String.valueOf((char) (base - 0xFF8A + 0x30D1)); // to handakuten katakana
+            if (c >= 'ﾊ' && c <= 'ﾎ') {
+                index = c - 'ｶ';
             }
         }
-        return null;
+        if (index > -1) {
+            return FULLWIDTH_KATAKANA_DAKUON_HANDAKUON.charAt(index);
+        }
+        return 0;
     }
 
-    private String convertChar(char c, int param) {
-        switch (c) {
-            case '｡':
-                return "。"; // period
-            case '｢':
-                return "「"; // left bracket
-            case '｣':
-                return "」"; // right bracket
-            case '､':
-                return "、"; // comma
-            case '･':
-                return "・"; // middle dot
-            case 'ｰ':
-                return "ー"; // long vowel mark
-        }
+    private static final String FULLWIDTH_KATAKANA_DAKUON_HANDAKUON =
+            "ガギグゲゴ" + "ザジズゼゾ" + "ダヂヅデド" + "バビブベボ" + "パピプペポ";
 
-        int smallBase, normalBase;
-        switch (param) {
-            case TO_KATAKANA:
-            case TO_ASCII:
-            case TO_WIDE_ASCII:
-                smallBase = 0x30A1;
-                normalBase = 0x30A2;
-                break;
-            case TO_HIRAGANA:
-                smallBase = 0x3041;
-                normalBase = 0x3042;
-                break;
-            default:
-                return null;
-        }
-
-        // Convert half-width katakana
-        if (c >= 0xFF67 && c <= 0xFF6F) {
-            return String.valueOf((char) (c - 0xFF67 + smallBase));
-        }
-        if (c >= 0xFF71 && c <= 0xFF9D) {
-            return String.valueOf((char) (c - 0xFF71 + normalBase));
-        }
-
-        return null;
-    }
+    private static final String FULLWIDTH_KATAKANA =
+            "　。「」、・ヲァィゥェォャュョッ" +
+                    "ーアイウエオカキクケコサシスセソ" +
+                    "タチツテトナニヌネノハヒフヘホマ" +
+                    "ミムメモヤユヨラリルレロワン゛゜";
 }

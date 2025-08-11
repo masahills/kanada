@@ -29,7 +29,7 @@ import com.iciao.kanada.Kanada;
 import java.util.Objects;
 
 /**
- * Convert hiragana input to romaji using TSV-based mapping.
+ * Convert hiragana characters to katakana, half-width katakana, romaji, or Braille.
  *
  * @author Masahiko Sato
  */
@@ -71,11 +71,7 @@ public class MapHiragana extends JMapper {
                 }
                 break;
             case TO_KANA_BRAILLE:
-                if (transliteration != null) {
-                    out.append(transliteration);
-                } else {
-                    out.append(kana);
-                }
+                out.append(Objects.requireNonNullElse(transliteration, kana));
                 break;
             default:
                 out.appendCodePoint(thisChar);
