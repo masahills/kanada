@@ -140,7 +140,7 @@ public class MapBraille extends JMapper {
                 if (punctuationStr != null) {
                     result.append(punctuationStr);
                     if (punctuation == DOTS_256 && nextChar == DOTS_0) {
-                        i++; // 句点を示す空白なので一つ飛ばす
+                        i += 1; // 句点を示す空白なので一つ飛ばす
                     }
                     continue;
                 }
@@ -171,7 +171,7 @@ public class MapBraille extends JMapper {
                     result.append(latin);
                     punctuation = 0; // 読点ではなく外字符のため punctuation をリセット
                 } else if (thisChar == DOTS_356 && nextChar == DOTS_36) {
-                    i++; // 外国語引用符（終了）の次が第一つなぎ符なので一つ飛ばす
+                    i += 1; // 外国語引用符（終了）の次が第一つなぎ符なので一つ飛ばす
                 }
                 continue;
             }
@@ -198,7 +198,7 @@ public class MapBraille extends JMapper {
             // Dashes
             if (thisChar == DOTS_25 && isDashes(brailleText, i)) {
                 result.append("――");
-                i++;
+                i += 1;
                 continue;
             }
 
@@ -211,7 +211,7 @@ public class MapBraille extends JMapper {
             kana = getKana(thisChar, nextChar);
             if (kana != null) {
                 result.append(kana);
-                i++;
+                i += 1;
                 if (thisChar == DOTS_256) {
                     punctuation = 0; // 句点ではなく特殊音のため punctuation をリセット
                 }
@@ -371,8 +371,8 @@ public class MapBraille extends JMapper {
         }
         if (text.charAt(i) == DOTS_25 && text.charAt(i + 1) == DOTS_25) {
             // Check if it's at a word boundary
-            boolean isAtStart = i == 0 || isBlankSpace(text.charAt(i - 1));
-            boolean isAtEnd = i + 2 == text.length() || isBlankSpace(text.charAt(i + 2)) || text.charAt(i + 2) == DOTS_56 || text.charAt(i + 2) == DOTS_256;
+            boolean isAtStart = i == 0 || isBlankSpace(text.charAt(i - 1)) || isLineBreak(text.charAt(i - 1));
+            boolean isAtEnd = i + 2 == text.length() || isBlankSpace(text.charAt(i + 2)) || isLineBreak(text.charAt(i + 2)) || text.charAt(i + 2) == DOTS_56 || text.charAt(i + 2) == DOTS_256;
             return isAtStart || isAtEnd;
         }
         return false;
@@ -385,7 +385,7 @@ public class MapBraille extends JMapper {
         if (text.charAt(i) == DOTS_2 && text.charAt(i + 1) == DOTS_2 && text.charAt(i + 2) == DOTS_2) {
             // Check if it's at a word boundary
             boolean isAtStart = i == 0 || isBlankSpace(text.charAt(i - 1));
-            boolean isAtEnd = i + 3 == text.length() || isBlankSpace(text.charAt(i + 3)) || text.charAt(i + 3) == DOTS_56 || text.charAt(i + 3) == DOTS_256;
+            boolean isAtEnd = i + 3 == text.length() || isBlankSpace(text.charAt(i + 3)) || isLineBreak(text.charAt(i + 3)) || text.charAt(i + 3) == DOTS_56 || text.charAt(i + 3) == DOTS_256;
             return isAtStart || isAtEnd;
         }
         return false;
