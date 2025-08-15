@@ -176,6 +176,13 @@ public class MapBraille extends JMapper {
                 continue;
             }
 
+            // Wave dash
+            if (thisChar == DOTS_36 && nextChar == DOTS_36) {
+                result.append("〜");
+                i += 1;
+                continue;
+            }
+
             // Brackets
             if (thisChar == DOTS_2356_PARENTHESES || thisChar == DOTS_36) {
                 if (thisChar == DOTS_2356_PARENTHESES) {
