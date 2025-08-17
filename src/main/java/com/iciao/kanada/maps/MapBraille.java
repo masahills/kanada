@@ -376,26 +376,34 @@ public class MapBraille extends JMapper {
         if (text.length() - i < 2) {
             return false;
         }
-        if (text.charAt(i) == DOTS_25 && text.charAt(i + 1) == DOTS_25) {
-            // Check if it's at a word boundary
-            boolean isAtStart = i == 0 || isBlankSpace(text.charAt(i - 1)) || isLineBreak(text.charAt(i - 1));
-            boolean isAtEnd = i + 2 == text.length() || isBlankSpace(text.charAt(i + 2)) || isLineBreak(text.charAt(i + 2)) || text.charAt(i + 2) == DOTS_56 || text.charAt(i + 2) == DOTS_256;
-            return isAtStart || isAtEnd;
+        if (text.charAt(i) != DOTS_25 && text.charAt(i + 1) != DOTS_25) {
+            return false;
         }
-        return false;
+        // Require a blank cell immediately before
+        if (i != 0 && !isBlankSpace(text.charAt(i - 1)) && !isLineBreak(text.charAt(i - 1))) {
+            return false;
+        }
+        // Require a blank cell immediately after
+        if (i + 2 == text.length()) {
+            return true;
+        }
+        char charAfter = text.charAt(i + 2);
+        return isBlankSpace(charAfter) || isLineBreak(charAfter);
     }
 
     private static boolean isEllipses(String text, int i) {
         if (text.length() - i < 3) {
             return false;
         }
-        if (text.charAt(i) == DOTS_2 && text.charAt(i + 1) == DOTS_2 && text.charAt(i + 2) == DOTS_2) {
-            // Check if it's at a word boundary
-            boolean isAtStart = i == 0 || isBlankSpace(text.charAt(i - 1));
-            boolean isAtEnd = i + 3 == text.length() || isBlankSpace(text.charAt(i + 3)) || isLineBreak(text.charAt(i + 3)) || text.charAt(i + 3) == DOTS_56 || text.charAt(i + 3) == DOTS_256;
-            return isAtStart || isAtEnd;
+        if (text.charAt(i) != DOTS_2 || text.charAt(i + 1) != DOTS_2 || text.charAt(i + 2) != DOTS_2) {
+            return false;
         }
-        return false;
+        // Require a blank cell immediately before
+        if (i == 0) {
+            return true;
+        }
+        char charBefore = text.charAt(i - 1);
+        return isBlankSpace(charBefore) || isLineBreak(charBefore);
     }
 
     private enum BrailleMode {
