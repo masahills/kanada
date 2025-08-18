@@ -144,6 +144,9 @@ class BrailleMapping {
     }
 
     protected static String toDakuon(String kana) {
+        if (kana == null) {
+            return null;
+        }
         return switch (kana) {
             case "か" -> "が";
             case "き" -> "ぎ";
@@ -172,6 +175,9 @@ class BrailleMapping {
     }
 
     protected static String toHandakuon(String kana) {
+        if (kana == null) {
+            return null;
+        }
         return switch (kana) {
             case "は" -> "ぱ";
             case "ひ" -> "ぴ";
@@ -183,6 +189,9 @@ class BrailleMapping {
     }
 
     protected static String toYouon(String kana) {
+        if (kana == null) {
+            return null;
+        }
         return switch (kana) {
             case "か" -> "きゃ";
             case "く" -> "きゅ";
@@ -219,6 +228,9 @@ class BrailleMapping {
     }
 
     protected static String toYouDakuon(String kana) {
+        if (kana == null) {
+            return null;
+        }
         return switch (kana) {
             case "か" -> "ぎゃ";
             case "く" -> "ぎゅ";
@@ -241,6 +253,9 @@ class BrailleMapping {
     }
 
     protected static String toYouHandakuon(String kana) {
+        if (kana == null) {
+            return null;
+        }
         return switch (kana) {
             case "は" -> "ぴゃ";
             case "ふ" -> "ぴゅ";
@@ -254,6 +269,9 @@ class BrailleMapping {
     }
 
     protected static String toSpecial26(String kana) {
+        if (kana == null) {
+            return null;
+        }
         return switch (kana) {
             case "い" -> "うぃ";
             case "え" -> "うぇ";
@@ -276,6 +294,9 @@ class BrailleMapping {
     }
 
     protected static String toSpecial256(String kana) {
+        if (kana == null) {
+            return null;
+        }
         return switch (kana) {
             case "は" -> "ゔぁ";
             case "ひ" -> "ゔぃ";
@@ -291,6 +312,9 @@ class BrailleMapping {
     }
 
     protected static String toSpecial456(String kana) {
+        if (kana == null) {
+            return null;
+        }
         return switch (kana) {
             case "つ" -> "でゅ";
             case "ゆ" -> "ゔゅ";
