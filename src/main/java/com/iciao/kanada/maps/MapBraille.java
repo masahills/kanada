@@ -142,6 +142,7 @@ public class MapBraille extends JMapper {
                     if (punctuation == DOTS_256 && nextChar == DOTS_0) {
                         i += 1; // 句点を示す空白なので一つ飛ばす
                     }
+                    punctuation = 0;
                     continue;
                 }
             }
@@ -196,16 +197,18 @@ public class MapBraille extends JMapper {
             }
 
             // Ellipses
-            if (thisChar == DOTS_2 && isEllipses(brailleText, i)) {
-                result.append("……");
-                i += 2;
+            int ellipses = findEllipses(brailleText, i);
+            if (thisChar == DOTS_2 && ellipses > 0) {
+                result.append("…".repeat(ellipses));
+                i += ellipses - 1;
                 continue;
             }
 
             // Dashes
-            if (thisChar == DOTS_25 && isDashes(brailleText, i)) {
-                result.append("――");
-                i += 1;
+            int dashes = findDashes(brailleText, i);
+            if (thisChar == DOTS_25 && dashes > 0) {
+                result.append("―".repeat(dashes));
+                i += dashes - 1;
                 continue;
             }
 
@@ -281,20 +284,19 @@ public class MapBraille extends JMapper {
     }
 
     private String getNumeric(char thisChar, char nextChar) {
-        String result = null;
-        if (thisChar == DOTS_36 && nextChar > 0) {
+        String nextDigit = BrailleMapping.DIGIT_MAP.get(nextChar);
+        if (thisChar == DOTS_36) {
             // 次があ行・ら行の場合は、第一つなぎ符
-            String digit = BrailleMapping.DIGIT_MAP.get(nextChar);
-            if (digit != null && digit.length() == 1 && Character.isDigit(digit.charAt(0))) {
+            if (nextDigit != null && nextDigit.length() == 1 && Character.isDigit(nextDigit.charAt(0))) {
                 resetBrailleMode();
                 return "";  // 数字の終端なので、nullではなく空文字を返して次の文字に進む
             }
         }
-        String number = BrailleMapping.DIGIT_MAP.get(thisChar);
-        if (number != null) {
-            result = number;
+        String digit = BrailleMapping.DIGIT_MAP.get(thisChar);
+        if (digit == null || nextDigit == null) {
+            resetBrailleMode();
         }
-        return result;
+        return digit;
     }
 
     private String getLatin(char thisChar) {
@@ -328,6 +330,9 @@ public class MapBraille extends JMapper {
 
     private String getKana(char thisChar, char nextChar) {
         String result = null;
+        if (thisChar == DOTS_456 && isLineBreak(nextChar)) {
+            return "｜" + nextChar; // 枠線（閉じ） として使われている
+        }
         String kana = BrailleMapping.KANA_MAP.get(nextChar);
         if (kana == null) {
             return null;
@@ -372,38 +377,58 @@ public class MapBraille extends JMapper {
         return c == '\n' || c == '\r';
     }
 
-    private static boolean isDashes(String text, int i) {
+    private static int findDashes(String text, int i) {
         if (text.length() - i < 2) {
-            return false;
+            return 0;
         }
         if (text.charAt(i) != DOTS_25 && text.charAt(i + 1) != DOTS_25) {
-            return false;
+            return 0;
         }
         // Require a blank cell immediately before
         if (i != 0 && !isBlankSpace(text.charAt(i - 1)) && !isLineBreak(text.charAt(i - 1))) {
-            return false;
+            return 0;
+        }
+        // DOTS_25 may be repeated more than twice
+        int dashes;
+        for (dashes = 2; dashes < text.length() - i; dashes++) {
+            if (text.charAt(i + dashes) != DOTS_25) {
+                break;
+            }
         }
         // Require a blank cell immediately after
-        if (i + 2 == text.length()) {
-            return true;
+        if (i + dashes == text.length()) {
+            return dashes;
         }
-        char charAfter = text.charAt(i + 2);
-        return isBlankSpace(charAfter) || isLineBreak(charAfter);
+        char charAfter = text.charAt(dashes + 1);
+        if (isBlankSpace(charAfter) || isLineBreak(charAfter)) {
+            return dashes;
+        }
+        return 0;
     }
 
-    private static boolean isEllipses(String text, int i) {
+    private static int findEllipses(String text, int i) {
         if (text.length() - i < 3) {
-            return false;
+            return 0;
         }
         if (text.charAt(i) != DOTS_2 || text.charAt(i + 1) != DOTS_2 || text.charAt(i + 2) != DOTS_2) {
-            return false;
+            return 0;
+        }
+        // DOTS_2 may be repeated more than three times
+        int ellipses;
+        for (ellipses = 2; ellipses < text.length() - i; ellipses++) {
+            if (text.charAt(i + ellipses) != DOTS_2) {
+                break;
+            }
         }
         // Require a blank cell immediately before
         if (i == 0) {
-            return true;
+            return ellipses;
         }
         char charBefore = text.charAt(i - 1);
-        return isBlankSpace(charBefore) || isLineBreak(charBefore);
+        if (isBlankSpace(charBefore) || isLineBreak(charBefore)) {
+            return ellipses;
+        }
+        return 0;
     }
 
     private enum BrailleMode {
