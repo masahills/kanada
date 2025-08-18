@@ -399,7 +399,7 @@ public class MapBraille extends JMapper {
         if (i + dashes == text.length()) {
             return dashes;
         }
-        char charAfter = text.charAt(dashes + 1);
+        char charAfter = text.charAt(i + dashes);
         if (isBlankSpace(charAfter) || isLineBreak(charAfter)) {
             return dashes;
         }
