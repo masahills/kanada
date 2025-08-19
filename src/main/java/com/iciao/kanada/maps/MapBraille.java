@@ -173,6 +173,7 @@ public class MapBraille extends JMapper {
             // White space
             if (thisChar == DOTS_0) {
                 result.append(" ");
+                currentMode = latinQuoteIn ? BrailleMode.LATIN : BrailleMode.KANA;
                 continue;
             }
 
@@ -197,10 +198,7 @@ public class MapBraille extends JMapper {
                     i += 1; // 外国語引用符（終了）の次が第一つなぎ符なので一つ飛ばす
                 } else if (thisChar == DOTS_5 && nextChar == DOTS_36) {
                     result.append("_");
-                    i += 1;
-                }
-                if (!latinQuoteIn) {
-                    resetBrailleMode();
+                    i += 1; // 情報処理用点字の組み合わせなので一つ飛ばす
                 }
                 continue;
             }
@@ -312,16 +310,16 @@ public class MapBraille extends JMapper {
     }
 
     private String getNumeric(char thisChar, char nextChar, boolean latinQuoteIn) {
-        String nextDigit = BrailleMapping.DIGIT_MAP.get(nextChar);
         if (thisChar == DOTS_36) {
             // 次があ行・ら行の場合は、第一つなぎ符
+            String nextDigit = BrailleMapping.DIGIT_MAP.get(nextChar);
             if (nextDigit != null && nextDigit.length() == 1 && Character.isDigit(nextDigit.charAt(0))) {
                 currentMode = latinQuoteIn ? BrailleMode.LATIN : BrailleMode.KANA;
                 return "";  // 数字の終端なので、nullではなく空文字を返して次の文字に進む
             }
         }
         String digit = BrailleMapping.DIGIT_MAP.get(thisChar);
-        if (digit == null || nextDigit == null) {
+        if (digit == null) {
             currentMode = latinQuoteIn ? BrailleMode.LATIN : BrailleMode.KANA;
         }
         return digit;
@@ -329,8 +327,9 @@ public class MapBraille extends JMapper {
 
     private String getLatin(char thisChar) {
         String result = null;
-        // 第一つなぎ符、外国語引用符（終了）の場合は、かなモードにリセット
+        // 第一つなぎ符の場合は、かな表記にリセット
         if (thisChar == DOTS_36) {
+            resetBrailleMode();
             return null;
         }
         String latin = BrailleMapping.LATIN_MAP.get(thisChar);
