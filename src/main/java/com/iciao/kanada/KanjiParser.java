@@ -68,7 +68,11 @@ public class KanjiParser {
                 Character.UnicodeBlock currentBlock = Character.UnicodeBlock.of(thisChar);
                 if (prevBlock != currentBlock) {
                     // Flush the buffer at the word boundary.
-                    flushBuffer(true);
+                    boolean isBoundaryAtTransition = true;
+                    if (isClosingPunctuation(thisChar) || prevChar == '「' || prevChar == '（') {
+                        isBoundaryAtTransition = false;
+                    }
+                    flushBuffer(isBoundaryAtTransition);
                 }
             }
 
@@ -181,7 +185,16 @@ public class KanjiParser {
                     jWriter.append("{").append(String.join("|", possibleReadings)).append("}");
                 }
 
-                flushBuffer(true);
+                // Avoid separator before closing punctuation.
+                boolean isBoundaryAfterMatch = true;
+                int nextIndex = i + matchedLen;
+                if (nextIndex < inputString.length()) {
+                    int nextChar = inputString.codePointAt(nextIndex);
+                    if (isClosingPunctuation(nextChar)) {
+                        isBoundaryAfterMatch = false;
+                    }
+                }
+                flushBuffer(isBoundaryAfterMatch);
                 i = i + matchedLen - 1;
             } else {
                 outputBuffer.appendCodePoint(thisChar);
@@ -261,5 +274,9 @@ public class KanjiParser {
             outputBuffer.append(str);
             jWriter.clear();
         }
+    }
+
+    private static boolean isClosingPunctuation(int c) {
+        return c == '、' || c == '。' || c == '」' || c == '）' || c == '！' || c == '？';
     }
 }
