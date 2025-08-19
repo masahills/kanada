@@ -114,7 +114,7 @@ public class MapBraille extends JMapper {
         for (int i = 0; i < brailleText.length(); i++) {
             char thisChar = brailleText.charAt(i);
             // Store punctuation indicator
-            if (thisChar == DOTS_5 || thisChar == DOTS_56 || thisChar == DOTS_256) {
+            if (isPunctuation(thisChar)) {
                 punctuation = thisChar;
             }
 
@@ -273,34 +273,22 @@ public class MapBraille extends JMapper {
         if (!isLineBreak(thisChar) && !isBlankSpace(thisChar)) {
             return null;
         }
-
-        if (punctuation == DOTS_5) {
+        String mark = BrailleMapping.KUTOUTEN_MAP.get(punctuation);
+        if (mark.equals("、") || mark.equals("・")) {
             if (isLineBreak(thisChar)) {
-                result = "・" + thisChar; // 改行は残す
+                result = mark + thisChar; // 改行は残す
             } else if (isBlankSpace(thisChar)) {
-                result = "・"; // 空白は無視
+                result = mark; // 空白は無視
             } else {
                 return null;
             }
             resetBrailleMode();
         }
-
-        if (punctuation == DOTS_56) {
+        if (mark.equals("。") || mark.equals("！") || mark.equals("？")) {
             if (isLineBreak(thisChar)) {
-                result = "、" + thisChar; // 改行は残す
-            } else if (isBlankSpace(thisChar)) {
-                result = "、"; // 空白は無視
-            } else {
-                return null;
-            }
-            resetBrailleMode();
-        }
-
-        if (punctuation == DOTS_256) {
-            if (isLineBreak(thisChar)) {
-                result = "。" + thisChar;
+                result = mark + thisChar;
             } else if (isBlankSpace(thisChar) && isBlankSpace(nextChar)) {
-                result = "。";
+                result = mark;
             } else {
                 return null;
             }
@@ -385,6 +373,10 @@ public class MapBraille extends JMapper {
 
     private static boolean isLineBreak(char c) {
         return c == '\n' || c == '\r';
+    }
+
+    private static boolean isPunctuation(char c) {
+        return BrailleMapping.KUTOUTEN_MAP.containsKey(c);
     }
 
     private static int findDashes(String text, int i) {

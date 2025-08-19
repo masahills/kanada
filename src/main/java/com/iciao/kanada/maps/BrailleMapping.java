@@ -35,6 +35,7 @@ class BrailleMapping {
     protected static final Map<Character, String> DIGIT_MAP = new HashMap<>();
     protected static final Map<Character, String> LATIN_MAP = new HashMap<>();
     protected static final Map<Character, String> KANA_MAP = new HashMap<>();
+    protected static final Map<Character, String> KUTOUTEN_MAP = new HashMap<>();
 
     static {
         // English alphabet
@@ -140,8 +141,11 @@ class BrailleMapping {
         KANA_MAP.put('⠒', "ー");
         KANA_MAP.put('⠂', "っ");
 
-        KANA_MAP.put('⠢', "？");
-        KANA_MAP.put('⠖', "！");
+        KUTOUTEN_MAP.put('⠐', "・");
+        KUTOUTEN_MAP.put('⠰', "、");
+        KUTOUTEN_MAP.put('⠲', "。");
+        KUTOUTEN_MAP.put('⠢', "？");
+        KUTOUTEN_MAP.put('⠖', "！");
     }
 
     protected static String toDakuon(String kana) {
