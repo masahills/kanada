@@ -96,11 +96,6 @@ public class MapBraille extends JMapper {
                 }
                 yield true;
             }
-            // 外国語引用符（開始）
-            case DOTS_236 -> {
-                currentMode = BrailleMode.LATIN_QUOTE;
-                yield true;
-            }
             default -> false;
         };
     }
@@ -114,6 +109,7 @@ public class MapBraille extends JMapper {
         char punctuation = 0;
         boolean parenthesisIn = false;
         boolean cornerBracketIn = false;
+        boolean latinQuoteIn = false;
 
         for (int i = 0; i < brailleText.length(); i++) {
             char thisChar = brailleText.charAt(i);
@@ -131,6 +127,33 @@ public class MapBraille extends JMapper {
             // Update braille mode
             if (setBrailleMode(thisChar)) {
                 // This is an indicator. Skip to the next char
+                continue;
+            }
+
+            // 情報処理用点字表記
+            // TODO: 外国語引用符との区別の仕方
+            if (thisChar == DOTS_6 && nextChar == DOTS_236 && !latinQuoteIn) {
+                currentMode = BrailleMode.LATIN;
+                latinQuoteIn = true;
+                i += 1;
+                continue;
+            }
+            if (thisChar == DOTS_6 && nextChar == DOTS_356 && latinQuoteIn) {
+                resetBrailleMode();
+                latinQuoteIn = false;
+                i += 1;
+                continue;
+            }
+
+            // 外国語引用符
+            if (thisChar == DOTS_236 && !latinQuoteIn) {
+                currentMode = BrailleMode.LATIN;
+                latinQuoteIn = true;
+                continue;
+            }
+            if (thisChar == DOTS_356 && latinQuoteIn) {
+                resetBrailleMode();
+                latinQuoteIn = false;
                 continue;
             }
 
@@ -155,7 +178,7 @@ public class MapBraille extends JMapper {
 
             // Numerals
             if (currentMode == BrailleMode.NUMBER) {
-                String number = getNumeric(thisChar, nextChar);
+                String number = getNumeric(thisChar, nextChar, latinQuoteIn);
                 if (number != null) {
                     result.append(number);
                     continue;
@@ -165,14 +188,19 @@ public class MapBraille extends JMapper {
             // Latin characters
             if (currentMode == BrailleMode.LATIN ||
                     currentMode == BrailleMode.LATIN_CAPITAL ||
-                    currentMode == BrailleMode.LATIN_CAPITAL_ALL ||
-                    currentMode == BrailleMode.LATIN_QUOTE) {
+                    currentMode == BrailleMode.LATIN_CAPITAL_ALL) {
                 String latin = getLatin(thisChar);
                 if (latin != null) {
                     result.append(latin);
                     punctuation = 0; // 読点ではなく外字符のため punctuation をリセット
                 } else if (thisChar == DOTS_356 && nextChar == DOTS_36) {
                     i += 1; // 外国語引用符（終了）の次が第一つなぎ符なので一つ飛ばす
+                } else if (thisChar == DOTS_5 && nextChar == DOTS_36) {
+                    result.append("_");
+                    i += 1;
+                }
+                if (!latinQuoteIn) {
+                    resetBrailleMode();
                 }
                 continue;
             }
@@ -283,18 +311,18 @@ public class MapBraille extends JMapper {
         return result;
     }
 
-    private String getNumeric(char thisChar, char nextChar) {
+    private String getNumeric(char thisChar, char nextChar, boolean latinQuoteIn) {
         String nextDigit = BrailleMapping.DIGIT_MAP.get(nextChar);
         if (thisChar == DOTS_36) {
             // 次があ行・ら行の場合は、第一つなぎ符
             if (nextDigit != null && nextDigit.length() == 1 && Character.isDigit(nextDigit.charAt(0))) {
-                resetBrailleMode();
+                currentMode = latinQuoteIn ? BrailleMode.LATIN : BrailleMode.KANA;
                 return "";  // 数字の終端なので、nullではなく空文字を返して次の文字に進む
             }
         }
         String digit = BrailleMapping.DIGIT_MAP.get(thisChar);
         if (digit == null || nextDigit == null) {
-            resetBrailleMode();
+            currentMode = latinQuoteIn ? BrailleMode.LATIN : BrailleMode.KANA;
         }
         return digit;
     }
@@ -302,8 +330,7 @@ public class MapBraille extends JMapper {
     private String getLatin(char thisChar) {
         String result = null;
         // 第一つなぎ符、外国語引用符（終了）の場合は、かなモードにリセット
-        if (thisChar == DOTS_36 || thisChar == DOTS_356) {
-            resetBrailleMode();
+        if (thisChar == DOTS_36) {
             return null;
         }
         String latin = BrailleMapping.LATIN_MAP.get(thisChar);
@@ -338,30 +365,14 @@ public class MapBraille extends JMapper {
             return null;
         }
         switch (thisChar) {
-            case DOTS_4 -> {
-                result = BrailleMapping.toYouon(kana);
-            }
-            case DOTS_5 -> {
-                result = BrailleMapping.toDakuon(kana);
-            }
-            case DOTS_6 -> {
-                result = BrailleMapping.toHandakuon(kana);
-            }
-            case DOTS_45 -> {
-                result = BrailleMapping.toYouDakuon(kana);
-            }
-            case DOTS_46 -> {
-                result = BrailleMapping.toYouHandakuon(kana);
-            }
-            case DOTS_26 -> {
-                result = BrailleMapping.toSpecial26(kana);
-            }
-            case DOTS_256 -> {
-                result = BrailleMapping.toSpecial256(kana);
-            }
-            case DOTS_456 -> {
-                result = BrailleMapping.toSpecial456(kana);
-            }
+            case DOTS_4 -> result = BrailleMapping.toYouon(kana);
+            case DOTS_5 -> result = BrailleMapping.toDakuon(kana);
+            case DOTS_6 -> result = BrailleMapping.toHandakuon(kana);
+            case DOTS_45 -> result = BrailleMapping.toYouDakuon(kana);
+            case DOTS_46 -> result = BrailleMapping.toYouHandakuon(kana);
+            case DOTS_26 -> result = BrailleMapping.toSpecial26(kana);
+            case DOTS_256 -> result = BrailleMapping.toSpecial256(kana);
+            case DOTS_456 -> result = BrailleMapping.toSpecial456(kana);
         }
         if (result != null) {
             resetBrailleMode();
@@ -436,7 +447,6 @@ public class MapBraille extends JMapper {
         LATIN,
         LATIN_CAPITAL,
         LATIN_CAPITAL_ALL,
-        LATIN_QUOTE,
         KANA
     }
 }
