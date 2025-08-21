@@ -69,7 +69,7 @@ public class KanjiParser {
                 if (prevBlock != currentBlock) {
                     // Insert a space at the word boundary when necessary.
                     boolean isBoundaryAtTransition = true;
-                    if (isClosingPunctuation(thisChar) || prevChar == '「' || prevChar == '（') {
+                    if (isClosingPunctuation(thisChar) || prevChar == '「' || prevChar == '（' || prevChar == '・') {
                         isBoundaryAtTransition = false;
                     } else if (Character.isWhitespace(thisChar) || Character.isWhitespace(prevChar)) {
                         isBoundaryAtTransition = false;
@@ -83,7 +83,7 @@ public class KanjiParser {
                         }
                     }
                     if (isBoundaryAtTransition) {
-                        appendSeparatorIfNeeded();
+                        appendSeparator();
                     }
                 }
             }
@@ -107,7 +107,7 @@ public class KanjiParser {
             }
 
             // Flush non-dictionary characters before looking up the dictionary.
-//            flushBuffer();
+            flushBuffer();
 
             int matchedLen = 0;
             String yomi;
@@ -197,6 +197,10 @@ public class KanjiParser {
                     jWriter.append("{").append(String.join("|", possibleReadings)).append("}");
                 }
 
+                if (kanada.modeAddSpace && jWriter.tail == ' ') {
+                    appendSeparator();
+                }
+                flushBuffer();
                 i = i + matchedLen - 1;
             } else {
                 outputBuffer.appendCodePoint(thisChar);
@@ -266,26 +270,23 @@ public class KanjiParser {
         return sentence.substring(contextStart, contextEnd);
     }
 
-    private void appendSeparatorIfNeeded() {
-        if (jWriter.buffer.isEmpty()) {
-            return;
-        }
-        if (kanada.modeAddSpace && jWriter.tail == ' '
-                && !Pattern.matches("(?s).*?[\r\n]$", jWriter.buffer.toString())) {
+    private void appendSeparator() {
+        if (!jWriter.buffer.isEmpty()
+                && jWriter.buffer.charAt(jWriter.buffer.length() - 1) != '\n'
+                && jWriter.buffer.charAt(jWriter.buffer.length() - 1) != '\r') {
             jWriter.append(kanada.settingSeparatorChar);
         }
     }
 
     private void flushBuffer() {
-        if (jWriter.buffer.isEmpty()) {
-            return;
+        if (!jWriter.buffer.isEmpty()) {
+            StringBuilder str = jWriter.map();
+            outputBuffer.append(str);
+            jWriter.clear();
         }
-        StringBuilder str = jWriter.map();
-        outputBuffer.append(str);
-        jWriter.clear();
     }
 
     private static boolean isClosingPunctuation(int c) {
-        return c == '、' || c == '。' || c == '」' || c == '）' || c == '！' || c == '？';
+        return c == '、' || c == '。' || c == '」' || c == '）' || c == '！' || c == '？' || c == '・';
     }
 }
