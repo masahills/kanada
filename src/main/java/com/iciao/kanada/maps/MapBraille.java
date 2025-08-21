@@ -68,7 +68,6 @@ public class MapBraille extends JMapper {
     @Override
     protected void process(String brailleStr, int param) {
         String str = brailleToText(brailleStr);
-        matchedLength = brailleStr.length();
         setString(this.kanada.process(str));
     }
 
@@ -113,6 +112,11 @@ public class MapBraille extends JMapper {
 
         for (int i = 0; i < brailleText.length(); i++) {
             char thisChar = brailleText.charAt(i);
+            Character.UnicodeBlock block = Character.UnicodeBlock.of(thisChar);
+            if (block != Character.UnicodeBlock.BRAILLE_PATTERNS && !isLineBreak(thisChar)) {
+                matchedLength = i;
+                return result.toString();
+            }
             // Store punctuation indicator
             if (isPunctuation(thisChar)) {
                 punctuation = thisChar;
@@ -265,6 +269,7 @@ public class MapBraille extends JMapper {
                 System.err.println("Unknown character: " + thisChar);
             }
         }
+        matchedLength = brailleText.length();
         return result.toString();
     }
 
@@ -304,6 +309,8 @@ public class MapBraille extends JMapper {
             if (nextDigit != null && nextDigit.length() == 1 && Character.isDigit(nextDigit.charAt(0))) {
                 currentMode = latinQuoteIn ? BrailleMode.LATIN : BrailleMode.KANA;
                 return "";  // 数字の終端なので、nullではなく空文字を返して次の文字に進む
+            } else if (nextChar == DOTS_3456 || nextChar == DOTS_56) {
+                return "-"; // 次が数字符・外字符なのでハイフンとみなす
             }
         }
         String digit = BrailleMapping.DIGIT_MAP.get(thisChar);
