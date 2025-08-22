@@ -68,7 +68,6 @@ public class MapBraille extends JMapper {
     @Override
     protected void process(String brailleStr, int param) {
         String str = brailleToText(brailleStr);
-        matchedLength = brailleStr.length();
         setString(this.kanada.process(str));
     }
 
@@ -113,6 +112,11 @@ public class MapBraille extends JMapper {
 
         for (int i = 0; i < brailleText.length(); i++) {
             char thisChar = brailleText.charAt(i);
+            Character.UnicodeBlock block = Character.UnicodeBlock.of(thisChar);
+            if (block != Character.UnicodeBlock.BRAILLE_PATTERNS && !isLineBreak(thisChar)) {
+                matchedLength = i;
+                return result.toString();
+            }
             // Store punctuation indicator
             if (isPunctuation(thisChar)) {
                 punctuation = thisChar;
@@ -158,11 +162,11 @@ public class MapBraille extends JMapper {
             }
 
             // Punctuation marks
-            if (punctuation == DOTS_56 || punctuation == DOTS_256) {
+            if (punctuation > 0) {
                 String punctuationStr = getPunctuation(thisChar, nextChar, punctuation);
                 if (punctuationStr != null) {
                     result.append(punctuationStr);
-                    if (punctuation == DOTS_256 && nextChar == DOTS_0) {
+                    if (nextChar == DOTS_0) {
                         i += 1; // 句点を示す空白なので一つ飛ばす
                     }
                     punctuation = 0;
@@ -198,6 +202,7 @@ public class MapBraille extends JMapper {
                     i += 1; // 外国語引用符（終了）の次が第一つなぎ符なので一つ飛ばす
                 } else if (thisChar == DOTS_5 && nextChar == DOTS_36) {
                     result.append("_");
+                    punctuation = 0;
                     i += 1; // 情報処理用点字の組み合わせなので一つ飛ばす
                 }
                 continue;
@@ -248,14 +253,14 @@ public class MapBraille extends JMapper {
             if (kana != null) {
                 result.append(kana);
                 i += 1;
-                if (thisChar == DOTS_256) {
-                    punctuation = 0; // 句点ではなく特殊音のため punctuation をリセット
+                if (isPunctuation(thisChar)) {
+                    punctuation = 0; // 中点・句点ではなく濁音・特殊音のため punctuation をリセット
                 }
                 continue;
             }
 
-            if (thisChar == DOTS_256) {
-                // Check kuten on the next path
+            if (isPunctuation(thisChar)) {
+                // Process nakaten / kuten on the next path
                 continue;
             }
 
@@ -265,6 +270,7 @@ public class MapBraille extends JMapper {
                 System.err.println("Unknown character: " + thisChar);
             }
         }
+        matchedLength = brailleText.length();
         return result.toString();
     }
 
@@ -304,6 +310,8 @@ public class MapBraille extends JMapper {
             if (nextDigit != null && nextDigit.length() == 1 && Character.isDigit(nextDigit.charAt(0))) {
                 currentMode = latinQuoteIn ? BrailleMode.LATIN : BrailleMode.KANA;
                 return "";  // 数字の終端なので、nullではなく空文字を返して次の文字に進む
+            } else if (nextChar == DOTS_3456 || nextChar == DOTS_56) {
+                return "-"; // 次が数字符・外字符なのでハイフンとみなす
             }
         }
         String digit = BrailleMapping.DIGIT_MAP.get(thisChar);

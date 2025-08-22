@@ -70,7 +70,7 @@ public class MapKatakana extends JMapper {
             case TO_ASCII:
             case TO_WIDE_ASCII:
                 if (transliteration != null) {
-                    if (str.length() > matchedLength + 1) {
+                    if (str.length() > matchedLength) {
                         int nextChar = str.codePointAt(matchedLength);
                         if (nextChar == 0x30FC) {
                             transliteration = kanaMapping.processLongVowels(transliteration, getConversionSystem());

@@ -48,6 +48,8 @@ public class MapAscii extends JMapper {
                 out.append(numbersToBraille(str));
             } else if (thisChar >= 'A' && thisChar <= 'Z' || thisChar >= 'a' && thisChar <= 'z') {
                 out.append(alphabetsToBraille(str));
+            } else if (thisChar == ' ') {
+                out.append('\u2800');
             } else {
                 out.appendCodePoint(thisChar);
             }
