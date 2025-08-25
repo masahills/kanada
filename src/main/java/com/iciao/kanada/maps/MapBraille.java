@@ -41,7 +41,7 @@ public class MapBraille extends JMapper {
 
     // 符号
     private static final char DOTS_3456 = '⠼'; // U+283C 数字符
-    private static final char DOTS_4 = '⠈';    // U+2808 拗音符
+    private static final char DOTS_4 = '⠈';    // U+2808 拗音符 / 情報処理用点字の場合、2行目以降の行頭で行継続符。
     private static final char DOTS_5 = '⠐';    // U+2810 濁音符 / 中点「・」改行の前以外では後ろに空白を挟む。
     private static final char DOTS_45 = '⠘';   // U+2818 拗濁音符
     private static final char DOTS_46 = '⠨';   // U+2828 拗半濁音符
@@ -194,7 +194,7 @@ public class MapBraille extends JMapper {
             if (currentMode == BrailleMode.LATIN ||
                     currentMode == BrailleMode.LATIN_CAPITAL ||
                     currentMode == BrailleMode.LATIN_CAPITAL_ALL) {
-                String latin = getLatin(thisChar);
+                String latin = getLatin(thisChar, latinQuoteIn);
                 if (latin != null) {
                     result.append(latin);
                     punctuation = 0; // 読点ではなく外字符のため punctuation をリセット
@@ -204,6 +204,13 @@ public class MapBraille extends JMapper {
                     result.append("_");
                     punctuation = 0;
                     i += 1; // 情報処理用点字の組み合わせなので一つ飛ばす
+                } else if (Character.isWhitespace(thisChar)) {
+                    result.append(thisChar);
+                    if (nextChar == DOTS_4) {
+                        i += 1; // 次の行の先頭が情報処理用点字の行継続符なので一つ飛ばす
+                    }
+                } else {
+                    System.err.println("Unknown character (latin): " + thisChar);
                 }
                 continue;
             }
@@ -321,10 +328,10 @@ public class MapBraille extends JMapper {
         return digit;
     }
 
-    private String getLatin(char thisChar) {
+    private String getLatin(char thisChar, boolean latinQuoteIn) {
         String result = null;
         // 第一つなぎ符の場合は、かな表記にリセット
-        if (thisChar == DOTS_36) {
+        if (thisChar == DOTS_36 && !latinQuoteIn) {
             resetBrailleMode();
             return null;
         }
