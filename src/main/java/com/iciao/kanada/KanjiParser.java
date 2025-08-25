@@ -198,7 +198,13 @@ public class KanjiParser {
                 }
 
                 if (kanada.modeAddSpace && jWriter.tail == ' ') {
-                    appendSeparator();
+                    int nextIndex = i + matchedLen;
+                    if (nextIndex < inputString.length()) {
+                        int nextChar = inputString.codePointAt(nextIndex);
+                        if (!isClosingPunctuation(nextChar)) {
+                            appendSeparator();
+                        }
+                    }
                 }
                 flushBuffer();
                 i = i + matchedLen - 1;
