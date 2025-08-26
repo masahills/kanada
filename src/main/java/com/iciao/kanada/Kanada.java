@@ -26,6 +26,8 @@ package com.iciao.kanada;
 import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -118,6 +120,121 @@ public class Kanada {
             return new Kanada().toKatakana().process(text);
         } catch (java.io.IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println("""
+                    Usage:
+                        java -jar kanada-1.0.0.jar <mode> [options]
+                    
+                    Modes:
+                        romaji      Convert input text to romaji
+                        hiragana    Convert input text to hiragana
+                        katakana    Convert input text to katakana
+                        parse       Parse input and apply options (-s, -r, -R)
+                    
+                    Options:
+                        -s          Insert spaces at segmentation points
+                        -u          Uppercase the first output word (romaji mode)
+                        -U          Uppercase all output words (romaji mode)
+                        -m          Output romaji with macrons
+                        -r          Add furigana readings for kanji words
+                        -R          Add all possible readings for kanji words
+                    
+                    Input:
+                        The program reads from standard input via piping or redirection.
+                    
+                    Examples:
+                        cat input.txt | java -jar kanada-1.0.0.jar parse -s
+                        java -jar kanada-1.0.0.jar romaji < input.txt
+                    
+                    Note:
+                    - Place kakasidict dictionary files in the ./dictionary/Japanese directory
+                      relative to the jar file. The kanwadict.dat file is generated at runtime.
+                        .
+                        ├── kanada-1.0.0.jar
+                        └── dictionary
+                            └── japanese
+                                ├── kakasidict
+                                └── kanwadict.dat
+                    
+                    - You can use your own dictionary files by specifying the -Ddictionaries property:
+                      e.g. -Ddictionaries=SKK-JISYO.ML,SKK-JISYO.propernoun
+                    
+                    - AI-assisted conversion is not yet supported in the command-line interface.
+                    """);
+
+            System.exit(1);
+        }
+
+        String mode = args[0];
+
+        boolean spaces = false;
+        boolean upperFirst = false;
+        boolean upperAll = false;
+        boolean macrons = false;
+        boolean furigana = false;
+        boolean allYomi = false;
+
+        for (int i = 1; i < args.length; i++) {
+            switch (args[i]) {
+                case "-s" -> {
+                    spaces = true;
+                }
+                case "-u" -> {
+                    upperFirst = true;
+                    upperAll = false;
+                }
+                case "-U" -> {
+                    upperFirst = false;
+                    upperAll = true;
+                }
+                case "-m" -> {
+                    macrons = true;
+                }
+                case "-r" -> {
+                    furigana = true;
+                    allYomi = false;
+                }
+                case "-R" -> {
+                    allYomi = true;
+                    furigana = false;
+                }
+            }
+        }
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+            Kanada converter = create();
+            switch (mode) {
+                case "romaji" -> converter.toRomaji();
+                case "hiragana" -> converter.toHiragana();
+                case "katakana" -> converter.toKatakana();
+                case "parse" -> { /* do nothing */ }
+                default -> {
+                    System.err.println("Unknown mode: " + mode);
+                    System.exit(1);
+                }
+            }
+
+            if (spaces) converter.withSpaces();
+            if (upperFirst) converter.upperCaseFirst();
+            if (upperAll) converter.upperCaseAll();
+            if (macrons) converter.withMacrons();
+            if (furigana) converter.withFurigana();
+            if (allYomi) converter.withAllYomi();
+
+            String line;
+            StringBuilder sb = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+            System.out.println(converter.process(sb.toString()));
+
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            System.exit(1);
         }
     }
 
