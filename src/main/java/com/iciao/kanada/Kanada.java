@@ -138,8 +138,8 @@ public class Kanada {
                     
                     Options:
                         -s          Insert spaces at segmentation points
-                        -u          Uppercase the first output word (romaji mode)
-                        -U          Uppercase all output words (romaji mode)
+                        -u          Capitalize each word (romaji mode)
+                        -U          Uppercase all letters (romaji mode)
                         -m          Output romaji with macrons
                         -r          Add furigana readings for kanji words
                         -R          Add all possible readings for kanji words
