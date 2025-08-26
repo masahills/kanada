@@ -151,7 +151,7 @@ public class Kanada {
                         java -jar kanada-1.0.0.jar romaji < input.txt
                     
                     Note:
-                    - Place kakasidict dictionary files in the ./dictionary/Japanese directory
+                    - Place the kakasidict dictionary file in the ./dictionary/Japanese directory
                       relative to the jar file. The kanwadict.dat file is generated at runtime.
                         .
                         ├── kanada-1.0.0.jar
@@ -161,7 +161,9 @@ public class Kanada {
                                 └── kanwadict.dat
                     
                     - You can use your own dictionary files by specifying the -Ddictionaries property:
-                      e.g. -Ddictionaries=SKK-JISYO.ML,SKK-JISYO.propernoun
+                      e.g. -Ddictionaries=SKK-JISYO.ML,SKK-JISYO.propernoun (comma-separated list)
+                    
+                    - Delete the kanwadict.dat file when loading new dictionary files.
                     
                     - AI-assisted conversion is not yet supported in the command-line interface.
                     """);
@@ -199,8 +201,8 @@ public class Kanada {
                     allYomi = false;
                 }
                 case "-R" -> {
-                    allYomi = true;
                     furigana = false;
+                    allYomi = true;
                 }
             }
         }
