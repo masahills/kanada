@@ -124,7 +124,7 @@ public class Kanada {
     }
 
     public static void main(String[] args) {
-        if (args.length < 1) {
+        if (args.length < 1 || args[0].equals("help")) {
             System.out.println("""
                     Usage:
                         java -jar kanada-1.0.0.jar <mode> [options]
@@ -134,6 +134,7 @@ public class Kanada {
                         hiragana    Convert input text to hiragana
                         katakana    Convert input text to katakana
                         parse       Parse input and apply options (-s, -r, -R)
+                        help        Show this help
                     
                     Options:
                         -s          Insert spaces at segmentation points
@@ -204,6 +205,11 @@ public class Kanada {
                     furigana = false;
                     allYomi = true;
                 }
+                default -> {
+                    System.err.println("Unknown option: " + args[i]);
+                    System.err.println("Available options: -s, -u, -U, -m, -r, -R");
+                    System.exit(1);
+                }
             }
         }
 
@@ -213,9 +219,10 @@ public class Kanada {
                 case "romaji" -> converter.toRomaji();
                 case "hiragana" -> converter.toHiragana();
                 case "katakana" -> converter.toKatakana();
-                case "parse" -> { /* do nothing */ }
+                case "parse" -> { /* parsing only */ }
                 default -> {
                     System.err.println("Unknown mode: " + mode);
+                    System.err.println("Available modes: romaji, hiragana, katakana, parse, help");
                     System.exit(1);
                 }
             }
