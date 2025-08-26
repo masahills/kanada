@@ -27,6 +27,7 @@ import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
 import java.io.BufferedReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -56,61 +57,46 @@ public class KanjiParser {
         this.llmClient = llmClient;
     }
 
+    private static boolean isClosingPunctuation(int c) {
+        return c == '、' || c == '。' || c == '」' || c == '）' || c == '！' || c == '？' || c == '・';
+    }
+
     public String parse(BufferedReader reader) throws Exception {
         StringBuilder buffer = new StringBuilder();
-        StringBuilder output = new StringBuilder();
         int position = 0;
         int maxDictLength = kanwa.getMaxEntryLength();
         int contextSize = 50; // For LLM context extraction
         int bufferSize = Math.max(maxDictLength, contextSize) + 100;
 
-        // Initial buffer fill
-        fillBuffer(reader, buffer, bufferSize);
+        // Read an initial chunk from the stream
+        readForward(reader, buffer, bufferSize);
 
         while (position < buffer.length()) {
-            int matched = processCharacterFromBuffer(buffer, position, output);
+            String bufferStr = buffer.toString();
+            int matched = processCharacterAt(bufferStr, position);
             position += Math.max(1, matched);
 
-            // Refill buffer if needed (only if we're getting close to the end)
+            // Read ahead to fill the buffer if necessary
             int remaining = buffer.length() - position;
             if (remaining < maxDictLength && remaining > 0) {
-                int oldLength = buffer.length();
-                fillBuffer(reader, buffer, bufferSize);
-                if (buffer.length() == oldLength) {
-                    // No more data, continue processing remaining characters
-                }
+                readForward(reader, buffer, bufferSize);
             }
         }
 
-        return output.toString();
+        // Flush the remaining characters in the buffer.
+        flushBuffer();
+        return outputBuffer.toString();
     }
 
-    private void fillBuffer(BufferedReader reader, StringBuilder buffer, int targetSize) throws Exception {
-        for (int i = 0; i < targetSize; i++) {
+    private void readForward(BufferedReader reader, StringBuilder buffer, int length) throws Exception {
+        for (int i = 0; i < length; i++) {
             int ch = reader.read();
             if (ch == -1) break;
             buffer.append((char) ch);
         }
     }
 
-    private int processCharacterFromBuffer(StringBuilder buffer, int position, StringBuilder output) throws Exception {
-        if (position >= buffer.length()) return 0;
-
-        String bufferStr = buffer.toString();
-        int matched = processCharacterAt(bufferStr, position, output);
-
-        // If no match, just copy the character
-        if (matched == 0) {
-            output.appendCodePoint(bufferStr.codePointAt(position));
-            return 1;
-        }
-        return matched;
-    }
-
-    private int processCharacterAt(String inputString, int i, StringBuilder output) throws Exception {
-        // Extract the core processing logic from the original parse method
-        int strLen = inputString.length();
-
+    private int processCharacterAt(String inputString, int i) throws Exception {
         int thisChar = inputString.codePointAt(i);
 
         if (i > 0 && kanada.modeAddSpace) {
@@ -118,6 +104,7 @@ public class KanjiParser {
             Character.UnicodeBlock prevBlock = Character.UnicodeBlock.of(prevChar);
             Character.UnicodeBlock currentBlock = Character.UnicodeBlock.of(thisChar);
             if (prevBlock != currentBlock) {
+                // Insert a space at the word boundary when necessary.
                 boolean isBoundaryAtTransition = true;
                 if (isClosingPunctuation(thisChar) || prevChar == '「' || prevChar == '（' || prevChar == '・') {
                     isBoundaryAtTransition = false;
@@ -141,7 +128,6 @@ public class KanjiParser {
         if (!Pattern.matches("[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]",
                 String.valueOf(Character.toChars(thisChar)))) {
             jWriter.append(thisChar);
-            flushBufferToOutput(output);
             return 1;
         }
 
@@ -154,15 +140,14 @@ public class KanjiParser {
 
         if (valueList.isEmpty()) {
             jWriter.append(thisChar);
-            flushBufferToOutput(output);
             return 1;
         }
 
         // Flush non-dictionary characters before looking up the dictionary.
-        flushBufferToOutput(output);
+        flushBuffer();
 
         int matchedLen = 0;
-        String yomi = "";
+        String yomi;
         String kanji = "";
         int tail = ' ';
         String yomiWithTail = "";
@@ -181,6 +166,7 @@ public class KanjiParser {
             if (term.tail() != ' ' && i + searchWord.length() < inputString.length()) {
                 char nextChar = inputString.charAt(i + searchWord.length());
                 if (Character.UnicodeBlock.of(nextChar) == Character.UnicodeBlock.HIRAGANA) {
+                    // The tail letters from the SKK dictionary are assumed to be based on the Hepburn system.
                     searchTail = KanaMapping.getInstance().getRomajiInitial(nextChar, KanaMapping.ConversionSystem.MODIFIED_HEPBURN);
                 }
             }
@@ -199,6 +185,7 @@ public class KanjiParser {
                     }
                 }
                 if (kanada.modeShowAllYomi || llmClient != null) {
+                    // Collect all YomiKanjiData for this word chunk
                     if (candidates.isEmpty() || candidates.get(0).getLength() == searchLen) {
                         if (candidates.isEmpty() || candidates.get(0).getLength() < searchLen) {
                             candidates.clear();
@@ -208,6 +195,7 @@ public class KanjiParser {
                         }
                     }
                 } else if (!yomiWithTail.isEmpty()) {
+                    // Otherwise, finish the search if yomi with tail is found
                     break;
                 }
             }
@@ -221,6 +209,7 @@ public class KanjiParser {
             jWriter.tail = ' ';
         }
 
+        // Use LLM for disambiguation if multiple candidates exist
         if (tail == ' ' && llmClient != null && candidates.size() > 1) {
             Kanwadict.YomiKanjiData selectedTerm = askGenerativeAI(candidates, inputString, i);
             yomi = selectedTerm.yomi();
@@ -234,6 +223,7 @@ public class KanjiParser {
                 jWriter.append(yomi);
             }
 
+            // These modes should be used with the Kanji option but leaving the choice up to the user.
             if (kanada.modeFurigana) {
                 jWriter.append("[").append(yomi).append("]");
             } else if (kanada.modeShowAllYomi && !candidates.isEmpty()) {
@@ -253,185 +243,19 @@ public class KanjiParser {
                     }
                 }
             }
-            flushBufferToOutput(output);
+            flushBuffer();
             return matchedLen;
-        } else {
-            jWriter.append(thisChar);
-            flushBufferToOutput(output);
-            return 1;
         }
-    }
 
-    private void flushBufferToOutput(StringBuilder output) {
-        if (!jWriter.buffer.isEmpty()) {
-            StringBuilder str = jWriter.map();
-            output.append(str);
-            jWriter.clear();
-        }
+        //outputBuffer.appendCodePoint(thisChar);
+        jWriter.append(thisChar);
+        return 1;
     }
 
     public String parse(String inputString) throws Exception {
-        int strLen = inputString.length();
-        outputBuffer.ensureCapacity(strLen);
-
-        for (int i = 0; i < strLen; i++) {
-            int thisChar = inputString.codePointAt(i);
-
-            if (i > 0 && kanada.modeAddSpace) {
-                int prevChar = inputString.codePointAt(i - 1);
-                Character.UnicodeBlock prevBlock = Character.UnicodeBlock.of(prevChar);
-                Character.UnicodeBlock currentBlock = Character.UnicodeBlock.of(thisChar);
-                if (prevBlock != currentBlock) {
-                    // Insert a space at the word boundary when necessary.
-                    boolean isBoundaryAtTransition = true;
-                    if (isClosingPunctuation(thisChar) || prevChar == '「' || prevChar == '（' || prevChar == '・') {
-                        isBoundaryAtTransition = false;
-                    } else if (Character.isWhitespace(thisChar) || Character.isWhitespace(prevChar)) {
-                        isBoundaryAtTransition = false;
-                    } else if (thisChar == 'ー' && prevBlock == Character.UnicodeBlock.HIRAGANA) {
-                        isBoundaryAtTransition = false;
-                    } else if (prevChar == 'ー') {
-                        int prevPrevChar = i > 1 ? inputString.codePointAt(i - 2) : 0;
-                        Character.UnicodeBlock prevPrevBlock = Character.UnicodeBlock.of(prevPrevChar);
-                        if (currentBlock == prevPrevBlock || prevPrevChar == 'ー') {
-                            isBoundaryAtTransition = false;
-                        }
-                    }
-                    if (isBoundaryAtTransition) {
-                        appendSeparator();
-                    }
-                }
-            }
-
-            if (!Pattern.matches("[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]",
-                    String.valueOf(Character.toChars(thisChar)))) {
-                jWriter.append(thisChar);
-                continue;
-            }
-
-            Kanwadict.KanwaKey key = kanwa.getKey(thisChar);
-            List<Kanwadict.YomiKanjiData> valueList = new ArrayList<>();
-
-            if (kanwa.searchKey(key)) {
-                valueList = kanwa.getValue(key);
-            }
-
-            if (valueList.isEmpty()) {
-                jWriter.append(thisChar);
-                continue;
-            }
-
-            // Flush non-dictionary characters before looking up the dictionary.
-            flushBuffer();
-
-            int matchedLen = 0;
-            String yomi;
-            String kanji = "";
-            int tail = ' ';
-            String yomiWithTail = "";
-            String yomiWithoutTail = "";
-            List<Kanwadict.YomiKanjiData> candidates = new ArrayList<>();
-
-            for (Kanwadict.YomiKanjiData term : valueList) {
-                int searchLen = term.getLength();
-                if ((i + searchLen) > inputString.length() || searchLen < matchedLen) {
-                    continue;
-                }
-
-                String searchWord = inputString.substring(i, i + searchLen);
-
-                int searchTail = 0;
-                if (term.tail() != ' ' && i + searchWord.length() < inputString.length()) {
-                    char nextChar = inputString.charAt(i + searchWord.length());
-                    if (Character.UnicodeBlock.of(nextChar) == Character.UnicodeBlock.HIRAGANA) {
-                        // The tail letters from the SKK dictionary are assumed to be based on the Hepburn system.
-                        searchTail = KanaMapping.getInstance().getRomajiInitial(nextChar, KanaMapping.ConversionSystem.MODIFIED_HEPBURN);
-                    }
-                }
-
-                if (searchWord.equals(term.kanji())) {
-                    kanji = term.kanji();
-                    matchedLen = searchLen;
-                    if (term.tail() == ' ') {
-                        if (yomiWithoutTail.isEmpty()) {
-                            yomiWithoutTail = term.yomi();
-                        }
-                    } else if (term.tail() == searchTail) {
-                        if (yomiWithTail.isEmpty()) {
-                            yomiWithTail = term.yomi();
-                            tail = term.tail();
-                        }
-                    }
-                    if (kanada.modeShowAllYomi || llmClient != null) {
-                        // Collect all YomiKanjiData for this word chunk
-                        if (candidates.isEmpty() || candidates.get(0).getLength() == searchLen) {
-                            if (candidates.isEmpty() || candidates.get(0).getLength() < searchLen) {
-                                candidates.clear();
-                            }
-                            if (term.tail() == ' ') {
-                                candidates.add(term);
-                            }
-                        }
-                    } else if (!yomiWithTail.isEmpty()) {
-                        // Otherwise, finish the search if yomi with tail is found
-                        break;
-                    }
-                }
-            }
-
-            if (!yomiWithTail.isEmpty()) {
-                yomi = yomiWithTail;
-                jWriter.tail = tail;
-            } else {
-                yomi = yomiWithoutTail;
-                jWriter.tail = ' ';
-            }
-
-            // Use LLM for disambiguation if multiple candidates exist
-            if (tail == ' ' && llmClient != null && candidates.size() > 1) {
-                Kanwadict.YomiKanjiData selectedTerm = askGenerativeAI(candidates, inputString, i);
-                yomi = selectedTerm.yomi();
-                jWriter.tail = selectedTerm.tail();
-            }
-
-            if (matchedLen > 0 && !yomi.isEmpty()) {
-                if (kanada.optionKanji == JMapper.AS_IS) {
-                    jWriter.append(kanji);
-                } else {
-                    jWriter.append(yomi);
-                }
-
-                // These modes should be used with the Kanji option but leaving the choice up to the user.
-                if (kanada.modeFurigana) {
-                    jWriter.append("[").append(yomi).append("]");
-                } else if (kanada.modeShowAllYomi && !candidates.isEmpty()) {
-                    List<String> possibleReadings = candidates.stream()
-                            .map(Kanwadict.YomiKanjiData::yomi)
-                            .distinct()
-                            .toList();
-                    jWriter.append("{").append(String.join("|", possibleReadings)).append("}");
-                }
-
-                if (kanada.modeAddSpace && jWriter.tail == ' ') {
-                    int nextIndex = i + matchedLen;
-                    if (nextIndex < inputString.length()) {
-                        int nextChar = inputString.codePointAt(nextIndex);
-                        if (!isClosingPunctuation(nextChar)) {
-                            appendSeparator();
-                        }
-                    }
-                }
-                flushBuffer();
-                i = i + matchedLen - 1;
-            } else {
-                outputBuffer.appendCodePoint(thisChar);
-            }
+        try (BufferedReader reader = new BufferedReader(new StringReader(inputString))) {
+            return parse(reader);
         }
-
-        // Flush the remaining characters in the buffer.
-        flushBuffer();
-
-        return outputBuffer.toString();
     }
 
     private Kanwadict.YomiKanjiData askGenerativeAI(List<Kanwadict.YomiKanjiData> candidates, String sentence, int position) {
@@ -505,9 +329,5 @@ public class KanjiParser {
             outputBuffer.append(str);
             jWriter.clear();
         }
-    }
-
-    private static boolean isClosingPunctuation(int c) {
-        return c == '、' || c == '。' || c == '」' || c == '）' || c == '！' || c == '？' || c == '・';
     }
 }
