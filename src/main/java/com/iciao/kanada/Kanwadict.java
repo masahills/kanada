@@ -392,28 +392,7 @@ public class Kanwadict {
         Kanwadict kanwadict = Kanwadict.getKanwadict();
         kanwadict.exportAllEntries();
     }
-
-    public int getMaxEntryLength() {
-        int maxLength = 20; // Conservative default
-        try {
-            // Load some entries to get a better estimate
-            for (int i = 0x4e00; i < 0x4e10 && maxLength < 50; i++) {
-                KanwaKey key = new KanwaKey(i);
-                if (searchKey(key)) {
-                    ArrayList<YomiKanjiData> valueList = getValue(key);
-                    if (valueList != null) {
-                        for (YomiKanjiData data : valueList) {
-                            maxLength = Math.max(maxLength, data.kanji.length());
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // Fallback to safe default
-        }
-        return Math.max(maxLength, 20);
-    }
-
+    
     public record YomiKanjiData(String yomi, int tail, String kanji) implements Serializable {
 
         public int getLength() {
