@@ -30,7 +30,6 @@ import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -64,25 +63,22 @@ public class KanjiParser {
     public String parse(BufferedReader reader) throws Exception {
         StringBuilder buffer = new StringBuilder();
         int position = 0;
-        int maxDictLength = kanwa.getMaxEntryLength();
-        int contextSize = 50; // For LLM context extraction
-        int bufferSize = Math.max(maxDictLength, contextSize) + 100;
+        int contextSize = 60;
+        int maxPosition = 30;
 
-        // Read an initial chunk from the stream
-        readForward(reader, buffer, bufferSize);
+        // Initial read to fill the buffer
+        readForward(reader, buffer, contextSize);
 
-        while (position < buffer.length()) {
-            String bufferStr = buffer.toString();
-            int matched = processCharacterAt(bufferStr, position);
-            position += Math.max(1, matched);
-
-            // Read ahead to fill the buffer if necessary
-            int remaining = buffer.length() - position;
-            if (remaining < maxDictLength && remaining > 0) {
-                readForward(reader, buffer, bufferSize);
+        while (!buffer.isEmpty() && buffer.length() > position) {
+            int matched = processCharacterAt(reader, buffer, position);
+            if (position >= maxPosition) {
+                // Slide the context window by the matched length.
+                readForward(reader, buffer, matched);
+                buffer.delete(0, matched);
+            } else {
+                position += matched;
             }
         }
-
         // Flush the remaining characters in the buffer.
         flushBuffer();
         return outputBuffer.toString();
@@ -96,13 +92,13 @@ public class KanjiParser {
         }
     }
 
-    private int processCharacterAt(String inputString, int i) throws Exception {
+    private int processCharacterAt(BufferedReader reader, StringBuilder inputString, int i) throws Exception {
         int thisChar = inputString.codePointAt(i);
+        Character.UnicodeBlock currentBlock = Character.UnicodeBlock.of(thisChar);
 
         if (i > 0 && kanada.modeAddSpace) {
             int prevChar = inputString.codePointAt(i - 1);
             Character.UnicodeBlock prevBlock = Character.UnicodeBlock.of(prevChar);
-            Character.UnicodeBlock currentBlock = Character.UnicodeBlock.of(thisChar);
             if (prevBlock != currentBlock) {
                 // Insert a space at the word boundary when necessary.
                 boolean isBoundaryAtTransition = true;
@@ -125,8 +121,8 @@ public class KanjiParser {
             }
         }
 
-        if (!Pattern.matches("[\\p{IsHiragana}\\p{IsKatakana}\\p{IsHan}]",
-                String.valueOf(Character.toChars(thisChar)))) {
+        // The dictionary is indexed by characters from the CJK Unified Ideographs block.
+        if (currentBlock != Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS) {
             jWriter.append(thisChar);
             return 1;
         }
@@ -156,13 +152,23 @@ public class KanjiParser {
 
         for (Kanwadict.YomiKanjiData term : valueList) {
             int searchLen = term.getLength();
-            if ((i + searchLen) > inputString.length() || searchLen < matchedLen) {
+            // Skip if a longer word is already found.
+            if (searchLen < matchedLen) {
+                continue;
+            }
+            // Add more characters to the input buffer if needed
+            int readMore = i + searchLen - inputString.length();
+            if (readMore > 0) {
+                readForward(reader, inputString, readMore);
+            }
+            // Check again if enough characters are available for matching
+            if ((i + searchLen) > inputString.length()) {
                 continue;
             }
 
             String searchWord = inputString.substring(i, i + searchLen);
 
-            int searchTail = 0;
+            int searchTail = ' ';
             if (term.tail() != ' ' && i + searchWord.length() < inputString.length()) {
                 char nextChar = inputString.charAt(i + searchWord.length());
                 if (Character.UnicodeBlock.of(nextChar) == Character.UnicodeBlock.HIRAGANA) {
@@ -190,7 +196,7 @@ public class KanjiParser {
                         if (candidates.isEmpty() || candidates.get(0).getLength() < searchLen) {
                             candidates.clear();
                         }
-                        if (term.tail() == ' ') {
+                        if (term.tail() == searchTail) {
                             candidates.add(term);
                         }
                     }
@@ -211,7 +217,7 @@ public class KanjiParser {
 
         // Use LLM for disambiguation if multiple candidates exist
         if (tail == ' ' && llmClient != null && candidates.size() > 1) {
-            Kanwadict.YomiKanjiData selectedTerm = askGenerativeAI(candidates, inputString, i);
+            Kanwadict.YomiKanjiData selectedTerm = askGenerativeAI(candidates, inputString.toString(), i);
             yomi = selectedTerm.yomi();
             jWriter.tail = selectedTerm.tail();
         }
@@ -253,6 +259,9 @@ public class KanjiParser {
     }
 
     public String parse(String inputString) throws Exception {
+        if (inputString == null) {
+            return null;
+        }
         try (BufferedReader reader = new BufferedReader(new StringReader(inputString))) {
             return parse(reader);
         }
