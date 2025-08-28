@@ -230,7 +230,7 @@ public class Kanada {
                 }
                 default -> {
                     System.err.println("Unknown option: " + args[i]);
-                    System.err.println("Available options: -s, -u, -U, -m, -r, -R");
+                    System.err.println("Available options: -s, -u, -U, -m, -r, -R, -i <charset>, -o <charset>");
                     System.exit(1);
                 }
             }
