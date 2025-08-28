@@ -49,9 +49,6 @@ public class Kanwadict {
 
     private static final Kanwadict KANWADICT = new Kanwadict();
 
-    private final HashMap<KanwaKey, ArrayList<YomiKanjiData>> kanwaMap = new HashMap<>();
-    private final HashMap<KanwaKey, KanwaAddress> kanwaIndex = new HashMap<>();
-
     static {
         boolean initState = false;
         File kanwaDict = new File(DICTIONARY_PATH, DICTIONARY_DAT);
@@ -112,6 +109,9 @@ public class Kanwadict {
         }
     }
 
+    private final HashMap<KanwaKey, ArrayList<YomiKanjiData>> kanwaMap = new HashMap<>();
+    private final HashMap<KanwaKey, KanwaAddress> kanwaIndex = new HashMap<>();
+
     public static Kanwadict getKanwadict() {
         return KANWADICT;
     }
@@ -133,6 +133,11 @@ public class Kanwadict {
 
         // Default fallback
         return possiblePaths[0];
+    }
+
+    public static void main(String[] args) {
+        Kanwadict kanwadict = Kanwadict.getKanwadict();
+        kanwadict.exportAllEntries();
     }
 
     private void loadIndex(File objFile) throws IOException {
@@ -334,29 +339,6 @@ public class Kanwadict {
         kanwaMap.put(key, valueList);
     }
 
-    public static class KanwaAddress implements Serializable {
-        int value;
-    }
-
-    public static class KanwaKey implements Serializable {
-        private final int key;
-
-        public KanwaKey(int codepoint) {
-            key = codepoint;
-        }
-
-        public boolean equals(Object obj) {
-            if (obj instanceof KanwaKey thisKey) {
-                return (this.key == thisKey.key);
-            }
-            return false;
-        }
-
-        public int hashCode() {
-            return key;
-        }
-    }
-
     public void exportAllEntries() {
         try (PrintWriter writer = new PrintWriter(DICTIONARY_PATH + "kanwadict_export.txt", StandardCharsets.UTF_8)) {
             List<KanwaKey> keyList = new ArrayList<>(kanwaIndex.keySet());
@@ -388,9 +370,27 @@ public class Kanwadict {
         }
     }
 
-    public static void main(String[] args) {
-        Kanwadict kanwadict = Kanwadict.getKanwadict();
-        kanwadict.exportAllEntries();
+    public static class KanwaAddress implements Serializable {
+        int value;
+    }
+
+    public static class KanwaKey implements Serializable {
+        private final int key;
+
+        public KanwaKey(int codepoint) {
+            key = codepoint;
+        }
+
+        public boolean equals(Object obj) {
+            if (obj instanceof KanwaKey thisKey) {
+                return (this.key == thisKey.key);
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            return key;
+        }
     }
 
     public record YomiKanjiData(String yomi, int tail, String kanji) implements Serializable {

@@ -25,6 +25,8 @@ package com.iciao.kanada;
 
 import com.iciao.kanada.maps.*;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
@@ -33,36 +35,52 @@ import java.util.StringTokenizer;
  *
  * @author Masahiko Sato
  */
-public class JWriter {
+class JWriter {
     protected Kanada kanada;
     protected StringBuilder buffer = new StringBuilder();
     protected int tail;
     private boolean isTail;
 
-    public JWriter(Kanada thisKanada) {
+    protected JWriter(Kanada kanada) {
         this.clear();
-        kanada = thisKanada;
+        this.kanada = kanada;
         tail = ' ';
         isTail = false;
     }
 
-    public StringBuilder append(int codePoint) {
+    protected StringBuilder append(int codePoint) {
         return buffer.appendCodePoint(codePoint);
     }
 
-    public StringBuilder append(String str) {
+    protected StringBuilder append(char c) {
+        return buffer.append(c);
+    }
+
+    protected StringBuilder append(String str) {
         return buffer.append(str);
     }
 
-    public void clear() {
+    protected void flushBuffer(Writer writer) throws IOException {
+        if (writer == null) {
+            throw new IllegalArgumentException("Writer must not be null");
+        }
+        if (buffer.isEmpty()) {
+            return;
+        }
+        String converted = map().toString();
+        writer.write(converted);
+        clear();
+    }
+
+    protected void clear() {
         buffer.setLength(0);
     }
 
-    public Kanada getKanada() {
+    protected Kanada getKanada() {
         return kanada;
     }
 
-    public StringBuilder map() {
+    private StringBuilder map() {
         StringBuilder mappedStr = new StringBuilder();
         StringBuilder outStr = new StringBuilder();
         int totalLen = buffer.length();
@@ -178,7 +196,11 @@ public class JWriter {
             mappedStr.setLength(0);
         }
 
-        if (kanada.modeUcFirst && !isTail) {
+        if (kanada.modeUcAll) {
+            String upperCased = outStr.toString().toUpperCase(Locale.ENGLISH);
+            outStr.setLength(0);
+            outStr.append(upperCased);
+        } else if (kanada.modeUcFirst && !isTail) {
             StringBuilder sb = new StringBuilder();
             StringTokenizer token = new StringTokenizer(outStr.toString(), " \t\n\r\f", true);
             while (token.hasMoreTokens()) {

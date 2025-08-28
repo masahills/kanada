@@ -64,7 +64,7 @@ public class KanadaTest {
 
     @Test
     public void testNullInput() throws Exception {
-        assertNull(romaji.process(null));
+        assertNull(romaji.process((String) null));
     }
 
     @Test

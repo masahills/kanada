@@ -26,9 +26,7 @@ package com.iciao.kanada;
 import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Locale;
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -418,24 +416,33 @@ public class Kanada {
         optionBraille = paramBraille;
     }
 
+    public void process(Reader reader, Writer writer) {
+        if (reader == null || writer == null) {
+            throw new IllegalArgumentException("Reader and Writer must not be null");
+        }
+        try {
+            JWriter jWriter = new JWriter(this);
+            KanjiParser parser = new KanjiParser(jWriter, llmClient);
+            parser.parse(reader, writer);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, e.getMessage());
+        }
+    }
+
+    public String process(Reader reader) {
+        if (reader == null) {
+            throw new IllegalArgumentException("Reader must not be null");
+        }
+        StringWriter writer = new StringWriter();
+        process(reader, writer);
+        return writer.toString();
+    }
+
     public String process(String str) {
         if (str == null) {
             return null;
         }
-
-        String parsedStr;
-        try {
-            JWriter writer = new JWriter(this);
-            KanjiParser parser = new KanjiParser(writer, llmClient);
-            parsedStr = parser.parse(str);
-            if (modeUcAll) {
-                parsedStr = parsedStr.toUpperCase(Locale.ENGLISH);
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, e.getMessage());
-            return str;
-        }
-
-        return parsedStr;
+        StringReader reader = new StringReader(str);
+        return process(reader);
     }
 }
