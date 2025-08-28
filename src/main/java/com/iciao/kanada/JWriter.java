@@ -25,6 +25,7 @@ package com.iciao.kanada;
 
 import com.iciao.kanada.maps.*;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -59,7 +60,7 @@ class JWriter {
         return buffer.append(str);
     }
 
-    protected void flushBuffer(Writer writer) {
+    protected void flushBuffer(Writer writer) throws IOException {
         if (writer == null) {
             throw new IllegalArgumentException("Writer must not be null");
         }
@@ -67,12 +68,8 @@ class JWriter {
             return;
         }
         String converted = map().toString();
-        try {
-            writer.write(converted);
-            clear();
-        } catch (java.io.IOException e) {
-            throw new RuntimeException(e);
-        }
+        writer.write(converted);
+        clear();
     }
 
     protected void clear() {
