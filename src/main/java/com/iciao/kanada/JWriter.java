@@ -75,7 +75,7 @@ class JWriter {
         }
     }
 
-    private void clear() {
+    protected void clear() {
         buffer.setLength(0);
     }
 
