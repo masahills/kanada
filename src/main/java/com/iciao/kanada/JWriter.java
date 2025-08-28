@@ -178,7 +178,11 @@ public class JWriter {
             mappedStr.setLength(0);
         }
 
-        if (kanada.modeUcFirst && !isTail) {
+        if (kanada.modeUcAll) {
+            String upperCased = outStr.toString().toUpperCase(Locale.ENGLISH);
+            outStr.setLength(0);
+            outStr.append(upperCased);
+        } else if (kanada.modeUcFirst && !isTail) {
             StringBuilder sb = new StringBuilder();
             StringTokenizer token = new StringTokenizer(outStr.toString(), " \t\n\r\f", true);
             while (token.hasMoreTokens()) {
