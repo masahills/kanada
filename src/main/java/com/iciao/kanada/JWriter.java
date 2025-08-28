@@ -25,6 +25,8 @@ package com.iciao.kanada;
 
 import com.iciao.kanada.maps.*;
 
+import java.io.BufferedWriter;
+import java.io.Writer;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
@@ -33,36 +35,57 @@ import java.util.StringTokenizer;
  *
  * @author Masahiko Sato
  */
-public class JWriter {
+class JWriter {
     protected Kanada kanada;
     protected StringBuilder buffer = new StringBuilder();
     protected int tail;
     private boolean isTail;
 
-    public JWriter(Kanada thisKanada) {
+    protected JWriter(Kanada kanada) {
         this.clear();
-        kanada = thisKanada;
+        this.kanada = kanada;
         tail = ' ';
         isTail = false;
     }
 
-    public StringBuilder append(int codePoint) {
+    protected StringBuilder append(int codePoint) {
         return buffer.appendCodePoint(codePoint);
     }
 
-    public StringBuilder append(String str) {
+    protected StringBuilder append(char c) {
+        return buffer.append(c);
+    }
+
+    protected StringBuilder append(String str) {
         return buffer.append(str);
     }
 
-    public void clear() {
+    protected void flushBuffer(Writer writer) {
+        if (buffer.isEmpty()) {
+            return;
+        }
+        String converted = map().toString();
+        if (writer != null) {
+            try (BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+                bufferedWriter.write(converted);
+            } catch (java.io.IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            buffer.append(converted);
+        }
+        clear();
+    }
+
+    private void clear() {
         buffer.setLength(0);
     }
 
-    public Kanada getKanada() {
+    protected Kanada getKanada() {
         return kanada;
     }
 
-    public StringBuilder map() {
+    private StringBuilder map() {
         StringBuilder mappedStr = new StringBuilder();
         StringBuilder outStr = new StringBuilder();
         int totalLen = buffer.length();

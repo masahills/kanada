@@ -27,6 +27,8 @@ import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
 import java.io.BufferedReader;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,22 +38,20 @@ import java.util.stream.Collectors;
  *
  * @author Masahiko Sato
  */
-public class KanjiParser {
+class KanjiParser {
     private final static Kanwadict kanwa = Kanwadict.getKanwadict();
     private final Kanada kanada;
     private final JWriter jWriter;
-    private final StringBuilder outputBuffer;
     private final LlmClient llmClient;
 
     @SuppressWarnings("unused")
-    public KanjiParser(JWriter writer) {
+    protected KanjiParser(JWriter writer) {
         this(writer, null);
     }
 
-    public KanjiParser(JWriter writer, LlmClient llmClient) {
+    protected KanjiParser(JWriter writer, LlmClient llmClient) {
         kanada = writer.getKanada();
         jWriter = writer;
-        outputBuffer = new StringBuilder();
         this.llmClient = llmClient;
     }
 
@@ -59,28 +59,29 @@ public class KanjiParser {
         return c == '、' || c == '。' || c == '」' || c == '）' || c == '！' || c == '？' || c == '・';
     }
 
-    public String parse(BufferedReader reader) throws Exception {
-        StringBuilder buffer = new StringBuilder();
-        int position = 0;
-        int contextSize = 60;
-        int maxPosition = 30;
+    protected void parse(Reader reader, Writer writer) throws Exception {
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            StringBuilder buffer = new StringBuilder();
+            int position = 0;
+            int contextSize = 60;
+            int maxPosition = 30;
 
-        // Initial read to fill the buffer
-        readForward(reader, buffer, contextSize);
+            // Initial read to fill the buffer
+            readForward(bufferedReader, buffer, contextSize);
 
-        while (!buffer.isEmpty() && buffer.length() > position) {
-            int matched = processCharacterAt(reader, buffer, position);
-            if (position >= maxPosition) {
-                // Slide the context window by the matched length.
-                readForward(reader, buffer, matched);
-                buffer.delete(0, matched);
-            } else {
-                position += matched;
+            while (!buffer.isEmpty() && buffer.length() > position) {
+                int matched = processCharacterAt(bufferedReader, writer, buffer, position);
+                if (position >= maxPosition) {
+                    // Slide the context window by the matched length.
+                    readForward(bufferedReader, buffer, matched);
+                    buffer.delete(0, matched);
+                } else {
+                    position += matched;
+                }
             }
+            // Flush the remaining characters in the buffer.
+            jWriter.flushBuffer(writer);
         }
-        // Flush the remaining characters in the buffer.
-        flushBuffer();
-        return outputBuffer.toString();
     }
 
     private void readForward(BufferedReader reader, StringBuilder buffer, int length) throws Exception {
@@ -91,7 +92,7 @@ public class KanjiParser {
         }
     }
 
-    private int processCharacterAt(BufferedReader reader, StringBuilder inputString, int i) throws Exception {
+    private int processCharacterAt(BufferedReader reader, Writer writer, StringBuilder inputString, int i) throws Exception {
         int thisChar = inputString.codePointAt(i);
         Character.UnicodeBlock currentBlock = Character.UnicodeBlock.of(thisChar);
 
@@ -139,7 +140,7 @@ public class KanjiParser {
         }
 
         // Flush non-dictionary characters before looking up the dictionary.
-        flushBuffer();
+        jWriter.flushBuffer(writer);
 
         int matchedLen = 0;
         String yomi;
@@ -248,11 +249,10 @@ public class KanjiParser {
                     }
                 }
             }
-            flushBuffer();
+            jWriter.flushBuffer(writer);
             return matchedLen;
         }
 
-        //outputBuffer.appendCodePoint(thisChar);
         jWriter.append(thisChar);
         return 1;
     }
@@ -319,14 +319,6 @@ public class KanjiParser {
                 && jWriter.buffer.charAt(jWriter.buffer.length() - 1) != '\n'
                 && jWriter.buffer.charAt(jWriter.buffer.length() - 1) != '\r') {
             jWriter.append(kanada.settingSeparatorChar);
-        }
-    }
-
-    private void flushBuffer() {
-        if (!jWriter.buffer.isEmpty()) {
-            StringBuilder str = jWriter.map();
-            outputBuffer.append(str);
-            jWriter.clear();
         }
     }
 }

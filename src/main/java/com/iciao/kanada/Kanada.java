@@ -420,11 +420,10 @@ public class Kanada {
         if (reader == null || writer == null) {
             throw new IllegalArgumentException("Reader and Writer must not be null");
         }
-        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+        try {
             JWriter jWriter = new JWriter(this);
             KanjiParser parser = new KanjiParser(jWriter, llmClient);
-            String parsedStr = parser.parse(bufferedReader);
-            writer.write(parsedStr);
+            parser.parse(reader, writer);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, e.getMessage());
         }
