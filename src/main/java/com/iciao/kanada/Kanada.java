@@ -211,7 +211,7 @@ public class Kanada {
             }
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, "JISAutoDetect"))) {
             Kanada converter = create();
             switch (mode) {
                 case "romaji" -> converter.toRomaji();
@@ -232,13 +232,10 @@ public class Kanada {
             if (furigana) converter.withFurigana();
             if (allYomi) converter.withAllYomi();
 
-            String line;
-            StringBuilder sb = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append('\n');
-            }
-            System.out.println(converter.process(sb.toString()));
-
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
+            converter.process(reader, writer);
+            writer.flush();
+            System.exit(0);
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
