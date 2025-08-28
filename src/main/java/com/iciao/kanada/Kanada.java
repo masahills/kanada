@@ -26,10 +26,7 @@ package com.iciao.kanada;
 import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -419,19 +416,27 @@ public class Kanada {
         optionBraille = paramBraille;
     }
 
-    public String process(Reader reader) {
-        if (reader == null) {
-            return null;
+    public void process(Reader reader, Writer writer) {
+        if (reader == null || writer == null) {
+            throw new IllegalArgumentException("Reader and Writer must not be null");
         }
-        String parsedStr = null;
         try (BufferedReader bufferedReader = new BufferedReader(reader)) {
-            JWriter writer = new JWriter(this);
-            KanjiParser parser = new KanjiParser(writer, llmClient);
-            parsedStr = parser.parse(bufferedReader);
+            JWriter jWriter = new JWriter(this);
+            KanjiParser parser = new KanjiParser(jWriter, llmClient);
+            String parsedStr = parser.parse(bufferedReader);
+            writer.write(parsedStr);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, e.getMessage());
         }
-        return parsedStr;
+    }
+
+    public String process(Reader reader) {
+        if (reader == null) {
+            throw new IllegalArgumentException("Reader must not be null");
+        }
+        StringWriter writer = new StringWriter();
+        process(reader, writer);
+        return writer.toString();
     }
 
     public String process(String str) {
