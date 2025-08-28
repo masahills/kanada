@@ -28,7 +28,7 @@ import com.iciao.kanada.maps.KanaMapping;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.Locale;
+import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -418,24 +418,30 @@ public class Kanada {
         optionBraille = paramBraille;
     }
 
+    public String process(BufferedReader reader) {
+        if (reader == null) {
+            return null;
+        }
+        String parsedStr = null;
+        try {
+            JWriter writer = new JWriter(this);
+            KanjiParser parser = new KanjiParser(writer, llmClient);
+            parsedStr = parser.parse(reader);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, e.getMessage());
+        }
+        return parsedStr;
+    }
+
     public String process(String str) {
         if (str == null) {
             return null;
         }
-
-        String parsedStr;
-        try {
-            JWriter writer = new JWriter(this);
-            KanjiParser parser = new KanjiParser(writer, llmClient);
-            parsedStr = parser.parse(str);
-            if (modeUcAll) {
-                parsedStr = parsedStr.toUpperCase(Locale.ENGLISH);
-            }
+        try (BufferedReader reader = new BufferedReader(new StringReader(str))) {
+            return process(reader);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, e.getMessage());
             return str;
         }
-
-        return parsedStr;
     }
 }
