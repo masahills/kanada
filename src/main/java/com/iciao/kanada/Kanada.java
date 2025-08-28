@@ -211,34 +211,30 @@ public class Kanada {
             }
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            Kanada converter = create();
-            switch (mode) {
-                case "romaji" -> converter.toRomaji();
-                case "hiragana" -> converter.toHiragana();
-                case "katakana" -> converter.toKatakana();
-                case "parse" -> { /* parsing only */ }
-                default -> {
-                    System.err.println("Unknown mode: " + mode);
-                    System.err.println("Available modes: romaji, hiragana, katakana, parse, help");
-                    System.exit(1);
-                }
+        Kanada converter = create();
+        switch (mode) {
+            case "romaji" -> converter.toRomaji();
+            case "hiragana" -> converter.toHiragana();
+            case "katakana" -> converter.toKatakana();
+            case "parse" -> { /* parsing only */ }
+            default -> {
+                System.err.println("Unknown mode: " + mode);
+                System.err.println("Available modes: romaji, hiragana, katakana, parse, help");
+                System.exit(1);
             }
+        }
 
-            if (spaces) converter.withSpaces();
-            if (upperFirst) converter.upperCaseFirst();
-            if (upperAll) converter.upperCaseAll();
-            if (macrons) converter.withMacrons();
-            if (furigana) converter.withFurigana();
-            if (allYomi) converter.withAllYomi();
+        if (spaces) converter.withSpaces();
+        if (upperFirst) converter.upperCaseFirst();
+        if (upperAll) converter.upperCaseAll();
+        if (macrons) converter.withMacrons();
+        if (furigana) converter.withFurigana();
+        if (allYomi) converter.withAllYomi();
 
-            String line;
-            StringBuilder sb = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append('\n');
-            }
-            System.out.println(converter.process(sb.toString()));
-
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, "JISAutoDetect"));
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out))) {
+            converter.process(reader, writer);
+            writer.flush();
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
