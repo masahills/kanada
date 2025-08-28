@@ -211,17 +211,20 @@ public class Kanada {
                     allYomi = true;
                 }
                 case "-i", "-o" -> {
-                    String charsetName = null;
-                    boolean isInput = args[i].equals("-i");
+                    if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
+                        System.err.println("Missing charset name for " + args[i] + " option");
+                        System.exit(1);
+                    }
+                    String charsetName = args[++i];
                     try {
-                        charsetName = args[++i];
-                        if (isInput) {
-                            inputCharset = Charset.forName(charsetName);
+                        Charset charset = Charset.forName(charsetName);
+                        if (args[i - 1].equals("-i")) {
+                            inputCharset = charset;
                         } else {
-                            outputCharset = Charset.forName(charsetName);
+                            outputCharset = charset;
                         }
                     } catch (Exception e) {
-                        System.err.println("Unknown charset: " + charsetName);
+                        System.err.println("Unknown charset name for " + args[i - 1] + " option: " + charsetName);
                         System.exit(1);
                     }
                 }
