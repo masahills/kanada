@@ -25,7 +25,6 @@ package com.iciao.kanada;
 
 import com.iciao.kanada.maps.*;
 
-import java.io.BufferedWriter;
 import java.io.Writer;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -61,20 +60,19 @@ class JWriter {
     }
 
     protected void flushBuffer(Writer writer) {
+        if (writer == null) {
+            throw new IllegalArgumentException("Writer must not be null");
+        }
         if (buffer.isEmpty()) {
             return;
         }
         String converted = map().toString();
-        if (writer != null) {
-            try (BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
-                bufferedWriter.write(converted);
-            } catch (java.io.IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            buffer.append(converted);
+        try {
+            writer.write(converted);
+            clear();
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
         }
-        clear();
     }
 
     private void clear() {

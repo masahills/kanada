@@ -60,6 +60,9 @@ class KanjiParser {
     }
 
     protected void parse(Reader reader, Writer writer) throws Exception {
+        if (reader == null || writer == null) {
+            throw new IllegalArgumentException("Reader and Writer must not be null");
+        }
         try (BufferedReader bufferedReader = new BufferedReader(reader)) {
             StringBuilder buffer = new StringBuilder();
             int position = 0;
