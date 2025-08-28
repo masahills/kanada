@@ -27,7 +27,6 @@ import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
 import java.io.BufferedReader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -256,15 +255,6 @@ public class KanjiParser {
         //outputBuffer.appendCodePoint(thisChar);
         jWriter.append(thisChar);
         return 1;
-    }
-
-    public String parse(String inputString) throws Exception {
-        if (inputString == null) {
-            return null;
-        }
-        try (BufferedReader reader = new BufferedReader(new StringReader(inputString))) {
-            return parse(reader);
-        }
     }
 
     private Kanwadict.YomiKanjiData askGenerativeAI(List<Kanwadict.YomiKanjiData> candidates, String sentence, int position) {
