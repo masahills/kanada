@@ -28,7 +28,9 @@ import com.iciao.kanada.maps.KanaMapping;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -223,8 +225,8 @@ public class Kanada {
                         } else {
                             outputCharset = charset;
                         }
-                    } catch (Exception e) {
-                        System.err.println("Unknown charset name for " + args[i - 1] + " option: " + charsetName);
+                    } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
+                        System.err.println("Unknown charset name for " + args[i - 1] + " option (" + e + ")");
                         System.exit(1);
                     }
                 }
