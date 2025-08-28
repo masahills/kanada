@@ -235,7 +235,6 @@ public class Kanada {
              BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out))) {
             converter.process(reader, writer);
             writer.flush();
-            System.exit(0);
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
