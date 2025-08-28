@@ -211,28 +211,28 @@ public class Kanada {
             }
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, "JISAutoDetect"))) {
-            Kanada converter = create();
-            switch (mode) {
-                case "romaji" -> converter.toRomaji();
-                case "hiragana" -> converter.toHiragana();
-                case "katakana" -> converter.toKatakana();
-                case "parse" -> { /* parsing only */ }
-                default -> {
-                    System.err.println("Unknown mode: " + mode);
-                    System.err.println("Available modes: romaji, hiragana, katakana, parse, help");
-                    System.exit(1);
-                }
+        Kanada converter = create();
+        switch (mode) {
+            case "romaji" -> converter.toRomaji();
+            case "hiragana" -> converter.toHiragana();
+            case "katakana" -> converter.toKatakana();
+            case "parse" -> { /* parsing only */ }
+            default -> {
+                System.err.println("Unknown mode: " + mode);
+                System.err.println("Available modes: romaji, hiragana, katakana, parse, help");
+                System.exit(1);
             }
+        }
 
-            if (spaces) converter.withSpaces();
-            if (upperFirst) converter.upperCaseFirst();
-            if (upperAll) converter.upperCaseAll();
-            if (macrons) converter.withMacrons();
-            if (furigana) converter.withFurigana();
-            if (allYomi) converter.withAllYomi();
+        if (spaces) converter.withSpaces();
+        if (upperFirst) converter.upperCaseFirst();
+        if (upperAll) converter.upperCaseAll();
+        if (macrons) converter.withMacrons();
+        if (furigana) converter.withFurigana();
+        if (allYomi) converter.withAllYomi();
 
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, "JISAutoDetect"));
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out))) {
             converter.process(reader, writer);
             writer.flush();
             System.exit(0);
