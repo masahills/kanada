@@ -27,6 +27,8 @@ import com.iciao.kanada.llm.LlmClient;
 import com.iciao.kanada.maps.KanaMapping;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -128,19 +130,21 @@ public class Kanada {
                         java -jar kanada-1.0.0.jar <mode> [options]
                     
                     Modes:
-                        romaji      Convert input text to romaji
-                        hiragana    Convert input text to hiragana
-                        katakana    Convert input text to katakana
-                        parse       Parse input and apply options (-s, -r, -R)
-                        help        Show this help
+                        romaji       Convert input text to romaji
+                        hiragana     Convert input text to hiragana
+                        katakana     Convert input text to katakana
+                        parse        Parse input and apply options (-s, -r, -R)
+                        help         Show this help
                     
                     Options:
-                        -s          Insert spaces at segmentation points
-                        -u          Capitalize each word (romaji mode)
-                        -U          Uppercase all letters (romaji mode)
-                        -m          Output romaji with macrons
-                        -r          Add furigana readings for kanji words
-                        -R          Add all possible readings for kanji words
+                        -s           Insert spaces at segmentation points
+                        -u           Capitalize each word (romaji mode)
+                        -U           Uppercase all letters (romaji mode)
+                        -m           Output romaji with macrons
+                        -r           Add furigana readings for kanji words
+                        -R           Add all possible readings for kanji words
+                        -i <charset> Set input charset (Default: UTF-8)
+                        -o <charset> Set output charset (Default: UTF-8)
                     
                     Input:
                         The program reads from standard input via piping or redirection.
@@ -179,6 +183,9 @@ public class Kanada {
         boolean furigana = false;
         boolean allYomi = false;
 
+        Charset inputCharset = StandardCharsets.UTF_8;
+        Charset outputCharset = StandardCharsets.UTF_8;
+
         for (int i = 1; i < args.length; i++) {
             switch (args[i]) {
                 case "-s" -> {
@@ -202,6 +209,21 @@ public class Kanada {
                 case "-R" -> {
                     furigana = false;
                     allYomi = true;
+                }
+                case "-i", "-o" -> {
+                    String charsetName = null;
+                    boolean isInput = args[i].equals("-i");
+                    try {
+                        charsetName = args[++i];
+                        if (isInput) {
+                            inputCharset = Charset.forName(charsetName);
+                        } else {
+                            outputCharset = Charset.forName(charsetName);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Unknown charset: " + charsetName);
+                        System.exit(1);
+                    }
                 }
                 default -> {
                     System.err.println("Unknown option: " + args[i]);
@@ -231,8 +253,8 @@ public class Kanada {
         if (furigana) converter.withFurigana();
         if (allYomi) converter.withAllYomi();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, "JISAutoDetect"));
-             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, inputCharset));
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out, outputCharset))) {
             converter.process(reader, writer);
             writer.flush();
         } catch (Exception e) {
