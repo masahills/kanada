@@ -66,6 +66,7 @@ class KanjiParser {
         try (BufferedReader bufferedReader = new BufferedReader(reader)) {
             StringBuilder buffer = new StringBuilder();
             int position = 0;
+            // For LLM disambiguation, the context is searched for 25 characters before and after the position.
             int contextSize = 60;
             int maxPosition = 30;
 
