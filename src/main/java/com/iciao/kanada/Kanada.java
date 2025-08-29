@@ -275,7 +275,7 @@ public class Kanada {
                 default -> {
                     System.err.println("Unknown option: " + args[i]);
                     System.err.println("Available options: -s, -u, -U, -m, -r, -R, -i <charset>, -o <charset>");
-                    System.err.println("AI-assist options: --openai, --claude, -ollama, --lmstudio");
+                    System.err.println("AI-assist options: --openai, --claude, --ollama, --lmstudio");
                     System.exit(1);
                 }
             }

@@ -48,7 +48,7 @@ public class LlmConfig {
         // Load default config
         try (InputStream is = getClass().getResourceAsStream("/llm-config.json")) {
             if (is == null) {
-                throw new IOException("config.json not found in resources");
+                throw new IOException("llm-config.json not found in resources");
             }
             this.config = gson.fromJson(new InputStreamReader(is), Config.class);
         }
