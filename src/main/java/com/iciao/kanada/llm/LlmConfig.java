@@ -63,25 +63,21 @@ public class LlmConfig {
 
         // Override with external system-wide config if exists
         String externalSystemConfigPath = System.getProperty("com.iciao.kanada.llm-config.system", "/etc/kanada/llm-config.json");
-        if (externalSystemConfigPath != null) {
-            if (new java.io.File(externalSystemConfigPath).exists()) {
-                try (InputStream externalIs = new FileInputStream(externalSystemConfigPath)) {
-                    LOGGER.info("Loading external system-wide config: " + externalSystemConfigPath);
-                    Config externalConfig = gson.fromJson(new InputStreamReader(externalIs), Config.class);
-                    mergeConfig(externalConfig);
-                }
+        if (new java.io.File(externalSystemConfigPath).exists()) {
+            try (InputStream externalIs = new FileInputStream(externalSystemConfigPath)) {
+                LOGGER.info("Loading external system-wide config: " + externalSystemConfigPath);
+                Config externalConfig = gson.fromJson(new InputStreamReader(externalIs), Config.class);
+                mergeConfig(externalConfig);
             }
         }
 
         // Override with external user config if exists
         String externalUserConfigPath = System.getProperty("com.iciao.kanada.llm-config.user", System.getProperty("user.home") + "/.kanada/llm-config.json");
-        if (externalUserConfigPath != null) {
-            if (new java.io.File(externalUserConfigPath).exists()) {
-                try (InputStream externalIs = new FileInputStream(externalUserConfigPath)) {
-                    LOGGER.info("Loading external user config: " + externalUserConfigPath);
-                    Config externalConfig = gson.fromJson(new InputStreamReader(externalIs), Config.class);
-                    mergeConfig(externalConfig);
-                }
+        if (new java.io.File(externalUserConfigPath).exists()) {
+            try (InputStream externalIs = new FileInputStream(externalUserConfigPath)) {
+                LOGGER.info("Loading external user config: " + externalUserConfigPath);
+                Config externalConfig = gson.fromJson(new InputStreamReader(externalIs), Config.class);
+                mergeConfig(externalConfig);
             }
         }
     }
