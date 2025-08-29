@@ -203,7 +203,7 @@ public class Kanada {
                     - Rate-limit and token-limit:
                       This library does not currently manage request rates.
                       Be aware of the rate limits and token limits of the LLM service you use.
-                      Excessive requests may result in to temporary bans or additional charges.
+                      Excessive requests may result in temporary bans or additional charges.
                     """);
 
             System.exit(1);
