@@ -24,6 +24,7 @@
 package com.iciao.kanada;
 
 import com.iciao.kanada.llm.LlmClient;
+import com.iciao.kanada.llm.LlmClientFactory;
 import com.iciao.kanada.maps.KanaMapping;
 
 import java.io.*;
@@ -31,7 +32,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -148,6 +148,12 @@ public class Kanada {
                         -i <charset> Set input charset (Default: UTF-8)
                         -o <charset> Set output charset (Default: UTF-8)
                     
+                    Options for AI-assisted conversion:
+                        --openai     Use OpenAI for LLM service
+                        --claude     Use Claude for LLM service
+                        --ollama     Use Ollama for LLM service
+                        --lmstudio   Use LM Studio for LLM service
+                    
                     Input:
                         The program reads from standard input via piping or redirection.
                     
@@ -155,7 +161,7 @@ public class Kanada {
                         cat input.txt | java -jar kanada-1.0.0.jar parse -s
                         java -jar kanada-1.0.0.jar romaji < input.txt
                     
-                    Note:
+                    Note for dictionary files:
                     - Place the kakasidict dictionary file in the ./dictionary/Japanese directory
                       relative to the jar file. The kanwadict.dat file is generated at runtime.
                         .
@@ -170,7 +176,34 @@ public class Kanada {
                     
                     - Delete the kanwadict.dat file when loading new dictionary files.
                     
-                    - AI-assisted conversion is not yet supported in the command-line interface.
+                    Note for AI-assisted conversion:
+                    - Place the llm-config.json file in the /etc/kanada or ~/.kanada directory.
+                    
+                    - Set the provider and model names you want to use in the JSON key-value pairs.
+                    
+                    - llm-config.json file example:
+                    {
+                      "openai": {
+                        "defaultModel": "gpt-5-mini"
+                      },
+                       "claude": {
+                        "defaultModel": "claude-3-haiku-20240307"
+                      },
+                      "ollama": {
+                        "defaultModel": "qwen3:1.7b"
+                      },
+                      "lmstudio": {
+                        "defaultModel": "google/gemma-3-1b"
+                      }
+                    }
+                    
+                    - The API keys for OpenAI and Claude must be set as environment variables:
+                      OPENAI_API_KEY and ANTHROPIC_API_KEY respectively.
+                    
+                    - Rate-limit and token-limit:
+                      This library does not currently manage request rates.
+                      Be aware of the rate limits and token limits of the LLM service you use.
+                      Excessive requests may result in temporary bans or additional charges.
                     """);
 
             System.exit(1);
@@ -187,9 +220,11 @@ public class Kanada {
 
         Charset inputCharset = StandardCharsets.UTF_8;
         Charset outputCharset = StandardCharsets.UTF_8;
+        LlmClientFactory.LlmProvider llmProvider = null;
 
         for (int i = 1; i < args.length; i++) {
             switch (args[i]) {
+                // Formatting options
                 case "-s" -> {
                     spaces = true;
                 }
@@ -212,6 +247,7 @@ public class Kanada {
                     furigana = false;
                     allYomi = true;
                 }
+                // Charset options
                 case "-i", "-o" -> {
                     if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
                         System.err.println("Missing charset name for " + args[i] + " option");
@@ -230,15 +266,31 @@ public class Kanada {
                         System.exit(1);
                     }
                 }
+                // AI-assist options
+                case "--openai" -> llmProvider = LlmClientFactory.LlmProvider.OPENAI;
+                case "--claude" -> llmProvider = LlmClientFactory.LlmProvider.CLAUDE;
+                case "--ollama" -> llmProvider = LlmClientFactory.LlmProvider.OLLAMA;
+                case "--lmstudio" -> llmProvider = LlmClientFactory.LlmProvider.LMSTUDIO;
+
                 default -> {
                     System.err.println("Unknown option: " + args[i]);
                     System.err.println("Available options: -s, -u, -U, -m, -r, -R, -i <charset>, -o <charset>");
+                    System.err.println("AI-assist options: --openai, --claude, --ollama, --lmstudio");
                     System.exit(1);
                 }
             }
         }
 
         Kanada converter = create();
+        if (llmProvider != null) {
+            LlmClient llmClient = LlmClientFactory.createClient(llmProvider);
+            if (!llmClient.testConnection()) {
+                System.err.println("Failed to connect to LLM server for " + llmProvider);
+                System.exit(1);
+            }
+            converter.withLlmClient(llmClient);
+            LOGGER.info("Using LLM provider: " + llmProvider + " (model: " + llmClient.getModel() + ")");
+        }
         switch (mode) {
             case "romaji" -> converter.toRomaji();
             case "hiragana" -> converter.toHiragana();
@@ -448,7 +500,7 @@ public class Kanada {
             KanjiParser parser = new KanjiParser(jWriter, llmClient);
             parser.parse(reader, writer);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, e.getMessage());
+            LOGGER.warning(e.getMessage());
         }
     }
 

@@ -69,6 +69,7 @@ class JWriter {
         }
         String converted = map().toString();
         writer.write(converted);
+        writer.flush();
         clear();
     }
 
