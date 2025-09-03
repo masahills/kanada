@@ -55,6 +55,10 @@ class KanjiParser {
         this.llmClient = llmClient;
     }
 
+    // TODO: 全角の約物類の扱いを見直す
+    // Opening and closing punctuation marks in CJK Symbols and Punctuation block, etc:
+    // 、。〈〉《》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〡
+    // ！＂＃＄％＆＇（）＊＋，－．／：；＜＝＞？＠［＼］＾＿｀｛｜｝～
     private static boolean isClosingPunctuation(int c) {
         return c == '、' || c == '。' || c == '」' || c == '）' || c == '！' || c == '？' || c == '・';
     }
@@ -200,6 +204,7 @@ class KanjiParser {
                         if (candidates.isEmpty() || candidates.get(0).getLength() < searchLen) {
                             candidates.clear();
                         }
+                        // Add the term with the same tail (an alphabet or a space) to the candidate list,
                         if (term.tail() == searchTail) {
                             candidates.add(term);
                         }
@@ -237,10 +242,14 @@ class KanjiParser {
             if (kanada.modeFurigana) {
                 jWriter.append("[").append(yomi).append("]");
             } else if (kanada.modeShowAllYomi && !candidates.isEmpty()) {
-                List<String> possibleReadings = candidates.stream()
-                        .map(Kanwadict.YomiKanjiData::yomi)
-                        .distinct()
-                        .toList();
+                String topYomi = yomi;
+                List<String> possibleReadings = new ArrayList<>(
+                        candidates.stream()
+                                .map(Kanwadict.YomiKanjiData::yomi)
+                                .filter(item -> !item.equals(topYomi))
+                                .distinct()
+                                .toList());
+                possibleReadings.add(0, topYomi);
                 jWriter.append("{").append(String.join("|", possibleReadings)).append("}");
             }
 
