@@ -14,7 +14,7 @@ BRAILLE_ASCII_TABLE = [
 
 
 # BSEファイルのヘッダー構成（独自分析・推測）
-# 文字エンコーディング：Shift JIS
+# 文字エンコーディング：Shift_JIS/CP932と思われる
 # 合計サイズ：512バイト
 # 項目詳細：
 # ・ファイル保存日　　　　 10バイト（半角10文字：YYYY/MM/DD）
@@ -32,40 +32,130 @@ BRAILLE_ASCII_TABLE = [
 # ・ページ数　　　　　　　  4バイト（半角数字：4桁固定ゼロパディング）
 # ・１行あたり文字数　　　  2バイト（半角数字：2桁固定ゼロパディング）
 # ・１ページあたりの行数　  2バイト（半角数字：2桁固定ゼロパディング）
-def parse_bse_header(header):
+def parse_bse_header(content):
+    header = content[0:512].decode('shift_jis')
     try:
-        fields = [
-            ("saved_date", 0, 10),
-            ("book_title", 10, 60),
-            ("subtitle", 60, 110),
-            ("author", 110, 160),
-            ("publisher", 160, 210),
-            ("publication_date", 210, 230),
-            ("book_code", 230, 266),
-            ("braille_translation", 266, 302),
-            ("proofreading", 302, 338),
-            ("creation_date", 338, 358),
-            ("remarks", 358, 458),
-            ("undefined_area", 458, 504),
-        ]
-        result = {
-            name: header[start:end].decode('shift_jis', errors='ignore').strip(' ')
-            for name, start, end in fields
+        fields = {
+            "保　 存 　日 ": header[0:10],
+            "署　　　　名 ": header[10:60],
+            "サブタイトル ": header[60:110],
+            "著　　　　者 ": header[110:160],
+            "出　 版 　社 ": header[160:210],
+            "発　 行 　日 ": header[210:230],
+            "図 書 コード ": header[230:266],
+            "点　　　　訳 ": header[266:302],
+            "校　　　　正 ": header[302:338],
+            "作　 成　 日 ": header[338:358],
+            "備　　　　考 ": header[358:458],
+            "未　 定　 義 ": header[458:504],
+            "総　 頁　 数 ": int(header[504:508]),
+            "１行 の 字数 ": int(header[508:510]),
+            "１頁 の 行数 ": int(header[510:512])
         }
-        result["num_pages"] = int(header[504:508].decode('shift_jis', errors='ignore'))
-        result["chars_per_line"] = int(header[508:510].decode('shift_jis', errors='ignore'))
-        result["lines_per_page"] = int(header[510:512].decode('shift_jis', errors='ignore'))
-        return result
+        return fields
     except Exception as e:
         raise ValueError(f"Invalid BSE header: {e}")
 
 
-def to_unicode_braille(text):
+def brf_to_unicode_braille(content, is_bse=False):
+    if is_bse:
+        content = content[512:]
+    result = []
+    for code in content:
+        char = chr(code)
+        if 32 <= code <= 127:
+            result.append(BRAILLE_ASCII_TABLE[code - 32])
+        else:
+            result.append(char)
+    return ''.join(result)
+
+
+# BESファイルのヘッダー構成（独自分析・推測）
+# 文字エンコーディング：iso-8859-1（一部は点字データ）
+# 合計サイズ：1024バイト
+# 項目詳細：
+# ・書式バージョン　  8バイト（半角8文字：'%BET400%'）
+# ・ファイル保存日　 10バイト（半角10文字：YYYY/MM/DD）
+# ・不明なエリア　　  4バイト（半角空白,半角空白,'E',半角数字）
+# ・１行の文字数　　  2バイト（半角数字：2桁）
+# ・１ページの行数　  2バイト（半角数字：2桁）
+# ・不明なエリア　　  5バイト（半角空白）
+# ・ページ総数　　　 14バイト（半角数字：最大4桁左寄せ）
+# ・不明なエリア　　  2バイト（半角空白）
+# ・原文タイトル　　 50バイト（点字入力）
+# ・著者　　　　　　 20バイト（点字入力）
+# ・共著訳者等　　　 20バイト（点字入力）
+# ・出版社　　　　　 20バイト（点字入力）
+# ・出版年　　　　　  3バイト（点字入力）
+# ・原本開始ページ　  5バイト（点字入力）
+# ・分冊番号　　　　  4バイト（点字入力）
+# ・不明なエリア　　  3バイト（半角空白）
+# ・点訳者　　　　　 20バイト（点字入力）
+# ・備考　　　　　　 50バイト（点字入力）
+# ・不明なエリア　　270バイト（半角空白）
+# ・不明なエリア　　  4バイト（0xFF,0xFF,0xFF,不明な値）
+# ・不明なエリア　　508バイト（半角空白）
+def parse_bes_header(content):
+    header = content.decode('iso-8859-1')
+    try:
+        fields = {
+            "書式バージョン ": header[0:8],
+            "ファイル保存日 ": header[8:18],
+            "不明なエリア１ ": header[18:22],
+            "１行の文字数　 ": int(header[22:24]),
+            "ページの行数　 ": int(header[24:26]),
+            "不明なエリア２ ": header[26:31],
+            "ページ総数　　 ": int(header[31:45]),
+            "不明なエリア３ ": header[45:37],
+            "原文タイトル　 ": decode_bes_header_field(header[47:97]),
+            "著者　　　　　 ": decode_bes_header_field(header[97:117]),
+            "共著訳者等　　 ": decode_bes_header_field(header[117:137]),
+            "出版社　　　　 ": decode_bes_header_field(header[137:157]),
+            "出版年　　　　 ": decode_bes_header_field(header[157:160]),
+            "原本開始ページ ": decode_bes_header_field(header[160:165]),
+            "分冊番号　　　 ": decode_bes_header_field(header[165:169]),
+            "不明なエリア４ ": header[169:172],
+            "点訳者　　　　 ": decode_bes_header_field(header[172:192]),
+            "備考　　　　　 ": decode_bes_header_field(header[192:242]),
+            "不明なエリア５ ": header[242:512],
+            "不明なエリア６ ": header[512:1024]
+        }
+        return fields
+    except Exception as e:
+        raise ValueError(f"Invalid BES header: {e}")
+
+
+def decode_bes_header_field(text):
     result = []
     for char in text:
         code = ord(char)
         if 32 <= code <= 127:
-            result.append(BRAILLE_ASCII_TABLE[code - 32])
+            result.append(chr(code + 0x2800 - 32))
+        else:
+            result.append(char)
+    return ''.join(result)
+
+
+def bes_to_unicode_braille(content):
+    result = []
+    for i in range(1024, len(content)):
+        code = content[i]
+        char = chr(code)
+        next_char = content[i + 1] if i < len(content) - 1 else None
+        if next_char == '\01':
+            result.append('[' + str(code) + ']')
+            i += 1
+            continue
+        elif 160 <= code <= 223:
+            result.append(chr(code - 160 + 0x2800))
+        elif 224 <= code <= 252:
+            result.append(char)
+        elif code == 253:
+            result.append('\f')  # form feed
+        elif code == 254:
+            result.append('\n')  # line feed
+        elif code == 255:
+            result.append('\0')  # null
         else:
             result.append(char)
     return ''.join(result)
@@ -74,44 +164,34 @@ def to_unicode_braille(text):
 def main():
     parser = argparse.ArgumentParser(description='Convert Braille ASCII to Unicode braille')
     parser.add_argument('input_file', help='Input file name')
-    parser.add_argument('output_file', help='Output file name')
+    parser.add_argument('output_file', nargs='?', help='Output file name (default: <input_file>_unicode.txt)')
     parser.add_argument('--bse', action='store_true', help='Parse BSE header')
     args = parser.parse_args()
+    if args.output_file is None:
+        args.output_file = args.input_file + '_unicode.txt'
+
+    ext = args.input_file[-4:].lower()
 
     try:
-        if args.bse:
-            with open(args.input_file, 'rb') as f:
-                header = f.readline()
-                header_info = parse_bse_header(header)
-                print(f"BSE Header Info:")
-                labels = {
-                    "saved_date": "Saved date",
-                    "book_title": "Book title",
-                    "subtitle": "Subtitle",
-                    "author": "Author",
-                    "publisher": "Publisher",
-                    "publication_date": "Publication date",
-                    "book_code": "Book code",
-                    "braille_translation": "Braille Translation",
-                    "proofreading": "Proofreading",
-                    "creation_date": "Creation date",
-                    "remarks": "Remarks",
-                    "undefined_area": "Undefined area",
-                    "num_pages": "Pages",
-                    "chars_per_line": "Characters per line",
-                    "lines_per_page": "Lines per page"
-                }
-                for key, value in header_info.items():
-                    print(f"{labels[key]:>20}[{value}]")
-                f.seek(len(header))
-                content = f.read().decode('ascii', errors='ignore')
+        with open(args.input_file, 'rb') as f:
+            content = f.read()
+
+        header_info = None
+        if ext == '.bse' or args.bse:
+            header_info = parse_bse_header(content)
+            converted_content = brf_to_unicode_braille(content, is_bse=True)
+        elif ext == '.bes' or content.startswith('%BET'):
+            header_info = parse_bes_header(content)
+            converted_content = bes_to_unicode_braille(content)
         else:
-            with open(args.input_file, 'r', encoding='utf-8') as f:
-                content = f.read()
+            converted_content = brf_to_unicode_braille(content)
 
-        converted_content = to_unicode_braille(content)
+        if header_info:
+            print(f"{args.input_file} Header Info:")
+            for key, value in header_info.items():
+                print(f"{key}[{value.strip(' ') if isinstance(value, str) else value}]")
 
-        with open(args.output_file, 'w', encoding='utf-8', newline='') as f:
+        with open(args.output_file, 'w', encoding='utf-8', newline=None) as f:
             f.write(converted_content)
 
         print(f"-> The output has been saved to: {args.output_file}")
