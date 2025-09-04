@@ -36,21 +36,21 @@ def parse_bse_header(content):
     header = content[0:512].decode('shift_jis')
     try:
         fields = {
-            "Saved date": header[0:10],
-            "Book title": header[10:60],
-            "Subtitle": header[60:110],
-            "Author": header[110:160],
-            "Publisher": header[160:210],
-            "Publication date": header[210:230],
-            "Book code": header[230:266],
-            "Braille translation": header[266:302],
-            "Proofreading": header[302:338],
-            "Creation date": header[338:358],
-            "Remarks": header[358:458],
-            "Undefined area": header[458:504],
-            "Pages": int(header[504:508]),
-            "Characters per line": int(header[508:510]),
-            "Lines per page": int(header[510:512])
+            "保　 存 　日 ": header[0:10],
+            "署　　　　名 ": header[10:60],
+            "サブタイトル ": header[60:110],
+            "著　　　　者 ": header[110:160],
+            "出　 版 　社 ": header[160:210],
+            "発　 行 　日 ": header[210:230],
+            "図 書 コード ": header[230:266],
+            "点　　　　訳 ": header[266:302],
+            "校　　　　正 ": header[302:338],
+            "作　 成　 日 ": header[338:358],
+            "備　　　　考 ": header[358:458],
+            "未　 定　 義 ": header[458:504],
+            "総　 頁　 数 ": int(header[504:508]),
+            "１行 の 字数 ": int(header[508:510]),
+            "１頁 の 行数 ": int(header[510:512])
         }
         return fields
     except Exception as e:
@@ -71,38 +71,69 @@ def brf_to_unicode_braille(content, is_bse=False):
 
 
 # BESファイルのヘッダー構成（独自分析・推測）
-# 文字エンコーディング：Shift_JIS/CP932と思われる
+# 文字エンコーディング：iso-8859-1（一部は点字データ）
 # 合計サイズ：1024バイト
 # 項目詳細：
-# ・書式バージョン　　　　 10バイト（半角8文字：'%BET400%'）
-# ・ファイル保存日　　　　 10バイト（半角10文字：YYYY/MM/DD）
-# ・不明なエリア　　　　 　 4バイト（半角空白,半角空白,'E',半角数字）
-# ・１行あたり文字数　　　  2バイト（半角数字：2桁）
-# ・１ページあたりの行数　  2バイト（半角数字：2桁）
-# ・ページ数　　　　　　　  3バイト（半角数字：左寄せ、最大桁数不明）
-# ・不明なエリア　　　　　480バイト（半角空白）
-# ・不明なエリア　　　　　  4バイト（0xFF,0xFF,0xFF,不明な値）
-# ・不明なエリア　　　　　508バイト（半角空白）
+# ・書式バージョン　  8バイト（半角8文字：'%BET400%'）
+# ・ファイル保存日　 10バイト（半角10文字：YYYY/MM/DD）
+# ・不明なエリア　　  4バイト（半角空白,半角空白,'E',半角数字）
+# ・１行の文字数　　  2バイト（半角数字：2桁）
+# ・１ページの行数　  2バイト（半角数字：2桁）
+# ・不明なエリア　　  5バイト（半角空白）
+# ・ページ総数　　　 14バイト（半角数字：最大4桁左寄せ）
+# ・不明なエリア　　  2バイト（半角空白）
+# ・原文タイトル　　 50バイト（点字入力）
+# ・著者　　　　　　 20バイト（点字入力）
+# ・共著訳者等　　　 20バイト（点字入力）
+# ・出版社　　　　　 20バイト（点字入力）
+# ・出版年　　　　　  3バイト（点字入力）
+# ・原本開始ページ　  5バイト（点字入力）
+# ・分冊番号　　　　  4バイト（点字入力）
+# ・不明なエリア　　  3バイト（半角空白）
+# ・点訳者　　　　　 20バイト（点字入力）
+# ・備考　　　　　　 50バイト（点字入力）
+# ・不明なエリア　　270バイト（半角空白）
+# ・不明なエリア　　  4バイト（0xFF,0xFF,0xFF,不明な値）
+# ・不明なエリア　　508バイト（半角空白）
 def parse_bes_header(content):
-    header = content[0:512].decode('shift_jis')
-    header += content[512:516].decode('iso-8859-1')
-    header += content[516:1024].decode('shift_jis')
+    header = content.decode('iso-8859-1')
     try:
         fields = {
-            "Format Version": header[0:8],
-            "Saved sate": header[8:18],
-            "Unknown area 1": header[18:22],
-            "Characters per line": int(header[22:24]),
-            "Lines per page": int(header[24:26]),
-            "Unknown area 2": header[26:31],
-            "Pages": int(header[31:35]),
-            "Unknown area 3": header[35:512],
-            "Unknown area 4": header[512:516],
-            "Unknown area 5": header[516:1024]
+            "書式バージョン ": header[0:8],
+            "ファイル保存日 ": header[8:18],
+            "不明なエリア１ ": header[18:22],
+            "１行の文字数　 ": int(header[22:24]),
+            "ページの行数　 ": int(header[24:26]),
+            "不明なエリア２ ": header[26:31],
+            "ページ総数　　 ": int(header[31:45]),
+            "不明なエリア３ ": header[45:37],
+            "原文タイトル　 ": decode_bes_header_field(header[47:97]),
+            "著者　　　　　 ": decode_bes_header_field(header[97:117]),
+            "共著訳者等　　 ": decode_bes_header_field(header[117:137]),
+            "出版社　　　　 ": decode_bes_header_field(header[137:157]),
+            "出版年　　　　 ": decode_bes_header_field(header[157:160]),
+            "原本開始ページ ": decode_bes_header_field(header[160:165]),
+            "分冊番号　　　 ": decode_bes_header_field(header[165:169]),
+            "不明なエリア４ ": header[169:172],
+            "点訳者　　　　 ": decode_bes_header_field(header[172:192]),
+            "備考　　　　　 ": decode_bes_header_field(header[192:242]),
+            "不明なエリア５ ": header[242:512],
+            "不明なエリア６ ": header[512:1024]
         }
         return fields
     except Exception as e:
         raise ValueError(f"Invalid BES header: {e}")
+
+
+def decode_bes_header_field(text):
+    result = []
+    for char in text:
+        code = ord(char)
+        if 32 <= code <= 127:
+            result.append(chr(code + 0x2800 - 32))
+        else:
+            result.append(char)
+    return ''.join(result)
 
 
 def bes_to_unicode_braille(content):
@@ -158,7 +189,7 @@ def main():
         if header_info:
             print(f"{args.input_file} Header Info:")
             for key, value in header_info.items():
-                print(f"{key:>20}[{value.strip(' ') if isinstance(value, str) else value}]")
+                print(f"{key}[{value.strip(' ') if isinstance(value, str) else value}]")
 
         with open(args.output_file, 'w', encoding='utf-8', newline=None) as f:
             f.write(converted_content)
