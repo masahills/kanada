@@ -1,4 +1,4 @@
-# Kanada - Japanese Text Transliteration Library
+# Kanada — Japanese Text Transliteration Library
 
 A pure Java library, reimplemented from scratch based on KAKASI, for converting Japanese text containing kanji into
 hiragana, katakana, or romaji, and performing natural word segmentation (wakatigaki).  
@@ -49,16 +49,16 @@ Now supercharged with AI-powered kanji reading disambiguation — think of it as
     - Convert Japanese 6-dot Braille patterns back to hiragana, katakana, or romaji text.
     - Supports standard Japanese Braille notation for kana characters.
     - Enables accessibility applications and Braille text processing workflows.
-    - Includes a Python script for converting BRF/BSE files into Unicode Braille patterns
+    - Includes a Python script for converting BSE/BES/BRF format files into Unicode Braille patterns
 
 
 - **Japanese Text to Braille Translation (Prototype)**
     - Automatically translates Japanese text with kanji and kana into Unicode Braille patterns.
-        - This is a prototype feature and functionality is incomplete (e.g., particle "は" to "わ" conversion, foreign
-          quotation marks not supported).
+        - This is a prototype feature, and functionality is incomplete (e.g., particle "は" to "わ" conversion, foreign
+          quotation marks, and so on, are not implemented yet).
     - Word segmentation may not precisely match standard clause boundaries used in Braille translation.
     - Output is not formatted for printing (no adjustment for characters per line or lines per page).
-        - A script to convert Unicode Braille patterns to BRF/BSE format files will be provided in the future.
+        - A script to convert Unicode Braille patterns to BSE/BES/BRF format files will be provided in the future.
 
 ## Quick Start
 
@@ -96,6 +96,21 @@ Kanada converter = Kanada.create()
 
         // Or as a one-liner
         String result = Kanada.create().toRomaji().withSpaces().process("進撃の巨人");
+```
+
+### Command Line Interface
+
+Kanada provides a CLI for quick text conversion from the command line:
+
+```bash
+# Convert Japanese text to hiragana from standard input
+echo "日本語" | java -jar kanada-<version>.jar hiragana
+```
+
+For usage details and available options, run:
+
+```bash
+java -jar kanada-<version>.jar help
 ```
 
 ## Implementation Details
@@ -147,9 +162,9 @@ For development, first generate the mapping file:
 
 This project is distributed under dual licenses:
 
-- **Kanada Library Source Code**: MIT License - See MIT-LICENSE file for details.
+- **Kanada Library Source Code**: MIT License — See MIT-LICENSE file for details.
 - **Dictionary File**: GPL v2 - The kakasidict dictionary file in the `dictionary/japanese/` directory is from the
-  KAKASI project and is licensed under GPL v2. See LICENSE file for details.
+  KAKASI project and is licensed under GPL v2. See the LICENSE file for details.
 
   **Note**: SKK dictionaries are also supported but are not included in this package. SKK dictionaries are also licensed
   under GPL v2, and you can use your own SKK dictionary files for additional functionality.
