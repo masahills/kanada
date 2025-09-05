@@ -314,7 +314,7 @@ public class Kanada {
         if (allYomi) converter.withAllYomi();
 
         if (inputFilename != null) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(args[args.length - 1]), inputCharset));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputFilename), inputCharset));
                  BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out, outputCharset))) {
                 converter.process(reader, writer);
                 writer.flush();
