@@ -79,7 +79,7 @@ public class Kanada {
 
     protected char settingSeparatorChar = ' ';
 
-    public Kanada() throws java.io.IOException {
+    public Kanada() throws IOException {
         setParam(
                 JMapper.AS_IS,
                 JMapper.AS_IS,
@@ -96,7 +96,7 @@ public class Kanada {
     public static Kanada create() {
         try {
             return new Kanada();
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -104,7 +104,7 @@ public class Kanada {
     public static String toRomaji(String text) {
         try {
             return new Kanada().toRomaji().withSpaces().process(text);
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -112,7 +112,7 @@ public class Kanada {
     public static String toHiragana(String text) {
         try {
             return new Kanada().toHiragana().process(text);
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -120,7 +120,7 @@ public class Kanada {
     public static String toKatakana(String text) {
         try {
             return new Kanada().toKatakana().process(text);
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -129,7 +129,7 @@ public class Kanada {
         if (args.length < 1 || args[0].equals("help")) {
             System.out.println("""
                     Usage:
-                        java -jar kanada-1.0.0.jar <mode> [options]
+                        java -jar kanada-1.0.0.jar <mode> [options] [<input file>]
                     
                     Modes:
                         romaji       Convert input text to romaji
@@ -156,6 +156,7 @@ public class Kanada {
                     
                     Input:
                         The program reads from standard input via piping or redirection.
+                        You can also specify an input file as the last argument.
                     
                     Examples:
                         cat input.txt | java -jar kanada-1.0.0.jar parse -s
@@ -221,13 +222,17 @@ public class Kanada {
         Charset inputCharset = StandardCharsets.UTF_8;
         Charset outputCharset = StandardCharsets.UTF_8;
         LlmClientFactory.LlmProvider llmProvider = null;
+        String inputFilename = null;
 
         for (int i = 1; i < args.length; i++) {
+            // If this is the last argument and not an option, treat as file name
+            if (i == args.length - 1 && !args[i].startsWith("-")) {
+                inputFilename = args[i];
+                continue;
+            }
             switch (args[i]) {
                 // Formatting options
-                case "-s" -> {
-                    spaces = true;
-                }
+                case "-s" -> spaces = true;
                 case "-u" -> {
                     upperFirst = true;
                     upperAll = false;
@@ -236,9 +241,7 @@ public class Kanada {
                     upperFirst = false;
                     upperAll = true;
                 }
-                case "-m" -> {
-                    macrons = true;
-                }
+                case "-m" -> macrons = true;
                 case "-r" -> {
                     furigana = true;
                     allYomi = false;
@@ -310,13 +313,24 @@ public class Kanada {
         if (furigana) converter.withFurigana();
         if (allYomi) converter.withAllYomi();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, inputCharset));
-             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out, outputCharset))) {
-            converter.process(reader, writer);
-            writer.flush();
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            System.exit(1);
+        if (inputFilename != null) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(args[args.length - 1]), inputCharset));
+                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out, outputCharset))) {
+                converter.process(reader, writer);
+                writer.flush();
+            } catch (Exception e) {
+                System.err.println("Error: " + e.getMessage());
+                System.exit(1);
+            }
+        } else {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, inputCharset));
+                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out, outputCharset))) {
+                converter.process(reader, writer);
+                writer.flush();
+            } catch (Exception e) {
+                System.err.println("Error: " + e.getMessage());
+                System.exit(1);
+            }
         }
     }
 
