@@ -33,24 +33,26 @@ BRAILLE_ASCII_TABLE = [
 # ・１行あたり文字数　　　  2バイト（半角数字：2桁固定ゼロパディング）
 # ・１ページあたりの行数　  2バイト（半角数字：2桁固定ゼロパディング）
 def parse_bse_header(content):
-    header = content[0:512].decode('shift_jis')
+    if len(content) < 512:
+        raise ValueError("BSE header too short (<512 bytes)")
     try:
+        header = content[0:512]
         fields = {
-            "保　 存 　日 ": header[0:10],
-            "署　　　　名 ": header[10:60],
-            "サブタイトル ": header[60:110],
-            "著　　　　者 ": header[110:160],
-            "出　 版 　社 ": header[160:210],
-            "発　 行 　日 ": header[210:230],
-            "図 書 コード ": header[230:266],
-            "点　　　　訳 ": header[266:302],
-            "校　　　　正 ": header[302:338],
-            "作　 成　 日 ": header[338:358],
-            "備　　　　考 ": header[358:458],
-            "未　 定　 義 ": header[458:504],
-            "総　 頁　 数 ": int(header[504:508]),
-            "１行 の 字数 ": int(header[508:510]),
-            "１頁 の 行数 ": int(header[510:512])
+            "保　 存 　日 ": header[0:10].decode('ascii'),
+            "署　　　　名 ": header[10:60].decode('shift_jis'),
+            "サブタイトル ": header[60:110].decode('shift_jis'),
+            "著　　　　者 ": header[110:160].decode('shift_jis'),
+            "出　 版 　社 ": header[160:210].decode('shift_jis'),
+            "発　 行 　日 ": header[210:230].decode('shift_jis'),
+            "図 書 コード ": header[230:266].decode('shift_jis'),
+            "点　　　　訳 ": header[266:302].decode('shift_jis'),
+            "校　　　　正 ": header[302:338].decode('shift_jis'),
+            "作　 成　 日 ": header[338:358].decode('shift_jis'),
+            "備　　　　考 ": header[358:458].decode('shift_jis'),
+            "未　 定　 義 ": header[458:504].decode('shift_jis'),
+            "総　 頁　 数 ": int(header[504:508].decode('ascii')),
+            "１行 の 字数 ": int(header[508:510].decode('ascii')),
+            "１頁 の 行数 ": int(header[510:512].decode('ascii'))
         }
         return fields
     except Exception as e:
@@ -62,11 +64,10 @@ def brf_to_unicode_braille(content, is_bse=False):
         content = content[512:]
     result = []
     for code in content:
-        char = chr(code)
         if 32 <= code <= 127:
             result.append(BRAILLE_ASCII_TABLE[code - 32])
         else:
-            result.append(char)
+            result.append(chr(code))
     return ''.join(result)
 
 
@@ -96,8 +97,22 @@ def brf_to_unicode_braille(content, is_bse=False):
 # ・不明なエリア　　  4バイト（0xFF,0xFF,0xFF,不明な値）
 # ・不明なエリア　　508バイト（半角空白）
 def parse_bes_header(content):
-    header = content.decode('iso-8859-1')
+    if len(content) < 1024:
+        raise ValueError("BES header too short (<1024 bytes)")
+
+    # A helper function to decode BES header field text
+    def decode_bes_header_field(text):
+        result = []
+        for char in text:
+            code = ord(char)
+            if 32 <= code <= 127:
+                result.append(chr(code + 0x2800 - 32))
+            else:
+                result.append(char)
+        return ''.join(result)
+
     try:
+        header = content[0:1024].decode('iso-8859-1')
         fields = {
             "書式バージョン ": header[0:8],
             "ファイル保存日 ": header[8:18],
@@ -106,7 +121,7 @@ def parse_bes_header(content):
             "ページの行数　 ": int(header[24:26]),
             "不明なエリア２ ": header[26:31],
             "ページ総数　　 ": int(header[31:45]),
-            "不明なエリア３ ": header[45:37],
+            "不明なエリア３ ": header[45:47],
             "原文タイトル　 ": decode_bes_header_field(header[47:97]),
             "著者　　　　　 ": decode_bes_header_field(header[97:117]),
             "共著訳者等　　 ": decode_bes_header_field(header[117:137]),
@@ -125,31 +140,25 @@ def parse_bes_header(content):
         raise ValueError(f"Invalid BES header: {e}")
 
 
-def decode_bes_header_field(text):
-    result = []
-    for char in text:
-        code = ord(char)
-        if 32 <= code <= 127:
-            result.append(chr(code + 0x2800 - 32))
-        else:
-            result.append(char)
-    return ''.join(result)
-
-
 def bes_to_unicode_braille(content):
+    if len(content) < 1024:
+        raise ValueError("BES content too short (<1024 bytes)")
     result = []
-    for i in range(1024, len(content)):
+    i = 1024
+    n = len(content)
+    while i < n:
         code = content[i]
-        char = chr(code)
-        next_char = content[i + 1] if i < len(content) - 1 else None
-        if next_char == '\01':
-            result.append('[' + str(code) + ']')
-            i += 1
+        next_byte = content[i + 1] if i + 1 < n else None
+
+        if next_byte == 0x01:
+            result.append(f'[{code}]')
+            i += 2
             continue
-        elif 160 <= code <= 223:
-            result.append(chr(code - 160 + 0x2800))
+
+        if 160 <= code <= 223:
+            result.append(chr(code + 0x2800 - 160))
         elif 224 <= code <= 252:
-            result.append(char)
+            result.append(chr(code))
         elif code == 253:
             result.append('\f')  # form feed
         elif code == 254:
@@ -157,7 +166,8 @@ def bes_to_unicode_braille(content):
         elif code == 255:
             result.append('\0')  # null
         else:
-            result.append(char)
+            result.append(chr(code))
+        i += 1
     return ''.join(result)
 
 
@@ -170,9 +180,9 @@ def main():
     if args.output_file is None:
         args.output_file = args.input_file + '_unicode.txt'
 
-    ext = args.input_file[-4:].lower()
-
     try:
+        ext = args.input_file[-4:].lower()
+
         with open(args.input_file, 'rb') as f:
             content = f.read()
 
@@ -180,7 +190,7 @@ def main():
         if ext == '.bse' or args.bse:
             header_info = parse_bse_header(content)
             converted_content = brf_to_unicode_braille(content, is_bse=True)
-        elif ext == '.bes' or content.startswith('%BET'):
+        elif ext == '.bes' or content.startswith(b'%BET'):
             header_info = parse_bes_header(content)
             converted_content = bes_to_unicode_braille(content)
         else:
