@@ -23,7 +23,7 @@ dependencies {
 
 task generateMapping(type: Exec) {
     description 'Generate KanaMapping.java from kanatable.tsv'
-    commandLine 'python3', 'tools/generate-mapping.py'
+    commandLine 'python3', 'tools/generate_mapping.py'
     inputs.file 'tools/mappings/kanatable.tsv'
     outputs.file 'src/main/java/com/iciao/kanada/maps/KanaMappingData.java'
 }

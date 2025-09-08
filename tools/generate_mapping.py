@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
 Generate KanaMappingData.java from kanatable.tsv
+
+Copyright (C) 2025 Masahiko Sato
+Licensed under the MIT License - see MIT-LICENSE file for details.
 """
 import csv
 import os
