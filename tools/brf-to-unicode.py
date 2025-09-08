@@ -61,11 +61,13 @@ def parse_bse_header(content):
 
 def brf_to_unicode_braille(content, is_bse=False):
     if is_bse:
-        content = content[512:]
+        content = content[514:]  # 512 bytes of the header plus CR,LF
     result = []
     for code in content:
         if 32 <= code <= 127:
             result.append(BRAILLE_ASCII_TABLE[code - 32])
+        elif code == 0x0D:
+            pass  # Carriage Return (0x0D) is ignored
         else:
             result.append(chr(code))
     return ''.join(result)
@@ -143,30 +145,38 @@ def parse_bes_header(content):
 def bes_to_unicode_braille(content):
     if len(content) < 1024:
         raise ValueError("BES content too short (<1024 bytes)")
+
     result = []
     i = 1024
     n = len(content)
+    lines_per_page = int(content[24:26].decode('iso-8859-1'))
+    line_number = 1
     while i < n:
         code = content[i]
-        next_byte = content[i + 1] if i + 1 < n else None
-
-        if next_byte == 0x01:
-            result.append(f'[{code}]')
-            i += 2
+        if i + 3 < n and content[i + 2] == 0xFD:
+            # Strip a three-byte sequence, possibly for printer control codes.
+            # The first two bytes are assumed to be the page block size in little-endian (16-bit).
+            # The third byte is 0xFD, which probably maps to the form feed (0x0C).
+            # result.append('\r')  # Add carriage returns
+            i += 3
+            line_number = 1
             continue
 
-        if 160 <= code <= 223:
-            result.append(chr(code + 0x2800 - 160))
-        elif 224 <= code <= 252:
-            result.append(chr(code))
-        elif code == 253:
-            result.append('\f')  # form feed
-        elif code == 254:
-            result.append('\n')  # line feed
-        elif code == 255:
-            result.append('\0')  # null
+        if 0xA0 <= code <= 0xDF:
+            result.append(chr(code + 0x2800 - 0xA0))
+        elif code == 0x0D:
+            pass  # Carriage Return (0x0D) is ignored
+        elif code == 0xFE:
+            line_number += 1
+            result.append('\n')  # Map to Line Feed (0x0A)
+        elif code == 0xFF:
+            pass  # Strip another sentinel value, probably an end of the section marker
+        elif code == 0x0C:
+            while line_number < lines_per_page:
+                line_number += 1
+                result.append('\n')  # Line Feed (0x0A)
         else:
-            result.append(chr(code))
+            result.append(chr(code))  # Unknown character
         i += 1
     return ''.join(result)
 
