@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
+"""
+Convert BES/BSE/BRF braille files to Unicode braille text.
 
+Copyright (C) 2025 Masahiko Sato
+Licensed under the MIT License - see MIT-LICENSE file for details.
+"""
 import argparse
 
 # ASCII to Unicode braille mapping (ASCII 32-127)
