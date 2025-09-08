@@ -49,6 +49,7 @@ public class MapBraille extends JMapper {
     private static final char DOTS_56 = '⠰';   // U+2830 外字符 / 読点「、」改行の前以外では後ろに空白を挟む
     private static final char DOTS_236 = '⠦';  // U+2826 外国語引用符（開始）
     private static final char DOTS_356 = '⠴';  // U+2834 外国語引用符（終了）/ 「ん」
+    private static final char DOTS_35 = '⠔';   // U+2814 「を」/ 第１星印の要素
     private static final char DOTS_36 = '⠤';   // U+2824 第一つなぎ符
     private static final char DOTS_256 = '⠲';  // U+2832 句点「。」改行の前以外では後ろに空白を2つ挟む / 特殊音「ゔぁ、ゔぃ、ゔぇ」など
     private static final char DOTS_26 = '⠢';   // U+2822 特殊音「うぃ、うぇ、うぉ」 など
@@ -250,6 +251,18 @@ public class MapBraille extends JMapper {
                 continue;
             }
 
+            // Stars
+            int star = findStars(brailleText, i);
+            if (star > 0) {
+                switch (star) {
+                    case 1 -> result.append("★");
+                    case 2 -> result.append("☆");
+                    case 3 -> result.append("◇");
+                }
+                i += 2;
+                continue;
+            }
+
             // Kana characters
             String kana = getKana(thisChar);
             if (kana != null) {
@@ -444,6 +457,36 @@ public class MapBraille extends JMapper {
         char charBefore = text.charAt(i - 1);
         if (isBlankSpace(charBefore) || isLineBreak(charBefore)) {
             return ellipses;
+        }
+        return 0;
+    }
+
+    private static int findStars(String text, int i) {
+        if (text.length() - i < 3) {
+            return 0;
+        }
+        char thisChar = text.charAt(i);
+        if (thisChar != DOTS_35 && thisChar != DOTS_26 && thisChar != DOTS_6) {
+            return 0;
+        }
+        char nextNextChar = text.charAt(i + 2);
+        if (nextNextChar != DOTS_0) {
+            return 0;
+        }
+        char nextChar = text.charAt(i + 1);
+        if (thisChar == DOTS_6 && nextChar == DOTS_25) {
+            return 3;
+        }
+        if (i < 2 || text.charAt(i - 1) != DOTS_0 || text.charAt(i - 2) != DOTS_0) {
+            return 0;
+        }
+        if (i > 3 && text.charAt(i - 3) != '\n') {
+            return 0;
+        }
+        if (thisChar == DOTS_35 && nextChar == DOTS_35) {
+            return 1;
+        } else if (thisChar == DOTS_26 && nextChar == DOTS_26) {
+            return 2;
         }
         return 0;
     }
