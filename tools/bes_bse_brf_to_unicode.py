@@ -66,7 +66,7 @@ def parse_bse_header(content):
 
 def brf_to_unicode_braille(content, is_bse=False):
     if is_bse:
-        content = content[514:]  # 512 bytes of the header plus CR,LF
+        content = content[514:]  # 512 bytes of the header plus CR, LF
     result = []
     for code in content:
         if 32 <= code <= 127:
@@ -162,7 +162,6 @@ def bes_to_unicode_braille(content):
             # Strip a three-byte sequence, possibly for printer control codes.
             # The first two bytes are assumed to be the page block size in little-endian (16-bit).
             # The third byte is 0xFD, which probably maps to the form feed (0x0C).
-            # result.append('\r')  # Add carriage returns
             i += 3
             line_number = 1
             continue
