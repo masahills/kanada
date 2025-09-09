@@ -75,6 +75,7 @@ class BrailleMapping {
         LATIN_MAP.put('⠦', "?");
         LATIN_MAP.put('⠤', "-");
         LATIN_MAP.put('⠌', "/");
+        LATIN_MAP.put('⠪', "@");
 
         // Numerals
         DIGIT_MAP.put('⠁', "1");
