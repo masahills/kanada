@@ -366,7 +366,7 @@ public class MapBraille extends JMapper {
     private String getPunctuation(char thisChar, char nextChar, char punctuation) {
         String result = null;
         if (punctuation == DOTS_5 && thisChar == DOTS_5 && nextChar == DOTS_5) {
-            return "・"; // おそらく点線のつもり（DOTS-2とDOTS_5の誤用）
+            return "・"; // おそらく点線のつもり（DOTS-2とDOTS-5を誤用している）
         }
         if (!isLineBreak(thisChar) && !isBlankSpace(thisChar)) {
             return null;
