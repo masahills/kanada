@@ -75,7 +75,7 @@ public class KanadaTest {
     @Test
     public void testBrailleInput() throws Exception {
         String text = """
-                せんしゅう、 GINZA 8びるにあるAppleすとあで「iPhone 16」を159,800えん（ぜいこみ）でこうにゅうしました。
+                せんしゅう、GINZA 8びるにあるAppleすとあで「iPhone 16」を159,800えん（ぜいこみ）でこうにゅうしました。
                 """;
         String tenji = """
                 ⠻⠴⠈⠹⠉⠰⠀⠰⠠⠠⠛⠊⠝⠵⠁⠀⠼⠓⠐⠧⠙⠇⠁⠙⠰⠠⠁⠏⠏⠇⠑⠤⠹⠞⠁⠐⠟⠤⠰⠊⠠⠏⠓⠕⠝⠑⠀⠼⠁⠋⠤⠔⠼⠁⠑⠊⠄⠓⠚⠚⠤⠋⠴⠶⠐⠻⠃⠪⠷⠶⠐⠟⠪⠉⠈⠍⠉⠳⠵⠳⠕⠲

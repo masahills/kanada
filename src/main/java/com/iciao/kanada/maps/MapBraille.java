@@ -80,10 +80,10 @@ public class MapBraille extends JMapper {
                 currentMode = BrailleMode.NUMBER;
                 yield true;
             }
-            // 外字符 / 読点「、」改行の前以外では後ろに空白を挟む
+            // 外字符
             case DOTS_56 -> {
-                if (c2 == DOTS_36) {
-                    // 外字符の直後に第一つなぎ符なので、二重カギの開始
+                if (c2 == DOTS_3 || c2 == DOTS_36 || c2 == DOTS_2356 || c2 == DOTS_0 || c2 == '\n') {
+                    // 第２カギ、二重カギ、二重カッコの開始、読点
                     resetBrailleMode();
                     yield false;
                 } else {
@@ -376,7 +376,7 @@ public class MapBraille extends JMapper {
             if (isLineBreak(thisChar)) {
                 result = mark + thisChar; // 改行は残す
             } else if (isBlankSpace(thisChar)) {
-                result = mark + " "; // 通常の空白にして残す
+                result = mark; // 空白は消す
             } else {
                 return null;
             }
@@ -386,7 +386,7 @@ public class MapBraille extends JMapper {
             if (isLineBreak(thisChar)) {
                 result = mark + thisChar;
             } else if (isBlankSpace(thisChar) && isBlankSpace(nextChar)) {
-                result = mark + "  ";
+                result = mark;
             } else {
                 return null;
             }
