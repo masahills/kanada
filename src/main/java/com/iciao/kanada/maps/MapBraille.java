@@ -152,12 +152,11 @@ public class MapBraille extends JMapper {
             return 0;
         }
         // DOTS_25 may be repeated more than twice
-        int dashes;
-        for (dashes = 2; dashes < text.length() - i; dashes++) {
-            if (text.charAt(i + dashes) != DOTS_25) {
-                break;
-            }
+        int dashes = 2;
+        while (dashes < text.length() - i && text.charAt(i + dashes) == DOTS_25) {
+            dashes++;
         }
+
         // Require a blank cell immediately after
         if (i + dashes == text.length()) {
             return dashes;
@@ -177,11 +176,9 @@ public class MapBraille extends JMapper {
             return 0;
         }
         // DOTS_2 may be repeated more than three times
-        int ellipses;
-        for (ellipses = 3; ellipses < text.length() - i; ellipses++) {
-            if (text.charAt(i + ellipses) != DOTS_2) {
-                break;
-            }
+        int ellipses = 3;
+        while (ellipses < text.length() - i && text.charAt(i + ellipses) == DOTS_2) {
+            ellipses++;
         }
         // 原則として、棒線と点線の前後は必ず一マスあけである。
         // ただし、点線を語頭や語中に使うときは、後ろにマスあけしなくてもよい。句点が続くときも、後はマスあけをしない。
@@ -414,7 +411,7 @@ public class MapBraille extends JMapper {
                     }
                     case SECONDARY_CORNER_BRACKET -> {
                         cornerBracketSecondaryIn = !cornerBracketSecondaryIn;
-                        result.append(cornerBracketSecondaryIn ? "〔 " : "〕");
+                        result.append(cornerBracketSecondaryIn ? "〔" : "〕");
                         i += 1;
                         continue;
                     }
