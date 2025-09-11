@@ -274,7 +274,7 @@ public class MapBraille extends JMapper {
                     }
                     case DOUBLE_PARENTHESIS -> {
                         parenthesisDoubleIn = !parenthesisDoubleIn;
-                        result.append(parenthesisDoubleIn ? "《" : "》");
+                        result.append(parenthesisDoubleIn ? "⸨" : "⸩");
                         i += 1;
                         continue;
                     }
@@ -285,7 +285,7 @@ public class MapBraille extends JMapper {
                     }
                     case SECONDARY_CORNER_BRACKET -> {
                         cornerBracketSecondaryIn = !cornerBracketSecondaryIn;
-                        result.append(cornerBracketIn ? "❝" : "❞");
+                        result.append(cornerBracketIn ? "〔 " : "〕");
                         i += 1;
                         continue;
                     }
@@ -297,7 +297,7 @@ public class MapBraille extends JMapper {
                     }
                     case TRANSLATORS_NOTE -> {
                         translatorsNoteIn = !translatorsNoteIn;
-                        result.append(cornerBracketDoubleIn ? "【" : "】");
+                        result.append(cornerBracketDoubleIn ? "（（" : "））");
                         i += 1;
                         continue;
                     }
@@ -491,6 +491,7 @@ public class MapBraille extends JMapper {
             case DOTS_26 -> result = BrailleMapping.toSpecial26(kana);
             case DOTS_256 -> result = BrailleMapping.toSpecial256(kana);
             case DOTS_456 -> result = BrailleMapping.toSpecial456(kana);
+            case DOTS_56 -> result = BrailleMapping.toSpecial56(kana);
         }
         if (result != null) {
             resetBrailleMode();
