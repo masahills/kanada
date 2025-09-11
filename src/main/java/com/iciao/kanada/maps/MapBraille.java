@@ -321,12 +321,12 @@ public class MapBraille extends JMapper {
             }
 
             // Stars
-            int star = findStars(brailleText, i);
-            if (star > 0) {
+            StarType star = getStarType(brailleText, i);
+            if (star != null) {
                 switch (star) {
-                    case 1 -> result.append("★");
-                    case 2 -> result.append("☆");
-                    case 3 -> result.append("◇");
+                    case FIRST_STAR -> result.append("★");
+                    case SECOND_STAR -> result.append("☆");
+                    case THIRD_STAR -> result.append("◇");
                 }
                 i += 2;
                 continue;
@@ -395,7 +395,7 @@ public class MapBraille extends JMapper {
         return result;
     }
 
-    private BracketType getBracketType(char thisChar, char nextChar) {
+    private static BracketType getBracketType(char thisChar, char nextChar) {
         if (thisChar == DOTS_2356) {
             if (nextChar == DOTS_23) {
                 return BracketType.DOUBLE_PARENTHESIS;
@@ -422,6 +422,36 @@ public class MapBraille extends JMapper {
             if (nextChar == DOTS_23) {
                 return BracketType.SECONDARY_PARENTHESIS;
             }
+        }
+        return null;
+    }
+
+    private static StarType getStarType(String text, int i) {
+        if (text.length() - i < 3) {
+            return null;
+        }
+        char thisChar = text.charAt(i);
+        if (thisChar != DOTS_35 && thisChar != DOTS_26 && thisChar != DOTS_6) {
+            return null;
+        }
+        char nextNextChar = text.charAt(i + 2);
+        if (nextNextChar != DOTS_0) {
+            return null;
+        }
+        char nextChar = text.charAt(i + 1);
+        if (thisChar == DOTS_6 && nextChar == DOTS_25) {
+            return StarType.THIRD_STAR;
+        }
+        if (i < 2 || text.charAt(i - 1) != DOTS_0 || text.charAt(i - 2) != DOTS_0) {
+            return null;
+        }
+        if (i > 3 && text.charAt(i - 3) != '\n') {
+            return null;
+        }
+        if (thisChar == DOTS_35 && nextChar == DOTS_35) {
+            return StarType.FIRST_STAR;
+        } else if (thisChar == DOTS_26 && nextChar == DOTS_26) {
+            return StarType.SECOND_STAR;
         }
         return null;
     }
@@ -565,36 +595,6 @@ public class MapBraille extends JMapper {
         return 0;
     }
 
-    private static int findStars(String text, int i) {
-        if (text.length() - i < 3) {
-            return 0;
-        }
-        char thisChar = text.charAt(i);
-        if (thisChar != DOTS_35 && thisChar != DOTS_26 && thisChar != DOTS_6) {
-            return 0;
-        }
-        char nextNextChar = text.charAt(i + 2);
-        if (nextNextChar != DOTS_0) {
-            return 0;
-        }
-        char nextChar = text.charAt(i + 1);
-        if (thisChar == DOTS_6 && nextChar == DOTS_25) {
-            return 3;
-        }
-        if (i < 2 || text.charAt(i - 1) != DOTS_0 || text.charAt(i - 2) != DOTS_0) {
-            return 0;
-        }
-        if (i > 3 && text.charAt(i - 3) != '\n') {
-            return 0;
-        }
-        if (thisChar == DOTS_35 && nextChar == DOTS_35) {
-            return 1;
-        } else if (thisChar == DOTS_26 && nextChar == DOTS_26) {
-            return 2;
-        }
-        return 0;
-    }
-
     private enum BracketType {
         PARENTHESIS,
         SECONDARY_PARENTHESIS,
@@ -603,6 +603,12 @@ public class MapBraille extends JMapper {
         SECONDARY_CORNER_BRACKET,
         DOUBLE_CORNER_BRACKET,
         TRANSLATORS_NOTE,
+    }
+
+    private enum StarType {
+        FIRST_STAR,
+        SECOND_STAR,
+        THIRD_STAR
     }
 
     private enum BrailleMode {
