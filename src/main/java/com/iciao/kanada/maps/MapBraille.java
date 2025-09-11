@@ -49,21 +49,148 @@ public class MapBraille extends JMapper {
     private static final char DOTS_56 = '⠰';   // U+2830 外字符 / 読点「、」改行の前以外では後ろに空白を挟む
     private static final char DOTS_236 = '⠦';  // U+2826 外国語引用符（開始）
     private static final char DOTS_356 = '⠴';  // U+2834 外国語引用符（終了）/ 「ん」
+
     private static final char DOTS_35 = '⠔';   // U+2814 「を」/ 第１星印の要素
     private static final char DOTS_36 = '⠤';   // U+2824 第一つなぎ符
     private static final char DOTS_256 = '⠲';  // U+2832 句点「。」改行の前以外では後ろに空白を2つ挟む / 特殊音「ゔぁ、ゔぃ、ゔぇ」など
     private static final char DOTS_26 = '⠢';   // U+2822 特殊音「うぃ、うぇ、うぉ」 など
     private static final char DOTS_456 = '⠸';  // U+2838 特殊音「でゅ、ゔゅ、ゔょ」
     private static final char DOTS_2 = '⠂';    // U+2802 促音譜「っ」/ 小数点 / コンマ / 点線（３こ）
+    private static final char DOTS_23 = '⠆';   // U+2806 「ゐ」/ 二重カギ閉じ２マス目
     private static final char DOTS_25 = '⠒';   // U+2812 長音付 / 棒線（２こ）
     private static final char DOTS_0 = '⠀';    // U+2800 Braille blank pattern
-
-    private static final char DOTS_2356_PARENTHESES = '⠶'; // U+2836
-
+    private static final char DOTS_2356 = '⠶'; // U+2836 丸カッコ
+    private static final char DOTS_3 = '⠄';    // U+2804 「わ」 / 第二カギ開き２マス目
     private BrailleMode currentMode = BrailleMode.KANA;
 
     public MapBraille(Kanada kanada) {
         super(kanada);
+    }
+
+    private static BracketType getBracketType(char thisChar, char nextChar) {
+        if (thisChar == DOTS_2356) {
+            if (nextChar == DOTS_23) {
+                return BracketType.DOUBLE_PARENTHESIS;
+            } else if (nextChar == DOTS_2356) {
+                return BracketType.TRANSLATORS_NOTE;
+            } else {
+                return BracketType.PARENTHESIS;
+            }
+        } else if (thisChar == DOTS_36) {
+            if (nextChar == DOTS_23) {
+                return BracketType.DOUBLE_CORNER_BRACKET;
+            } else {
+                return BracketType.CORNER_BRACKET;
+            }
+        } else if (thisChar == DOTS_56) {
+            if (nextChar == DOTS_2356) {
+                return BracketType.DOUBLE_PARENTHESIS;
+            } else if (nextChar == DOTS_3) {
+                return BracketType.SECONDARY_CORNER_BRACKET;
+            } else if (nextChar == DOTS_36) {
+                return BracketType.DOUBLE_CORNER_BRACKET;
+            }
+        } else if (thisChar == DOTS_6) {
+            if (nextChar == DOTS_23) {
+                return BracketType.SECONDARY_PARENTHESIS;
+            }
+        }
+        return null;
+    }
+
+    private static StarType getStarType(String text, int i) {
+        if (text.length() - i < 3) {
+            return null;
+        }
+        char thisChar = text.charAt(i);
+        if (thisChar != DOTS_35 && thisChar != DOTS_26 && thisChar != DOTS_6) {
+            return null;
+        }
+        char nextNextChar = text.charAt(i + 2);
+        if (nextNextChar != DOTS_0) {
+            return null;
+        }
+        char nextChar = text.charAt(i + 1);
+        if (thisChar == DOTS_6 && nextChar == DOTS_25) {
+            return StarType.THIRD_STAR;
+        }
+        if (i < 2 || text.charAt(i - 1) != DOTS_0 || text.charAt(i - 2) != DOTS_0) {
+            return null;
+        }
+        if (i > 3 && text.charAt(i - 3) != '\n') {
+            return null;
+        }
+        if (thisChar == DOTS_35 && nextChar == DOTS_35) {
+            return StarType.FIRST_STAR;
+        } else if (thisChar == DOTS_26 && nextChar == DOTS_26) {
+            return StarType.SECOND_STAR;
+        }
+        return null;
+    }
+
+    private static boolean isBlankSpace(char c) {
+        return c == ' ' || c == DOTS_0;
+    }
+
+    private static boolean isLineBreak(char c) {
+        return c == '\n' || c == '\r';
+    }
+
+    private static boolean isPunctuation(char c) {
+        return BrailleMapping.KUTOUTEN_MAP.containsKey(c);
+    }
+
+    private static int findDashes(String text, int i) {
+        if (text.length() - i < 2) {
+            return 0;
+        }
+        if (text.charAt(i) != DOTS_25 || text.charAt(i + 1) != DOTS_25) {
+            return 0;
+        }
+        // Require a blank cell immediately before
+        if (i != 0 && !isBlankSpace(text.charAt(i - 1)) && !isLineBreak(text.charAt(i - 1))) {
+            return 0;
+        }
+        // DOTS_25 may be repeated more than twice
+        int dashes = 2;
+        while (dashes < text.length() - i && text.charAt(i + dashes) == DOTS_25) {
+            dashes++;
+        }
+
+        // Require a blank cell immediately after
+        if (i + dashes == text.length()) {
+            return dashes;
+        }
+        char charAfter = text.charAt(i + dashes);
+        if (isBlankSpace(charAfter) || isLineBreak(charAfter)) {
+            return dashes;
+        }
+        return 0;
+    }
+
+    private static int findEllipses(String text, int i) {
+        if (text.length() - i < 3) {
+            return 0;
+        }
+        if (text.charAt(i) != DOTS_2 || text.charAt(i + 1) != DOTS_2 || text.charAt(i + 2) != DOTS_2) {
+            return 0;
+        }
+        // DOTS_2 may be repeated more than three times
+        int ellipses = 3;
+        while (ellipses < text.length() - i && text.charAt(i + ellipses) == DOTS_2) {
+            ellipses++;
+        }
+        // 原則として、棒線と点線の前後は必ず一マスあけである。
+        // ただし、点線を語頭や語中に使うときは、後ろにマスあけしなくてもよい。句点が続くときも、後はマスあけをしない。
+        // 前は必ずマスあけをする。マスあけをしないと、「っっっ」になってしまう。
+        if (i == 0) {
+            return ellipses;
+        }
+        char charBefore = text.charAt(i - 1);
+        if (isBlankSpace(charBefore) || isLineBreak(charBefore)) {
+            return ellipses;
+        }
+        return 0;
     }
 
     @Override
@@ -72,17 +199,23 @@ public class MapBraille extends JMapper {
         setString(this.kanada.process(str));
     }
 
-    private boolean setBrailleMode(char c) {
-        return switch (c) {
+    private boolean setBrailleMode(char c1, char c2) {
+        return switch (c1) {
             // 数字符
             case DOTS_3456 -> {
                 currentMode = BrailleMode.NUMBER;
                 yield true;
             }
-            // 外字符 / 読点「、」改行の前以外では後ろに空白を挟む
+            // 外字符
             case DOTS_56 -> {
-                currentMode = BrailleMode.LATIN;
-                yield true;
+                if (c2 == DOTS_3 || c2 == DOTS_36 || c2 == DOTS_2356 || c2 == DOTS_0 || c2 == '\n') {
+                    // 第２カギ、二重カギ、二重カッコの開始、読点
+                    resetBrailleMode();
+                    yield false;
+                } else {
+                    currentMode = BrailleMode.LATIN;
+                    yield true;
+                }
             }
             // 大文字符 / 二重大文字符（２連続で）/ 半濁音符
             case DOTS_6 -> {
@@ -108,7 +241,12 @@ public class MapBraille extends JMapper {
         StringBuilder result = new StringBuilder();
         char punctuation = 0;
         boolean parenthesisIn = false;
+        boolean parenthesisSecondaryIn = false;
+        boolean parenthesisDoubleIn = false;
         boolean cornerBracketIn = false;
+        boolean cornerBracketDoubleIn = false;
+        boolean cornerBracketSecondaryIn = false;
+        boolean translatorsNoteIn = false;
         boolean latinQuoteIn = false;
 
         for (int i = 0; i < brailleText.length(); i++) {
@@ -130,8 +268,7 @@ public class MapBraille extends JMapper {
             }
 
             // Update braille mode
-            if (setBrailleMode(thisChar)) {
-                // This is an indicator. Skip to the next char
+            if (setBrailleMode(thisChar, nextChar)) {
                 continue;
             }
 
@@ -150,15 +287,22 @@ public class MapBraille extends JMapper {
                 continue;
             }
 
+            // 第１小見出し符
+            if (thisChar == DOTS_6 && nextChar == DOTS_36) {
+                if (i + 2 < brailleText.length()) {
+                    char nextNextChar = brailleText.charAt(i + 2);
+                    if (nextNextChar == DOTS_0 || nextNextChar == '\n') {
+                        result.append("  ");
+                        i += 1;
+                        continue;
+                    }
+                }
+            }
+
             // 外国語引用符
             if (thisChar == DOTS_236 && !latinQuoteIn) {
                 currentMode = BrailleMode.LATIN;
                 latinQuoteIn = true;
-                continue;
-            }
-            if (thisChar == DOTS_356 && latinQuoteIn) {
-                resetBrailleMode();
-                latinQuoteIn = false;
                 continue;
             }
 
@@ -167,18 +311,20 @@ public class MapBraille extends JMapper {
                 String punctuationStr = getPunctuation(thisChar, nextChar, punctuation);
                 if (punctuationStr != null) {
                     result.append(punctuationStr);
-                    if (nextChar == DOTS_0) {
-                        i += 1; // 句点を示す空白なので一つ飛ばす
+                    if (punctuationStr.length() > 2) {
+                        i += 1; // 句点の２つ目の空白を飛ばす
                     }
                     punctuation = 0;
                     continue;
                 }
             }
 
-            // White space
+            // Braille blank space
             if (thisChar == DOTS_0) {
                 result.append(" ");
-                currentMode = latinQuoteIn ? BrailleMode.LATIN : BrailleMode.KANA;
+                if (!latinQuoteIn) {
+                    resetBrailleMode(); // 空白または改行なので外字符などの効力が切れる
+                }
                 continue;
             }
 
@@ -199,21 +345,35 @@ public class MapBraille extends JMapper {
                 if (latin != null) {
                     result.append(latin);
                     punctuation = 0; // 読点ではなく外字符のため punctuation をリセット
-                } else if (thisChar == DOTS_356 && nextChar == DOTS_36) {
-                    i += 1; // 外国語引用符（終了）の次が第一つなぎ符なので一つ飛ばす
-                } else if (thisChar == DOTS_5 && nextChar == DOTS_36) {
-                    result.append("_");
-                    punctuation = 0;
-                    i += 1; // 情報処理用点字の組み合わせなので一つ飛ばす
-                } else if (Character.isWhitespace(thisChar)) {
-                    result.append(thisChar);
-                    if (nextChar == DOTS_4) {
-                        i += 1; // 次の行の先頭が情報処理用点字の行継続符なので一つ飛ばす
+                    continue;
+                }
+                if (latinQuoteIn) {
+                    if (thisChar == DOTS_4) {
+                        // 情報処理用点字の行継続符
+                        continue;
+                    }
+                    if (thisChar == DOTS_5 && nextChar == DOTS_36) {
+                        result.append("_");
+                        punctuation = 0;
+                        i += 1; // 情報処理用点字の組み合わせなので一つ飛ばす
+                        continue;
+                    }
+                    if (thisChar == DOTS_356) {
+                        resetBrailleMode(); // 外国語引用符（終了）
+                        if (nextChar == DOTS_36) {
+                            i += 1; // 次が第一つなぎ符なので一つ飛ばす
+                        }
+                        latinQuoteIn = false;
+                        continue;
                     }
                 } else {
-                    System.err.println("Unknown character (latin): " + thisChar);
+                    // 外字符の効力が切れた
+                    resetBrailleMode();
+                    if (thisChar == DOTS_36) {
+                        // 第一つなぎ符なのでスキップ
+                        continue;
+                    }
                 }
-                continue;
             }
 
             // Wave dash
@@ -224,15 +384,50 @@ public class MapBraille extends JMapper {
             }
 
             // Brackets
-            if (thisChar == DOTS_2356_PARENTHESES || thisChar == DOTS_36) {
-                if (thisChar == DOTS_2356_PARENTHESES) {
-                    parenthesisIn = !parenthesisIn;
-                    result.append(parenthesisIn ? "（" : "）");
-                } else {
-                    cornerBracketIn = !cornerBracketIn;
-                    result.append(cornerBracketIn ? "「" : "」");
+            BracketType thisBracket = getBracketType(thisChar, nextChar);
+            if (thisBracket != null) {
+                switch (thisBracket) {
+                    case PARENTHESIS -> {
+                        parenthesisIn = !parenthesisIn;
+                        result.append(parenthesisIn ? "（" : "）");
+                        continue;
+                    }
+                    case SECONDARY_PARENTHESIS -> {
+                        parenthesisSecondaryIn = !parenthesisSecondaryIn;
+                        result.append(parenthesisSecondaryIn ? "〈" : "〉");
+                        i += 1;
+                        continue;
+                    }
+                    case DOUBLE_PARENTHESIS -> {
+                        parenthesisDoubleIn = !parenthesisDoubleIn;
+                        result.append(parenthesisDoubleIn ? "⸨" : "⸩");
+                        i += 1;
+                        continue;
+                    }
+                    case CORNER_BRACKET -> {
+                        cornerBracketIn = !cornerBracketIn;
+                        result.append(cornerBracketIn ? "「" : "」");
+                        continue;
+                    }
+                    case SECONDARY_CORNER_BRACKET -> {
+                        cornerBracketSecondaryIn = !cornerBracketSecondaryIn;
+                        result.append(cornerBracketSecondaryIn ? "〔" : "〕");
+                        i += 1;
+                        continue;
+                    }
+                    case DOUBLE_CORNER_BRACKET -> {
+                        cornerBracketDoubleIn = !cornerBracketDoubleIn;
+                        result.append(cornerBracketDoubleIn ? "『" : "』");
+                        i += 1;
+                        continue;
+                    }
+                    case TRANSLATORS_NOTE -> {
+                        translatorsNoteIn = !translatorsNoteIn;
+                        result.append(translatorsNoteIn ? "（（" : "））");
+                        i += 1;
+                        continue;
+                    }
                 }
-                continue;
             }
 
             // Ellipses
@@ -252,12 +447,12 @@ public class MapBraille extends JMapper {
             }
 
             // Stars
-            int star = findStars(brailleText, i);
-            if (star > 0) {
+            StarType star = getStarType(brailleText, i);
+            if (star != null) {
                 switch (star) {
-                    case 1 -> result.append("★");
-                    case 2 -> result.append("☆");
-                    case 3 -> result.append("◇");
+                    case FIRST_STAR -> result.append("★");
+                    case SECOND_STAR -> result.append("☆");
+                    case THIRD_STAR -> result.append("◇");
                 }
                 i += 2;
                 continue;
@@ -279,7 +474,7 @@ public class MapBraille extends JMapper {
                 continue;
             }
 
-            if (isPunctuation(thisChar)) {
+            if (punctuation != 0) {
                 // Process nakaten / kuten on the next path
                 continue;
             }
@@ -296,6 +491,9 @@ public class MapBraille extends JMapper {
 
     private String getPunctuation(char thisChar, char nextChar, char punctuation) {
         String result = null;
+        if (punctuation == DOTS_5 && thisChar == DOTS_5 && nextChar == DOTS_5) {
+            return "・"; // おそらく点線のつもり（DOTS-2とDOTS-5を誤用している）
+        }
         if (!isLineBreak(thisChar) && !isBlankSpace(thisChar)) {
             return null;
         }
@@ -304,7 +502,7 @@ public class MapBraille extends JMapper {
             if (isLineBreak(thisChar)) {
                 result = mark + thisChar; // 改行は残す
             } else if (isBlankSpace(thisChar)) {
-                result = mark; // 空白は無視
+                result = mark; // 空白は消す
             } else {
                 return null;
             }
@@ -388,6 +586,7 @@ public class MapBraille extends JMapper {
             case DOTS_26 -> result = BrailleMapping.toSpecial26(kana);
             case DOTS_256 -> result = BrailleMapping.toSpecial256(kana);
             case DOTS_456 -> result = BrailleMapping.toSpecial456(kana);
+            case DOTS_56 -> result = BrailleMapping.toSpecial56(kana);
         }
         if (result != null) {
             resetBrailleMode();
@@ -395,100 +594,20 @@ public class MapBraille extends JMapper {
         return result;
     }
 
-    private static boolean isBlankSpace(char c) {
-        return c == ' ' || c == DOTS_0;
+    private enum BracketType {
+        PARENTHESIS,
+        SECONDARY_PARENTHESIS,
+        DOUBLE_PARENTHESIS,
+        CORNER_BRACKET,
+        SECONDARY_CORNER_BRACKET,
+        DOUBLE_CORNER_BRACKET,
+        TRANSLATORS_NOTE,
     }
 
-    private static boolean isLineBreak(char c) {
-        return c == '\n' || c == '\r';
-    }
-
-    private static boolean isPunctuation(char c) {
-        return BrailleMapping.KUTOUTEN_MAP.containsKey(c);
-    }
-
-    private static int findDashes(String text, int i) {
-        if (text.length() - i < 2) {
-            return 0;
-        }
-        if (text.charAt(i) != DOTS_25 && text.charAt(i + 1) != DOTS_25) {
-            return 0;
-        }
-        // Require a blank cell immediately before
-        if (i != 0 && !isBlankSpace(text.charAt(i - 1)) && !isLineBreak(text.charAt(i - 1))) {
-            return 0;
-        }
-        // DOTS_25 may be repeated more than twice
-        int dashes;
-        for (dashes = 2; dashes < text.length() - i; dashes++) {
-            if (text.charAt(i + dashes) != DOTS_25) {
-                break;
-            }
-        }
-        // Require a blank cell immediately after
-        if (i + dashes == text.length()) {
-            return dashes;
-        }
-        char charAfter = text.charAt(i + dashes);
-        if (isBlankSpace(charAfter) || isLineBreak(charAfter)) {
-            return dashes;
-        }
-        return 0;
-    }
-
-    private static int findEllipses(String text, int i) {
-        if (text.length() - i < 3) {
-            return 0;
-        }
-        if (text.charAt(i) != DOTS_2 || text.charAt(i + 1) != DOTS_2 || text.charAt(i + 2) != DOTS_2) {
-            return 0;
-        }
-        // DOTS_2 may be repeated more than three times
-        int ellipses;
-        for (ellipses = 2; ellipses < text.length() - i; ellipses++) {
-            if (text.charAt(i + ellipses) != DOTS_2) {
-                break;
-            }
-        }
-        // Require a blank cell immediately before
-        if (i == 0) {
-            return ellipses;
-        }
-        char charBefore = text.charAt(i - 1);
-        if (isBlankSpace(charBefore) || isLineBreak(charBefore)) {
-            return ellipses;
-        }
-        return 0;
-    }
-
-    private static int findStars(String text, int i) {
-        if (text.length() - i < 3) {
-            return 0;
-        }
-        char thisChar = text.charAt(i);
-        if (thisChar != DOTS_35 && thisChar != DOTS_26 && thisChar != DOTS_6) {
-            return 0;
-        }
-        char nextNextChar = text.charAt(i + 2);
-        if (nextNextChar != DOTS_0) {
-            return 0;
-        }
-        char nextChar = text.charAt(i + 1);
-        if (thisChar == DOTS_6 && nextChar == DOTS_25) {
-            return 3;
-        }
-        if (i < 2 || text.charAt(i - 1) != DOTS_0 || text.charAt(i - 2) != DOTS_0) {
-            return 0;
-        }
-        if (i > 3 && text.charAt(i - 3) != '\n') {
-            return 0;
-        }
-        if (thisChar == DOTS_35 && nextChar == DOTS_35) {
-            return 1;
-        } else if (thisChar == DOTS_26 && nextChar == DOTS_26) {
-            return 2;
-        }
-        return 0;
+    private enum StarType {
+        FIRST_STAR,
+        SECOND_STAR,
+        THIRD_STAR
     }
 
     private enum BrailleMode {

@@ -74,7 +74,9 @@ class BrailleMapping {
         LATIN_MAP.put('⠖', "!");
         LATIN_MAP.put('⠦', "?");
         LATIN_MAP.put('⠤', "-");
+        LATIN_MAP.put('⠠', "'");
         LATIN_MAP.put('⠌', "/");
+        LATIN_MAP.put('⠪', "@");
 
         // Numerals
         DIGIT_MAP.put('⠁', "1");
@@ -175,6 +177,12 @@ class BrailleMapping {
             case "ほ" -> "ぼ";
             // Specials
             case "う" -> "ゔ";
+            // Masked letters
+            case "ま" -> "◯";
+            case "み" -> "△";
+            case "む" -> "□";
+            case "め" -> "✗";
+            case "も" -> "●";
             default -> kana;
         };
     }
@@ -324,6 +332,19 @@ class BrailleMapping {
             case "つ" -> "でゅ";
             case "ゆ" -> "ゔゅ";
             case "よ" -> "ゔょ";
+            default -> kana;
+        };
+    }
+
+    protected static String toSpecial56(String kana) {
+        if (kana == null) {
+            return null;
+        }
+        return switch (kana) {
+            case "ね" -> "％";
+            case "へ" -> "＆";
+            case "く" -> "＃";
+            case "か" -> "＊";
             default -> kana;
         };
     }
