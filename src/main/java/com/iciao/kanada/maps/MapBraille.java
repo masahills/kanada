@@ -61,6 +61,14 @@ public class MapBraille extends JMapper {
     private static final char DOTS_0 = '⠀';    // U+2800 Braille blank pattern
     private static final char DOTS_2356 = '⠶'; // U+2836 丸カッコ
     private static final char DOTS_3 = '⠄';    // U+2804 「わ」 / 第二カギ開き２マス目
+    private static final char DOTS_246 = '⠪';  // U+282A 「こ」 / 矢印左矢先
+    private static final char DOTS_135 = '⠕';  // U+2815 「た」 / 矢印右矢先
+    private static final char DOTS_1346 = '⠭'; // U+282D 「ふ」 / 空欄符号の間
+    private static final char DOTS_123 = '⠇';  // U+2807 「に」 / 空欄符号の右端
+    private static final char DOTS_235 = '⠖';  // U+2816 「！、ゑ」 / 枠線の左上
+    private static final char DOTS_125 = '⠓';  // U+2813 「り」 / 枠線の左下
+    private static final char DOTS_245 = '⠚';  // U+281A 「ろ」 / 枠線の右下
+
     private BrailleMode currentMode = BrailleMode.KANA;
 
     public MapBraille(Kanada kanada) {
@@ -124,6 +132,39 @@ public class MapBraille extends JMapper {
             return StarType.FIRST_STAR;
         } else if (thisChar == DOTS_26 && nextChar == DOTS_26) {
             return StarType.SECOND_STAR;
+        }
+        return null;
+    }
+
+    private static ArrowType getArrowType(String text, int i) {
+        if (text.length() - i < 3) {
+            return null;
+        }
+        // Require a blank cell immediately before
+        if (i != 0 && !isBlankSpace(text.charAt(i - 1)) && !isLineBreak(text.charAt(i - 1))) {
+            return null;
+        }
+        // Check the arrow pattern
+        ArrowType arrow = null;
+        if (text.charAt(i) == DOTS_25 && text.charAt(i + 1) == DOTS_25 && text.charAt(i + 2) == DOTS_135) {
+            arrow = ArrowType.RIGHT_ARROW;
+        } else if (text.charAt(i) == DOTS_246 && text.charAt(i + 1) == DOTS_25 && text.charAt(i + 2) == DOTS_25) {
+            if (i + 3 < text.length() && text.charAt(i + 3) == DOTS_135) {
+                arrow = ArrowType.LEFT_RIGHT_ARROW;
+            } else {
+                arrow = ArrowType.LEFT_ARROW;
+            }
+        }
+        if (arrow != null) {
+            int arrowLength = arrow == ArrowType.LEFT_RIGHT_ARROW ? 4 : 3;
+            // Require a blank cell immediately after
+            if (i + arrowLength == text.length()) {
+                return arrow;
+            }
+            char charAfter = text.charAt(i + arrowLength);
+            if (isBlankSpace(charAfter) || isLineBreak(charAfter)) {
+                return arrow;
+            }
         }
         return null;
     }
@@ -193,6 +234,33 @@ public class MapBraille extends JMapper {
         return 0;
     }
 
+    private static int findFrameBorder(String text, int i) {
+        if (text.length() - i < 2) {
+            return 0;
+        }
+        char thisChar = text.charAt(i);
+        char nextChar = text.charAt(i + 1);
+        if (thisChar != DOTS_235 && thisChar != DOTS_125 && nextChar != DOTS_25 && nextChar != DOTS_2) {
+            return 0;
+        }
+
+        int pos = 1;
+        while (i + pos < text.length()) {
+            char c = text.charAt(i + pos);
+            if (c != nextChar) {
+                break;
+            }
+            pos++;
+        }
+
+        if (text.charAt(i) == DOTS_235 && text.charAt(i + pos) == DOTS_256) {
+            return pos;
+        } else if (text.charAt(i) == DOTS_125 && text.charAt(i + pos) == DOTS_245) {
+            return pos;
+        }
+        return 0;
+    }
+
     @Override
     protected void process(String brailleStr, int param) {
         String str = brailleToText(brailleStr);
@@ -212,10 +280,9 @@ public class MapBraille extends JMapper {
                     // 第２カギ、二重カギ、二重カッコの開始、読点
                     resetBrailleMode();
                     yield false;
-                } else {
-                    currentMode = BrailleMode.LATIN;
-                    yield true;
                 }
+                currentMode = BrailleMode.LATIN;
+                yield true;
             }
             // 大文字符 / 二重大文字符（２連続で）/ 半濁音符
             case DOTS_6 -> {
@@ -383,6 +450,29 @@ public class MapBraille extends JMapper {
                 continue;
             }
 
+            // Blank text box
+            if (i + 3 < brailleText.length() && thisChar == DOTS_456
+                    && nextChar == DOTS_1346 && brailleText.charAt(i + 2) == DOTS_1346
+                    && brailleText.charAt(i + 3) == DOTS_123) {
+                result.append("【　　】");
+                i += 3;
+                continue;
+            }
+
+            // Frame border
+            int borderFrame = findFrameBorder(brailleText, i);
+            if (borderFrame > 0) {
+                result.append(thisChar == DOTS_235 ? "┌" : "└");
+                String border = nextChar == DOTS_25 ? "─" : "┄";
+                result.append(border.repeat(borderFrame));
+                result.append(thisChar == DOTS_235 ? "┐" : "┘");
+                i += borderFrame;
+                if (thisChar == DOTS_235) {
+                    punctuation = 0; // 枠線のため punctuation をリセット
+                }
+                continue;
+            }
+
             // Brackets
             BracketType thisBracket = getBracketType(thisChar, nextChar);
             if (thisBracket != null) {
@@ -455,6 +545,22 @@ public class MapBraille extends JMapper {
                     case THIRD_STAR -> result.append("◇");
                 }
                 i += 2;
+                continue;
+            }
+
+            //  Arrows
+            ArrowType arrow = getArrowType(brailleText, i);
+            if (arrow != null) {
+                switch (arrow) {
+                    case RIGHT_ARROW -> result.append("--→");
+                    case LEFT_ARROW -> result.append("←--");
+                    case LEFT_RIGHT_ARROW -> result.append("←--→");
+                }
+                if (arrow == ArrowType.LEFT_RIGHT_ARROW) {
+                    i += 3;
+                } else {
+                    i += 2;
+                }
                 continue;
             }
 
@@ -601,13 +707,19 @@ public class MapBraille extends JMapper {
         CORNER_BRACKET,
         SECONDARY_CORNER_BRACKET,
         DOUBLE_CORNER_BRACKET,
-        TRANSLATORS_NOTE,
+        TRANSLATORS_NOTE
     }
 
     private enum StarType {
         FIRST_STAR,
         SECOND_STAR,
         THIRD_STAR
+    }
+
+    private enum ArrowType {
+        RIGHT_ARROW,
+        LEFT_ARROW,
+        LEFT_RIGHT_ARROW
     }
 
     private enum BrailleMode {
