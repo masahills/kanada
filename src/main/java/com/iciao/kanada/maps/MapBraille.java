@@ -67,6 +67,133 @@ public class MapBraille extends JMapper {
         super(kanada);
     }
 
+    private static BracketType getBracketType(char thisChar, char nextChar) {
+        if (thisChar == DOTS_2356) {
+            if (nextChar == DOTS_23) {
+                return BracketType.DOUBLE_PARENTHESIS;
+            } else if (nextChar == DOTS_2356) {
+                return BracketType.TRANSLATORS_NOTE;
+            } else {
+                return BracketType.PARENTHESIS;
+            }
+        } else if (thisChar == DOTS_36) {
+            if (nextChar == DOTS_23) {
+                return BracketType.DOUBLE_CORNER_BRACKET;
+            } else {
+                return BracketType.CORNER_BRACKET;
+            }
+        } else if (thisChar == DOTS_56) {
+            if (nextChar == DOTS_2356) {
+                return BracketType.DOUBLE_PARENTHESIS;
+            } else if (nextChar == DOTS_3) {
+                return BracketType.SECONDARY_CORNER_BRACKET;
+            } else if (nextChar == DOTS_36) {
+                return BracketType.DOUBLE_CORNER_BRACKET;
+            }
+        } else if (thisChar == DOTS_6) {
+            if (nextChar == DOTS_23) {
+                return BracketType.SECONDARY_PARENTHESIS;
+            }
+        }
+        return null;
+    }
+
+    private static StarType getStarType(String text, int i) {
+        if (text.length() - i < 3) {
+            return null;
+        }
+        char thisChar = text.charAt(i);
+        if (thisChar != DOTS_35 && thisChar != DOTS_26 && thisChar != DOTS_6) {
+            return null;
+        }
+        char nextNextChar = text.charAt(i + 2);
+        if (nextNextChar != DOTS_0) {
+            return null;
+        }
+        char nextChar = text.charAt(i + 1);
+        if (thisChar == DOTS_6 && nextChar == DOTS_25) {
+            return StarType.THIRD_STAR;
+        }
+        if (i < 2 || text.charAt(i - 1) != DOTS_0 || text.charAt(i - 2) != DOTS_0) {
+            return null;
+        }
+        if (i > 3 && text.charAt(i - 3) != '\n') {
+            return null;
+        }
+        if (thisChar == DOTS_35 && nextChar == DOTS_35) {
+            return StarType.FIRST_STAR;
+        } else if (thisChar == DOTS_26 && nextChar == DOTS_26) {
+            return StarType.SECOND_STAR;
+        }
+        return null;
+    }
+
+    private static boolean isBlankSpace(char c) {
+        return c == ' ' || c == DOTS_0;
+    }
+
+    private static boolean isLineBreak(char c) {
+        return c == '\n' || c == '\r';
+    }
+
+    private static boolean isPunctuation(char c) {
+        return BrailleMapping.KUTOUTEN_MAP.containsKey(c);
+    }
+
+    private static int findDashes(String text, int i) {
+        if (text.length() - i < 2) {
+            return 0;
+        }
+        if (text.charAt(i) != DOTS_25 && text.charAt(i + 1) != DOTS_25) {
+            return 0;
+        }
+        // Require a blank cell immediately before
+        if (i != 0 && !isBlankSpace(text.charAt(i - 1)) && !isLineBreak(text.charAt(i - 1))) {
+            return 0;
+        }
+        // DOTS_25 may be repeated more than twice
+        int dashes;
+        for (dashes = 2; dashes < text.length() - i; dashes++) {
+            if (text.charAt(i + dashes) != DOTS_25) {
+                break;
+            }
+        }
+        // Require a blank cell immediately after
+        if (i + dashes == text.length()) {
+            return dashes;
+        }
+        char charAfter = text.charAt(i + dashes);
+        if (isBlankSpace(charAfter) || isLineBreak(charAfter)) {
+            return dashes;
+        }
+        return 0;
+    }
+
+    private static int findEllipses(String text, int i) {
+        if (text.length() - i < 3) {
+            return 0;
+        }
+        if (text.charAt(i) != DOTS_2 || text.charAt(i + 1) != DOTS_2 || text.charAt(i + 2) != DOTS_2) {
+            return 0;
+        }
+        // DOTS_2 may be repeated more than three times
+        int ellipses;
+        for (ellipses = 2; ellipses < text.length() - i; ellipses++) {
+            if (text.charAt(i + ellipses) != DOTS_2) {
+                break;
+            }
+        }
+        // Require a blank cell immediately before
+        if (i == 0) {
+            return ellipses;
+        }
+        char charBefore = text.charAt(i - 1);
+        if (isBlankSpace(charBefore) || isLineBreak(charBefore)) {
+            return ellipses;
+        }
+        return 0;
+    }
+
     @Override
     protected void process(String brailleStr, int param) {
         String str = brailleToText(brailleStr);
@@ -395,67 +522,6 @@ public class MapBraille extends JMapper {
         return result;
     }
 
-    private static BracketType getBracketType(char thisChar, char nextChar) {
-        if (thisChar == DOTS_2356) {
-            if (nextChar == DOTS_23) {
-                return BracketType.DOUBLE_PARENTHESIS;
-            } else if (nextChar == DOTS_2356) {
-                return BracketType.TRANSLATORS_NOTE;
-            } else {
-                return BracketType.PARENTHESIS;
-            }
-        } else if (thisChar == DOTS_36) {
-            if (nextChar == DOTS_23) {
-                return BracketType.DOUBLE_CORNER_BRACKET;
-            } else {
-                return BracketType.CORNER_BRACKET;
-            }
-        } else if (thisChar == DOTS_56) {
-            if (nextChar == DOTS_2356) {
-                return BracketType.DOUBLE_PARENTHESIS;
-            } else if (nextChar == DOTS_3) {
-                return BracketType.SECONDARY_CORNER_BRACKET;
-            } else if (nextChar == DOTS_36) {
-                return BracketType.DOUBLE_CORNER_BRACKET;
-            }
-        } else if (thisChar == DOTS_6) {
-            if (nextChar == DOTS_23) {
-                return BracketType.SECONDARY_PARENTHESIS;
-            }
-        }
-        return null;
-    }
-
-    private static StarType getStarType(String text, int i) {
-        if (text.length() - i < 3) {
-            return null;
-        }
-        char thisChar = text.charAt(i);
-        if (thisChar != DOTS_35 && thisChar != DOTS_26 && thisChar != DOTS_6) {
-            return null;
-        }
-        char nextNextChar = text.charAt(i + 2);
-        if (nextNextChar != DOTS_0) {
-            return null;
-        }
-        char nextChar = text.charAt(i + 1);
-        if (thisChar == DOTS_6 && nextChar == DOTS_25) {
-            return StarType.THIRD_STAR;
-        }
-        if (i < 2 || text.charAt(i - 1) != DOTS_0 || text.charAt(i - 2) != DOTS_0) {
-            return null;
-        }
-        if (i > 3 && text.charAt(i - 3) != '\n') {
-            return null;
-        }
-        if (thisChar == DOTS_35 && nextChar == DOTS_35) {
-            return StarType.FIRST_STAR;
-        } else if (thisChar == DOTS_26 && nextChar == DOTS_26) {
-            return StarType.SECOND_STAR;
-        }
-        return null;
-    }
-
     private String getNumeric(char thisChar, char nextChar, boolean latinQuoteIn) {
         if (thisChar == DOTS_36) {
             // 次があ行・ら行の場合は、第一つなぎ符
@@ -527,72 +593,6 @@ public class MapBraille extends JMapper {
             resetBrailleMode();
         }
         return result;
-    }
-
-    private static boolean isBlankSpace(char c) {
-        return c == ' ' || c == DOTS_0;
-    }
-
-    private static boolean isLineBreak(char c) {
-        return c == '\n' || c == '\r';
-    }
-
-    private static boolean isPunctuation(char c) {
-        return BrailleMapping.KUTOUTEN_MAP.containsKey(c);
-    }
-
-    private static int findDashes(String text, int i) {
-        if (text.length() - i < 2) {
-            return 0;
-        }
-        if (text.charAt(i) != DOTS_25 && text.charAt(i + 1) != DOTS_25) {
-            return 0;
-        }
-        // Require a blank cell immediately before
-        if (i != 0 && !isBlankSpace(text.charAt(i - 1)) && !isLineBreak(text.charAt(i - 1))) {
-            return 0;
-        }
-        // DOTS_25 may be repeated more than twice
-        int dashes;
-        for (dashes = 2; dashes < text.length() - i; dashes++) {
-            if (text.charAt(i + dashes) != DOTS_25) {
-                break;
-            }
-        }
-        // Require a blank cell immediately after
-        if (i + dashes == text.length()) {
-            return dashes;
-        }
-        char charAfter = text.charAt(i + dashes);
-        if (isBlankSpace(charAfter) || isLineBreak(charAfter)) {
-            return dashes;
-        }
-        return 0;
-    }
-
-    private static int findEllipses(String text, int i) {
-        if (text.length() - i < 3) {
-            return 0;
-        }
-        if (text.charAt(i) != DOTS_2 || text.charAt(i + 1) != DOTS_2 || text.charAt(i + 2) != DOTS_2) {
-            return 0;
-        }
-        // DOTS_2 may be repeated more than three times
-        int ellipses;
-        for (ellipses = 2; ellipses < text.length() - i; ellipses++) {
-            if (text.charAt(i + ellipses) != DOTS_2) {
-                break;
-            }
-        }
-        // Require a blank cell immediately before
-        if (i == 0) {
-            return ellipses;
-        }
-        char charBefore = text.charAt(i - 1);
-        if (isBlankSpace(charBefore) || isLineBreak(charBefore)) {
-            return ellipses;
-        }
-        return 0;
     }
 
     private enum BracketType {
