@@ -144,7 +144,7 @@ public class MapBraille extends JMapper {
         if (text.length() - i < 2) {
             return 0;
         }
-        if (text.charAt(i) != DOTS_25 && text.charAt(i + 1) != DOTS_25) {
+        if (text.charAt(i) != DOTS_25 || text.charAt(i + 1) != DOTS_25) {
             return 0;
         }
         // Require a blank cell immediately before
@@ -178,12 +178,14 @@ public class MapBraille extends JMapper {
         }
         // DOTS_2 may be repeated more than three times
         int ellipses;
-        for (ellipses = 2; ellipses < text.length() - i; ellipses++) {
+        for (ellipses = 3; ellipses < text.length() - i; ellipses++) {
             if (text.charAt(i + ellipses) != DOTS_2) {
                 break;
             }
         }
-        // Require a blank cell immediately before
+        // 原則として、棒線と点線の前後は必ず一マスあけである。
+        // ただし、点線を語頭や語中に使うときは、後ろにマスあけしなくてもよい。句点が続くときも、後はマスあけをしない。
+        // 前は必ずマスあけをする。マスあけをしないと、「っっっ」になってしまう。
         if (i == 0) {
             return ellipses;
         }
