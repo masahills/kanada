@@ -253,9 +253,10 @@ public class MapBraille extends JMapper {
             pos++;
         }
 
-        if (text.charAt(i) == DOTS_235 && text.charAt(i + pos) == DOTS_256) {
+        if (i + pos < text.length() && text.charAt(i) == DOTS_235 && text.charAt(i + pos) == DOTS_256) {
             return pos;
-        } else if (text.charAt(i) == DOTS_125 && text.charAt(i + pos) == DOTS_245) {
+        }
+        if (i + pos < text.length() && text.charAt(i) == DOTS_125 && text.charAt(i + pos) == DOTS_245) {
             return pos;
         }
         return 0;
