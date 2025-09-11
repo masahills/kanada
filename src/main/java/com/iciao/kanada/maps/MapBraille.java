@@ -412,7 +412,7 @@ public class MapBraille extends JMapper {
                     }
                     case SECONDARY_CORNER_BRACKET -> {
                         cornerBracketSecondaryIn = !cornerBracketSecondaryIn;
-                        result.append(cornerBracketIn ? "〔 " : "〕");
+                        result.append(cornerBracketSecondaryIn ? "〔 " : "〕");
                         i += 1;
                         continue;
                     }
@@ -424,7 +424,7 @@ public class MapBraille extends JMapper {
                     }
                     case TRANSLATORS_NOTE -> {
                         translatorsNoteIn = !translatorsNoteIn;
-                        result.append(cornerBracketDoubleIn ? "（（" : "））");
+                        result.append(translatorsNoteIn ? "（（" : "））");
                         i += 1;
                         continue;
                     }
