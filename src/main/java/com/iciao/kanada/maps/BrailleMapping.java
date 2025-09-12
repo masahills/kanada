@@ -89,7 +89,8 @@ class BrailleMapping {
         DIGIT_MAP.put('⠓', "8");
         DIGIT_MAP.put('⠊', "9");
         DIGIT_MAP.put('⠚', "0");
-        DIGIT_MAP.put('⠂', ".");
+        DIGIT_MAP.put('⠂', "."); // for decimal point
+        DIGIT_MAP.put('⠲', "."); // for list numbering
         DIGIT_MAP.put('⠄', ",");
 
         // Hiragana
