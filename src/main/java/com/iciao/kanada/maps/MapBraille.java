@@ -290,6 +290,36 @@ public class MapBraille extends JMapper {
         return 0;
     }
 
+    private static String getPunctuation(char thisChar, char nextChar, char punctuation) {
+        String result = null;
+        if (punctuation == DOTS_5 && thisChar == DOTS_5 && nextChar == DOTS_5) {
+            return "・"; // おそらく点線のつもり（DOTS-2とDOTS-5を誤用している）
+        }
+        if (!isLineBreak(thisChar) && !isBlankSpace(thisChar)) {
+            return null;
+        }
+        String mark = BrailleMapping.KUTOUTEN_MAP.get(punctuation);
+        if (mark.equals("、") || mark.equals("・")) {
+            if (isLineBreak(thisChar)) {
+                result = mark + thisChar; // 改行は残す
+            } else if (isBlankSpace(thisChar)) {
+                result = mark; // 空白は消す
+            } else {
+                return null;
+            }
+        }
+        if (mark.equals("。") || mark.equals("！") || mark.equals("？")) {
+            if (isLineBreak(thisChar)) {
+                result = mark + thisChar;
+            } else if (isBlankSpace(thisChar) && isBlankSpace(nextChar)) {
+                result = mark;
+            } else {
+                return null;
+            }
+        }
+        return result;
+    }
+
     @Override
     protected void process(String brailleStr, int param) {
         String str = brailleToText(brailleStr);
@@ -635,38 +665,6 @@ public class MapBraille extends JMapper {
         }
         matchedLength = brailleText.length();
         return result.toString();
-    }
-
-    private String getPunctuation(char thisChar, char nextChar, char punctuation) {
-        String result = null;
-        if (punctuation == DOTS_5 && thisChar == DOTS_5 && nextChar == DOTS_5) {
-            return "・"; // おそらく点線のつもり（DOTS-2とDOTS-5を誤用している）
-        }
-        if (!isLineBreak(thisChar) && !isBlankSpace(thisChar)) {
-            return null;
-        }
-        String mark = BrailleMapping.KUTOUTEN_MAP.get(punctuation);
-        if (mark.equals("、") || mark.equals("・")) {
-            if (isLineBreak(thisChar)) {
-                result = mark + thisChar; // 改行は残す
-            } else if (isBlankSpace(thisChar)) {
-                result = mark; // 空白は消す
-            } else {
-                return null;
-            }
-            resetBrailleMode();
-        }
-        if (mark.equals("。") || mark.equals("！") || mark.equals("？")) {
-            if (isLineBreak(thisChar)) {
-                result = mark + thisChar;
-            } else if (isBlankSpace(thisChar) && isBlankSpace(nextChar)) {
-                result = mark;
-            } else {
-                return null;
-            }
-            resetBrailleMode();
-        }
-        return result;
     }
 
     private String getNumeric(char thisChar, char nextChar, boolean latinQuoteIn) {
