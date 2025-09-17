@@ -26,6 +26,8 @@ package com.iciao.kanada.maps;
 import com.iciao.kanada.JMapper;
 import com.iciao.kanada.Kanada;
 
+import java.util.EnumSet;
+
 /**
  * Convert braille input to hiragana, katakana, or romaji.
  *
@@ -73,6 +75,7 @@ public class MapBraille extends JMapper {
     private static final char DOTS_123456 = '⠿'; // U+283F 「め」
 
     private BrailleMode currentMode = BrailleMode.KANA;
+    private final EnumSet<BracketType> bracketStates = EnumSet.noneOf(BracketType.class);
 
     public MapBraille(Kanada kanada) {
         super(kanada);
@@ -432,16 +435,17 @@ public class MapBraille extends JMapper {
         currentMode = BrailleMode.KANA;
     }
 
+    private void toggleBracketState(BracketType bracketType) {
+        if (bracketStates.contains(bracketType)) {
+            bracketStates.remove(bracketType);
+        } else {
+            bracketStates.add(bracketType);
+        }
+    }
+
     private String brailleToText(String brailleText) {
         StringBuilder result = new StringBuilder();
         char punctuation = 0;
-        boolean parenthesisIn = false;
-        boolean parenthesisSecondaryIn = false;
-        boolean parenthesisDoubleIn = false;
-        boolean cornerBracketIn = false;
-        boolean cornerBracketDoubleIn = false;
-        boolean cornerBracketSecondaryIn = false;
-        boolean translatorsNoteIn = false;
         boolean latinQuoteIn = false;
 
         for (int i = 0; i < brailleText.length(); i++) {
@@ -618,44 +622,38 @@ public class MapBraille extends JMapper {
             // Brackets
             BracketType thisBracket = getBracketType(thisChar, nextChar);
             if (thisBracket != null) {
+                toggleBracketState(thisBracket);
                 switch (thisBracket) {
                     case PARENTHESIS -> {
-                        parenthesisIn = !parenthesisIn;
-                        result.append(parenthesisIn ? "（" : "）");
+                        result.append(bracketStates.contains(thisBracket) ? "（" : "）");
                         continue;
                     }
                     case SECONDARY_PARENTHESIS -> {
-                        parenthesisSecondaryIn = !parenthesisSecondaryIn;
-                        result.append(parenthesisSecondaryIn ? "〈" : "〉");
+                        result.append(bracketStates.contains(thisBracket) ? "〈" : "〉");
                         i += 1;
                         continue;
                     }
                     case DOUBLE_PARENTHESIS -> {
-                        parenthesisDoubleIn = !parenthesisDoubleIn;
-                        result.append(parenthesisDoubleIn ? "⸨" : "⸩");
+                        result.append(bracketStates.contains(thisBracket) ? "⸨" : "⸩");
                         i += 1;
                         continue;
                     }
                     case CORNER_BRACKET -> {
-                        cornerBracketIn = !cornerBracketIn;
-                        result.append(cornerBracketIn ? "「" : "」");
+                        result.append(bracketStates.contains(thisBracket) ? "「" : "」");
                         continue;
                     }
                     case SECONDARY_CORNER_BRACKET -> {
-                        cornerBracketSecondaryIn = !cornerBracketSecondaryIn;
-                        result.append(cornerBracketSecondaryIn ? "《" : "》");
+                        result.append(bracketStates.contains(thisBracket) ? "《" : "》");
                         i += 1;
                         continue;
                     }
                     case DOUBLE_CORNER_BRACKET -> {
-                        cornerBracketDoubleIn = !cornerBracketDoubleIn;
-                        result.append(cornerBracketDoubleIn ? "『" : "』");
+                        result.append(bracketStates.contains(thisBracket) ? "『" : "』");
                         i += 1;
                         continue;
                     }
                     case TRANSLATORS_NOTE -> {
-                        translatorsNoteIn = !translatorsNoteIn;
-                        result.append(translatorsNoteIn ? "（（" : "））");
+                        result.append(bracketStates.contains(thisBracket) ? "（（" : "））");
                         i += 1;
                         continue;
                     }
