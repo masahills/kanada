@@ -26,6 +26,8 @@ package com.iciao.kanada.maps;
 import com.iciao.kanada.JMapper;
 import com.iciao.kanada.Kanada;
 
+import java.util.EnumSet;
+
 /**
  * Convert braille input to hiragana, katakana, or romaji.
  *
@@ -68,8 +70,12 @@ public class MapBraille extends JMapper {
     private static final char DOTS_235 = '⠖';  // U+2816 「！、ゑ」 / 枠線の左上
     private static final char DOTS_125 = '⠓';  // U+2813 「り」 / 枠線の左下
     private static final char DOTS_245 = '⠚';  // U+281A 「ろ」 / 枠線の右下
+    private static final char DOTS_14 = '⠉';   // U+2809 「う」
+    private static final char DOTS_1245 = '⠛'; // U+281B 「れ」
+    private static final char DOTS_123456 = '⠿'; // U+283F 「め」
 
     private BrailleMode currentMode = BrailleMode.KANA;
+    private final EnumSet<BracketType> bracketStates = EnumSet.noneOf(BracketType.class);
 
     public MapBraille(Kanada kanada) {
         super(kanada);
@@ -171,6 +177,83 @@ public class MapBraille extends JMapper {
         return null;
     }
 
+    private static FrameBorderType getFrameBorderType(String text, int i) {
+        if (text.length() - i < 3) {
+            return null;
+        }
+        FrameBorderType frameBorder = null;
+        char thisChar = text.charAt(i);
+        char nextChar = text.charAt(i + 1);
+        char nextNextChar = text.charAt(i + 2);
+        if (thisChar == DOTS_235 && nextChar == DOTS_25) {
+            frameBorder = FrameBorderType.BASE_SOLID_TOP;
+        } else if (thisChar == DOTS_125 && nextChar == DOTS_25) {
+            frameBorder = FrameBorderType.BASE_SOLID_BOTTOM;
+        } else if (thisChar == DOTS_235 && nextChar == DOTS_2) {
+            frameBorder = FrameBorderType.BASE_DOTTED_TOP;
+        } else if (thisChar == DOTS_125 && nextChar == DOTS_2) {
+            frameBorder = FrameBorderType.BASE_DOTTED_BOTTOM;
+        } else if (thisChar == DOTS_123456 && nextChar == DOTS_1245 && nextNextChar == DOTS_14) {
+            frameBorder = FrameBorderType.LARGE_TOP;
+        } else if (thisChar == DOTS_123456 && nextChar == DOTS_2356 && nextNextChar == DOTS_36) {
+            frameBorder = FrameBorderType.LARGE_BOTTOM;
+        } else if (thisChar == DOTS_2356 && nextChar == DOTS_25) {
+            frameBorder = FrameBorderType.DIVIDER_TEXT_LEFT;
+        } else if (thisChar == DOTS_25 && nextChar == DOTS_25) {
+            frameBorder = FrameBorderType.DIVIDER_TEXT_RIGHT;
+        } else {
+            return null;
+        }
+        return frameBorder;
+    }
+
+    private static String getFrameBorder(FrameBorderType type, int width) {
+        StringBuilder result = new StringBuilder();
+        if (type != null && width > 0) {
+            switch (type) {
+                case LARGE_TOP -> {
+                    result.append("┏");
+                    result.append("━".repeat(width - 1));
+                    result.append("┓");
+                }
+                case LARGE_BOTTOM -> {
+                    result.append("┗");
+                    result.append("━".repeat(width - 1));
+                    result.append("┛");
+                }
+                case BASE_SOLID_TOP -> {
+                    result.append("┌");
+                    result.append("─".repeat(width - 1));
+                    result.append("┐");
+                }
+                case BASE_SOLID_BOTTOM -> {
+                    result.append("└");
+                    result.append("─".repeat(width - 1));
+                    result.append("┘");
+                }
+                case BASE_DOTTED_TOP -> {
+                    result.append("┌");
+                    result.append("┄".repeat(width - 1));
+                    result.append("┐");
+                }
+                case BASE_DOTTED_BOTTOM -> {
+                    result.append("└");
+                    result.append("┄".repeat(width - 1));
+                    result.append("┘");
+                }
+                case DIVIDER_TEXT_LEFT -> {
+                    result.append("├");
+                    result.append("─".repeat(width));
+                }
+                case DIVIDER_TEXT_RIGHT -> {
+                    result.append("─".repeat(width));
+                    result.append("┤");
+                }
+            }
+        }
+        return result.toString();
+    }
+
     private static boolean isBlankSpace(char c) {
         return c == ' ' || c == DOTS_0;
     }
@@ -236,58 +319,47 @@ public class MapBraille extends JMapper {
         return 0;
     }
 
-    /* Various Frame Patterns:
-    Typical pattern
-    ⠖⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠲
-    ⠓⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠚
-    Typical pattern with some dividers (not implemented yet)
-    ⠖⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠲
-    ⠶⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠀⠈⠝⠒⠀⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠶
-    ⠶⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠀⠈⠝⠒⠀⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠶
-    ⠓⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠚
-    Nested pattern (not implemented yet)
-    ⠿⠛⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠛⠿
-    ⠖⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠲
-    ⠓⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠚
-    ⠿⠶⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠶⠿
-     */
-    private static int findFrameBorder(String text, int i) {
-        if (text.length() - i < 2) {
+    private static int findFrameBorderSize(String text, int i, FrameBorderType frameBorder) {
+        if (text.length() < i + 2) {
             return 0;
         }
-        char thisChar = text.charAt(i);
-        char nextChar = text.charAt(i + 1);
-        if (thisChar != DOTS_235 && thisChar != DOTS_125 && nextChar != DOTS_25 && nextChar != DOTS_2) {
+        if (frameBorder == null) {
             return 0;
         }
-
-        int pos = 1;
-        while (i + pos < text.length()) {
-            char c = text.charAt(i + pos);
-            if (c != nextChar) {
-                break;
-            }
+        int pos = 2;
+        char borderChar = text.charAt(i + pos);
+        while (i + pos < text.length() && text.charAt(i + pos) == borderChar) {
             pos++;
         }
-
-        if (i + pos < text.length()) {
-            if ((text.charAt(i) == DOTS_235 && text.charAt(i + pos) == DOTS_256) ||
-                    (text.charAt(i) == DOTS_125 && text.charAt(i + pos) == DOTS_245)) {
-                // 行頭から
-                if (i == 0 || isLineBreak(text.charAt(i - 1))) {
-                    return pos;
-                }
-                // 行頭4マス空け後
-                // あまり厳格ではない印象なので、最低4マス空いていることだけを確認
-                if (i == 4 || (i > 4 && isBlankSpace(text.charAt(i - 4))
-                        && isBlankSpace(text.charAt(i - 3))
-                        && isBlankSpace(text.charAt(i - 2))
-                        && isBlankSpace(text.charAt(i - 1)))) {
-                    return pos;
-                }
+        if (pos == 2) {
+            return 0;
+        }
+        // BASE_SOLID_TOP, BASE_DOTTED_TOP
+        if (text.charAt(i) == DOTS_235 && text.charAt(i + pos) != DOTS_256) {
+            return 0;
+        }
+        // BASE_SOLID_BOTTOM, BASE_DOTTED_BOTTOM
+        if (text.charAt(i) == DOTS_125 && text.charAt(i + pos) != DOTS_245) {
+            return 0;
+        }
+        // LARGE_TOP, LARGE_BOTTOM
+        if (text.charAt(i) == DOTS_123456) {
+            if (i + pos + 1 > text.length() || text.charAt(i) != text.charAt(i + pos + 1) || text.charAt(i + 1) != text.charAt(i + pos)) {
+                return 0;
             }
         }
-        return 0;
+
+        if (frameBorder == FrameBorderType.DIVIDER_TEXT_RIGHT && text.charAt(i + pos) != DOTS_2356) {
+            return 0;
+        }
+
+        if (frameBorder == FrameBorderType.DIVIDER_TEXT_LEFT) {
+            pos--; // The last space does not count as a divider
+        }
+        if (frameBorder == FrameBorderType.LARGE_TOP || frameBorder == FrameBorderType.LARGE_BOTTOM) {
+            pos++; // Large frame has one more char
+        }
+        return pos;
     }
 
     private static String getPunctuation(char thisChar, char nextChar, char punctuation) {
@@ -363,16 +435,17 @@ public class MapBraille extends JMapper {
         currentMode = BrailleMode.KANA;
     }
 
+    private void toggleBracketState(BracketType bracketType) {
+        if (bracketStates.contains(bracketType)) {
+            bracketStates.remove(bracketType);
+        } else {
+            bracketStates.add(bracketType);
+        }
+    }
+
     private String brailleToText(String brailleText) {
         StringBuilder result = new StringBuilder();
         char punctuation = 0;
-        boolean parenthesisIn = false;
-        boolean parenthesisSecondaryIn = false;
-        boolean parenthesisDoubleIn = false;
-        boolean cornerBracketIn = false;
-        boolean cornerBracketDoubleIn = false;
-        boolean cornerBracketSecondaryIn = false;
-        boolean translatorsNoteIn = false;
         boolean latinQuoteIn = false;
 
         for (int i = 0; i < brailleText.length(); i++) {
@@ -524,17 +597,18 @@ public class MapBraille extends JMapper {
             }
 
             // Frame border (horizontal)
-            int borderFrame = findFrameBorder(brailleText, i);
-            if (borderFrame > 0) {
-                result.append(thisChar == DOTS_235 ? "┌" : "└");
-                String border = nextChar == DOTS_25 ? "─" : "┄";
-                result.append(border.repeat(borderFrame));
-                result.append(thisChar == DOTS_235 ? "┐" : "┘");
-                i += borderFrame;
-                if (thisChar == DOTS_235) {
-                    punctuation = 0; // 枠線のため punctuation をリセット
+            FrameBorderType frameBorderType = getFrameBorderType(brailleText, i);
+            if (frameBorderType != null) {
+                int borderWidth = findFrameBorderSize(brailleText, i, frameBorderType);
+                if (borderWidth > 0) {
+                    String border = getFrameBorder(frameBorderType, borderWidth);
+                    result.append(border);
+                    i += borderWidth;
+                    if (thisChar == DOTS_235) {
+                        punctuation = 0; // 枠線のため punctuation をリセット
+                    }
+                    continue;
                 }
-                continue;
             }
 
             // Frame border (vertical)
@@ -548,44 +622,38 @@ public class MapBraille extends JMapper {
             // Brackets
             BracketType thisBracket = getBracketType(thisChar, nextChar);
             if (thisBracket != null) {
+                toggleBracketState(thisBracket);
                 switch (thisBracket) {
                     case PARENTHESIS -> {
-                        parenthesisIn = !parenthesisIn;
-                        result.append(parenthesisIn ? "（" : "）");
+                        result.append(bracketStates.contains(thisBracket) ? "（" : "）");
                         continue;
                     }
                     case SECONDARY_PARENTHESIS -> {
-                        parenthesisSecondaryIn = !parenthesisSecondaryIn;
-                        result.append(parenthesisSecondaryIn ? "〈" : "〉");
+                        result.append(bracketStates.contains(thisBracket) ? "〈" : "〉");
                         i += 1;
                         continue;
                     }
                     case DOUBLE_PARENTHESIS -> {
-                        parenthesisDoubleIn = !parenthesisDoubleIn;
-                        result.append(parenthesisDoubleIn ? "⸨" : "⸩");
+                        result.append(bracketStates.contains(thisBracket) ? "⸨" : "⸩");
                         i += 1;
                         continue;
                     }
                     case CORNER_BRACKET -> {
-                        cornerBracketIn = !cornerBracketIn;
-                        result.append(cornerBracketIn ? "「" : "」");
+                        result.append(bracketStates.contains(thisBracket) ? "「" : "」");
                         continue;
                     }
                     case SECONDARY_CORNER_BRACKET -> {
-                        cornerBracketSecondaryIn = !cornerBracketSecondaryIn;
-                        result.append(cornerBracketSecondaryIn ? "《" : "》");
+                        result.append(bracketStates.contains(thisBracket) ? "《" : "》");
                         i += 1;
                         continue;
                     }
                     case DOUBLE_CORNER_BRACKET -> {
-                        cornerBracketDoubleIn = !cornerBracketDoubleIn;
-                        result.append(cornerBracketDoubleIn ? "『" : "』");
+                        result.append(bracketStates.contains(thisBracket) ? "『" : "』");
                         i += 1;
                         continue;
                     }
                     case TRANSLATORS_NOTE -> {
-                        translatorsNoteIn = !translatorsNoteIn;
-                        result.append(translatorsNoteIn ? "（（" : "））");
+                        result.append(bracketStates.contains(thisBracket) ? "（（" : "））");
                         i += 1;
                         continue;
                     }
@@ -757,6 +825,17 @@ public class MapBraille extends JMapper {
         RIGHT_ARROW,
         LEFT_ARROW,
         LEFT_RIGHT_ARROW
+    }
+
+    private enum FrameBorderType {
+        BASE_SOLID_TOP,
+        BASE_SOLID_BOTTOM,
+        BASE_DOTTED_TOP,
+        BASE_DOTTED_BOTTOM,
+        LARGE_TOP,
+        LARGE_BOTTOM,
+        DIVIDER_TEXT_LEFT,
+        DIVIDER_TEXT_RIGHT
     }
 
     private enum BrailleMode {
