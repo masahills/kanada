@@ -116,13 +116,13 @@ public class OllamaClient implements LlmClient {
             return "";
         }
 
-        LlmConfig.ModelConfig modelConfig = config.models.get(model);
+        LlmConfig.ModelConfig modelConfig = (config.models != null) ? config.models.get(model) : null;
         String template = getConfigValue(modelConfig, m -> m.promptTemplate, config.promptTemplate);
-            
+
         String prompt = template
-            .replace("{kanji}", kanji)
-            .replace("{context}", context.replace("\n", ""))
-            .replace("{readings}", String.join(" / ", possibleReadings));
+                .replace("{kanji}", kanji)
+                .replace("{context}", context.replace("\n", ""))
+                .replace("{readings}", String.join(" / ", possibleReadings));
 
         String response = generateCompletion(prompt);
         return parseResponse(response, possibleReadings);

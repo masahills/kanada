@@ -104,6 +104,7 @@ public class LlmConfig {
             if (localConfig.claude.systemPrompt != null) config.claude.systemPrompt = localConfig.claude.systemPrompt;
             if (localConfig.claude.userPromptTemplate != null)
                 config.claude.userPromptTemplate = localConfig.claude.userPromptTemplate;
+            if (localConfig.claude.models != null) config.claude.models.putAll(localConfig.claude.models);
         }
         if (localConfig.lmstudio != null) {
             if (localConfig.lmstudio.defaultModel != null)
@@ -167,6 +168,7 @@ public class LlmConfig {
         public String apiUrl;
         public String systemPrompt;
         public String userPromptTemplate;
+        public Map<String, ModelConfig> models;
     }
 
     public static class LMStudioConfig {
@@ -177,6 +179,11 @@ public class LlmConfig {
         public Map<String, ModelConfig> models;
     }
 
+    /*
+    The modelName and modelDescription fields are intended
+    for holding human-readable descriptions.  These fields
+    are not used in the application logic.
+    */
     public static class ModelConfig {
         public String modelName;
         public String modelDescription;

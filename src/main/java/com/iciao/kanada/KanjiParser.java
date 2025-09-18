@@ -31,6 +31,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  * @author Masahiko Sato
  */
 class KanjiParser {
+    private static final Logger LOGGER = Logger.getLogger(KanjiParser.class.getName());
     private final static Kanwadict kanwa = Kanwadict.getKanwadict();
     private final Kanada kanada;
     private final JWriter jWriter;
@@ -293,6 +295,7 @@ class KanjiParser {
                 }
             } catch (Exception e) {
                 // Fall back to default selection on error
+                LOGGER.warning("Failed to select best reading: " + e.getMessage());
             }
         }
 
@@ -301,8 +304,6 @@ class KanjiParser {
     }
 
     private String extractContext(String sentence, String targetKanji, int position) {
-        sentence = sentence.replace("\r", "").replace("\n", "");
-
         // Find positions 25 characters before and after
         int contextStart = Math.max(0, position - 25);
         int contextEnd = Math.min(sentence.length(), position + targetKanji.length() + 25);
@@ -310,21 +311,32 @@ class KanjiParser {
         // Look for a preceding punctuation mark
         for (int i = contextStart; i < position; i++) {
             char c = sentence.charAt(i);
-            if (c == '。' || c == '、') {
-                contextStart = i + 1;
+            if (c == '。' || c == '、' || c == '！' || c == '？') {
+                contextStart = i + 1; // Exclude the punctuation itself
+                break;
             }
         }
 
         // Look for the next punctuation mark
         for (int i = position + targetKanji.length(); i < contextEnd; i++) {
             char c = sentence.charAt(i);
-            if (c == '。' || c == '、') {
-                contextEnd = i;
+            if (c == '。' || c == '、' || c == '！' || c == '？') {
+                contextEnd = i + 1; // Include the punctuation itself
                 break;
             }
         }
 
-        return sentence.substring(contextStart, contextEnd);
+        // Extract the context substring
+        String context = sentence.substring(contextStart, contextEnd);
+
+        // Highlight the target kanji in the context
+        int relativePos = position - contextStart;
+        StringBuilder sb = new StringBuilder(context);
+        sb.insert(relativePos + targetKanji.length(), "]]");
+        sb.insert(relativePos, "[[");
+
+        // Remove any newline or carriage return characters for cleaner context
+        return sb.toString().replace("\r", "").replace("\n", "");
     }
 
     private void appendSeparator() {

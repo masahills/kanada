@@ -106,8 +106,11 @@ public class ClaudeClient implements LlmClient {
             return possibleReadings.isEmpty() ? "" : possibleReadings.get(0);
         }
 
-        String systemMessage = config.systemPrompt;
-        String userMessage = config.userPromptTemplate
+        LlmConfig.ModelConfig modelConfig = (config.models != null) ? config.models.get(model) : null;
+        String systemMessage = getConfigValue(modelConfig, m -> m.systemPrompt, config.systemPrompt);
+        String template = getConfigValue(modelConfig, m -> m.userPromptTemplate, config.userPromptTemplate);
+
+        String userMessage = template
                 .replace("{kanji}", kanji)
                 .replace("{context}", context.replace("\n", ""))
                 .replace("{readings}", String.join(" / ", possibleReadings));
@@ -176,5 +179,9 @@ public class ClaudeClient implements LlmClient {
     }
 
     private record Content(String text) {
+    }
+
+    private static <T> T getConfigValue(LlmConfig.ModelConfig modelConfig, java.util.function.Function<LlmConfig.ModelConfig, T> getter, T defaultValue) {
+        return modelConfig != null && getter.apply(modelConfig) != null ? getter.apply(modelConfig) : defaultValue;
     }
 }
