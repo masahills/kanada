@@ -131,6 +131,12 @@ class KanjiParser {
             }
         }
 
+        // Skip the rest if dictionary lookups aren't necessary.
+        if (kanada.optionKanji == JMapper.AS_IS && !kanada.modeAddSpace && !kanada.modeFurigana && !kanada.modeShowAllYomi) {
+            jWriter.append(thisChar);
+            return 1;
+        }
+
         // The dictionary is indexed by characters from the CJK Unified Ideographs block.
         if (currentBlock != Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS) {
             jWriter.append(thisChar);
@@ -226,11 +232,13 @@ class KanjiParser {
             jWriter.tail = ' ';
         }
 
-        // Use LLM for disambiguation if multiple candidates exist
-        if (tail == ' ' && llmClient != null && candidates.size() > 1) {
-            Kanwadict.YomiKanjiData selectedTerm = askGenerativeAI(candidates, inputString.toString(), i);
-            yomi = selectedTerm.yomi();
-            jWriter.tail = selectedTerm.tail();
+        // Use an LLM to select the most appropriate reading from multiple candidates when necessary.
+        if (kanada.optionKanji != JMapper.AS_IS || kanada.modeFurigana || kanada.modeShowAllYomi) {
+            if (tail == ' ' && llmClient != null && candidates.size() > 1) {
+                Kanwadict.YomiKanjiData selectedTerm = askGenerativeAI(candidates, inputString.toString(), i);
+                yomi = selectedTerm.yomi();
+                jWriter.tail = selectedTerm.tail();
+            }
         }
 
         if (matchedLen > 0 && !yomi.isEmpty()) {
