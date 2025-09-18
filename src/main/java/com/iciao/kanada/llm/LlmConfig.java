@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -153,14 +154,14 @@ public class LlmConfig {
         public String apiUrl;
         public String systemPrompt;
         public String userPromptTemplate;
-        public Map<String, ModelConfig> models = new java.util.HashMap<>();
+        public Map<String, ModelConfig> models = new HashMap<>();
     }
 
     public static class OllamaConfig {
         public String defaultModel;
         public String apiUrl;
         public String promptTemplate;
-        public Map<String, ModelConfig> models = new java.util.HashMap<>();
+        public Map<String, ModelConfig> models = new HashMap<>();
     }
 
     public static class ClaudeConfig {
@@ -168,7 +169,7 @@ public class LlmConfig {
         public String apiUrl;
         public String systemPrompt;
         public String userPromptTemplate;
-        public Map<String, ModelConfig> models = new java.util.HashMap<>();
+        public Map<String, ModelConfig> models = new HashMap<>();
     }
 
     public static class LMStudioConfig {
@@ -176,7 +177,7 @@ public class LlmConfig {
         public String apiUrl;
         public String systemPrompt;
         public String userPromptTemplate;
-        public Map<String, ModelConfig> models = new java.util.HashMap<>();
+        public Map<String, ModelConfig> models = new HashMap<>();
     }
 
     /*
