@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -104,6 +105,7 @@ public class LlmConfig {
             if (localConfig.claude.systemPrompt != null) config.claude.systemPrompt = localConfig.claude.systemPrompt;
             if (localConfig.claude.userPromptTemplate != null)
                 config.claude.userPromptTemplate = localConfig.claude.userPromptTemplate;
+            if (localConfig.claude.models != null) config.claude.models.putAll(localConfig.claude.models);
         }
         if (localConfig.lmstudio != null) {
             if (localConfig.lmstudio.defaultModel != null)
@@ -152,14 +154,14 @@ public class LlmConfig {
         public String apiUrl;
         public String systemPrompt;
         public String userPromptTemplate;
-        public Map<String, ModelConfig> models;
+        public Map<String, ModelConfig> models = new HashMap<>();
     }
 
     public static class OllamaConfig {
         public String defaultModel;
         public String apiUrl;
         public String promptTemplate;
-        public Map<String, ModelConfig> models;
+        public Map<String, ModelConfig> models = new HashMap<>();
     }
 
     public static class ClaudeConfig {
@@ -167,6 +169,7 @@ public class LlmConfig {
         public String apiUrl;
         public String systemPrompt;
         public String userPromptTemplate;
+        public Map<String, ModelConfig> models = new HashMap<>();
     }
 
     public static class LMStudioConfig {
@@ -174,9 +177,14 @@ public class LlmConfig {
         public String apiUrl;
         public String systemPrompt;
         public String userPromptTemplate;
-        public Map<String, ModelConfig> models;
+        public Map<String, ModelConfig> models = new HashMap<>();
     }
 
+    /*
+    The modelName and modelDescription fields are intended
+    for holding human-readable descriptions.  These fields
+    are not used in the application logic.
+    */
     public static class ModelConfig {
         public String modelName;
         public String modelDescription;

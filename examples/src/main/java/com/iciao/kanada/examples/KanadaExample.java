@@ -325,7 +325,7 @@ public class KanadaExample {
         System.out.println("Setting up an LLM client...");
         try {
             // Create LLM client and test connection
-            llmClient = LlmClientFactory.createClient(LlmClientFactory.LlmProvider.OLLAMA);
+            llmClient = LlmClientFactory.createClient(LlmClientFactory.LlmProvider.LMSTUDIO);
 
             // Test connection to the LLM server
             String clientName = llmClient.getClass().getSimpleName();
