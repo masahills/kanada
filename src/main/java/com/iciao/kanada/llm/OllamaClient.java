@@ -116,7 +116,7 @@ public class OllamaClient implements LlmClient {
             return "";
         }
 
-        LlmConfig.ModelConfig modelConfig = (config.models != null) ? config.models.get(model) : null;
+        LlmConfig.ModelConfig modelConfig = config.models.get(model);
         String template = getConfigValue(modelConfig, m -> m.promptTemplate, config.promptTemplate);
 
         String prompt = template

@@ -120,7 +120,7 @@ public class LMStudioClient implements LlmClient {
             return possibleReadings.isEmpty() ? "" : possibleReadings.get(0);
         }
 
-        LlmConfig.ModelConfig modelConfig = (config.models != null) ? config.models.get(model) : null;
+        LlmConfig.ModelConfig modelConfig = config.models.get(model);
         String systemMessage = getConfigValue(modelConfig, m -> m.systemPrompt, config.systemPrompt);
         String template = getConfigValue(modelConfig, m -> m.userPromptTemplate, config.userPromptTemplate);
 
