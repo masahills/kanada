@@ -103,6 +103,23 @@ class KanjiParser {
     }
 
     private int processCharacterAt(BufferedReader reader, Writer writer, StringBuilder inputString, int i) throws Exception {
+        // Skip whitespace characters before processing the next word.
+        int whitespaces = 0;
+        while (i < inputString.length()) {
+            int ch = inputString.charAt(i);
+            if (!Character.isWhitespace(ch)) {
+                break;
+            }
+            jWriter.append(ch);
+            whitespaces++;
+            i++;
+        }
+        // Flush buffered characters with trailing whitespaces.
+        if (whitespaces > 0) {
+            jWriter.flushBuffer(writer);
+            return whitespaces;
+        }
+
         int thisChar = inputString.codePointAt(i);
         Character.UnicodeBlock currentBlock = Character.UnicodeBlock.of(thisChar);
 
@@ -127,6 +144,7 @@ class KanjiParser {
                 }
                 if (isBoundaryAtTransition) {
                     appendSeparator();
+                    jWriter.flushBuffer(writer);
                 }
             }
         }
