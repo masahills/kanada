@@ -106,11 +106,15 @@ public class MapBraille extends JMapper {
                 return BracketType.SECONDARY_CORNER_BRACKET;
             } else if (nextChar == DOTS_36) {
                 return BracketType.DOUBLE_CORNER_BRACKET;
+            } else if (!isBlankSpace(nextChar) && !isLineBreak(nextChar)) {
+                return BracketType.REFERENCE_MARK;
             }
         } else if (thisChar == DOTS_5 && nextChar == DOTS_2356) {
             return BracketType.SECONDARY_PARENTHESIS;
         } else if (thisChar == DOTS_6 && nextChar == DOTS_23) {
             return BracketType.SECONDARY_CORNER_BRACKET;
+        } else if (thisChar == DOTS_23) {
+            return BracketType.REFERENCE_MARK;
         }
         return null;
     }
@@ -413,8 +417,8 @@ public class MapBraille extends JMapper {
             }
             // 外字符
             case DOTS_56 -> {
-                if (c2 == DOTS_3 || c2 == DOTS_36 || c2 == DOTS_2356 || c2 == DOTS_0 || c2 == '\n') {
-                    // 第２カギ、二重カギ、二重カッコの開始、読点
+                if (c2 == DOTS_3 || c2 == DOTS_36 || c2 == DOTS_2356 || c2 == DOTS_0 || c2 == DOTS_23 || c2 == DOTS_3456 || c2 == '\n') {
+                    // 第２カギ、二重カギ、二重カッコの開始、読点、文中注記符
                     resetBrailleMode();
                     yield false;
                 }
@@ -681,6 +685,13 @@ public class MapBraille extends JMapper {
                         i += 1;
                         continue;
                     }
+                    case REFERENCE_MARK -> {
+                        result.append(bracketStates.contains(thisBracket) ? "[※" : "]");
+                        if (thisChar == DOTS_56) {
+                            punctuation = 0;
+                        }
+                        continue;
+                    }
                 }
             }
 
@@ -837,6 +848,7 @@ public class MapBraille extends JMapper {
         SECONDARY_CORNER_BRACKET,
         DOUBLE_CORNER_BRACKET,
         TRANSLATORS_NOTE,
+        REFERENCE_MARK
     }
 
     private enum StarType {

@@ -179,6 +179,21 @@ public class KanadaTest {
     }
 
     @Test
+    public void testBrailleInput5() throws Exception {
+        String text = """
+                [※3]せんていの かていでわ、
+                
+                [※3] せんてい   えらぶ こと
+                """;
+        String tenji = """
+                ⠰⠼⠉⠆⠻⠴⠟⠃⠎⠀⠡⠟⠃⠐⠟⠄⠰⠀
+                
+                ⠰⠼⠉⠆⠀⠻⠴⠟⠃⠠⠤⠀⠋⠑⠐⠭⠀⠪⠞
+                """;
+        assertEquals(text, hiragana.process(tenji));
+    }
+
+    @Test
     public void testBrailleInputFrameBorders() throws Exception {
         String text = """
                 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
