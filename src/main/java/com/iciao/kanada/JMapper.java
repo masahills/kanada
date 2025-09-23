@@ -25,6 +25,8 @@ package com.iciao.kanada;
 
 import com.iciao.kanada.maps.KanaMapping;
 
+import java.util.Locale;
+
 /**
  * Remap non-kanji characters.<br>
  *
@@ -59,6 +61,20 @@ public abstract class JMapper {
 
     protected String getString() {
         return outStr;
+    }
+
+    protected String getStringUppercased() {
+        return outStr.toUpperCase(Locale.ENGLISH);
+    }
+
+    protected String getStringCapitalized() {
+        if (outStr.isEmpty()) {
+            return outStr;
+        }
+        if (outStr.length() == 1) {
+            return outStr.toUpperCase(Locale.ENGLISH);
+        }
+        return outStr.substring(0, 1).toUpperCase(Locale.ENGLISH) + outStr.substring(1);
     }
 
     protected int getProcessedLength() {

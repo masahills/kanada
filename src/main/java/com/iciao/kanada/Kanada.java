@@ -32,6 +32,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -71,6 +72,7 @@ public class Kanada {
     protected boolean modeAddSpace = false;
     protected boolean modeUcFirst = false;
     protected boolean modeUcAll = false;
+    protected boolean modeUcRomajiOnly = false;
     protected boolean modeMacron = false;
     protected boolean modeShowAllYomi = false;
     protected boolean modeFurigana = false;
@@ -140,8 +142,10 @@ public class Kanada {
                     
                     Options:
                         -s           Insert spaces at segmentation points
-                        -u           Capitalize each word (romaji mode)
-                        -U           Uppercase all letters (romaji mode)
+                        -c           Capitalize each word (romaji words only)
+                        -C           Capitalize each word (all words)
+                        -u           Uppercase all letters (romaji text only)
+                        -U           Uppercase all letters (all text)
                         -m           Output romaji with macrons
                         -r           Add furigana readings for kanji words
                         -R           Add all possible readings for kanji words
@@ -215,6 +219,7 @@ public class Kanada {
         boolean spaces = false;
         boolean upperFirst = false;
         boolean upperAll = false;
+        boolean upperRomajiOnly = false;
         boolean macrons = false;
         boolean furigana = false;
         boolean allYomi = false;
@@ -232,16 +237,32 @@ public class Kanada {
             }
             switch (args[i]) {
                 // Formatting options
-                case "-s" -> spaces = true;
-                case "-u" -> {
+                case "-s" -> {
+                    spaces = true;
+                }
+                case "-c" -> {
                     upperFirst = true;
                     upperAll = false;
+                    upperRomajiOnly = true;
+                }
+                case "-C" -> {
+                    upperFirst = true;
+                    upperAll = false;
+                    upperRomajiOnly = false;
+                }
+                case "-u" -> {
+                    upperFirst = false;
+                    upperAll = true;
+                    upperRomajiOnly = true;
                 }
                 case "-U" -> {
                     upperFirst = false;
                     upperAll = true;
+                    upperRomajiOnly = false;
                 }
-                case "-m" -> macrons = true;
+                case "-m" -> {
+                    macrons = true;
+                }
                 case "-r" -> {
                     furigana = true;
                     allYomi = false;
@@ -309,6 +330,7 @@ public class Kanada {
         if (spaces) converter.withSpaces();
         if (upperFirst) converter.upperCaseFirst();
         if (upperAll) converter.upperCaseAll();
+        if (upperRomajiOnly) converter.upperCaseRomajiOnly();
         if (macrons) converter.withMacrons();
         if (furigana) converter.withFurigana();
         if (allYomi) converter.withAllYomi();
@@ -480,6 +502,11 @@ public class Kanada {
         return this;
     }
 
+    public Kanada upperCaseRomajiOnly() {
+        modeUcRomajiOnly = true;
+        return this;
+    }
+
     public Kanada romanizationSystem(KanaMapping.ConversionSystem system) {
         conversionSystem = system;
         return this;
@@ -514,7 +541,7 @@ public class Kanada {
             KanjiParser parser = new KanjiParser(jWriter, llmClient);
             parser.parse(reader, writer);
         } catch (Exception e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, "Exception occurred", e);
         }
     }
 

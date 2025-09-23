@@ -56,6 +56,34 @@ public class KanadaTest {
     }
 
     @Test
+    public void testUppercasedAlphabets() throws Exception {
+        String result = romaji.upperCaseAll().process("漢字 kanji@example.com");
+        assertNotNull(result);
+        assertEquals("KANJI KANJI@EXAMPLE.COM", result);
+    }
+
+    @Test
+    public void testCapitalizeAlphabets() throws Exception {
+        String result = romaji.upperCaseFirst().process("漢字 kanji@example.com");
+        assertNotNull(result);
+        assertEquals("Kanji Kanji@example.com", result);
+    }
+
+    @Test
+    public void testUppercasedRomajiOnly() throws Exception {
+        String result = romaji.upperCaseAll().upperCaseRomajiOnly().process("漢字 kanji@example.com");
+        assertNotNull(result);
+        assertEquals("KANJI kanji@example.com", result);
+    }
+
+    @Test
+    public void testCapitalizeRomajiOnly() throws Exception {
+        String result = romaji.upperCaseFirst().upperCaseRomajiOnly().process("漢字 kanji@example.com");
+        assertNotNull(result);
+        assertEquals("Kanji kanji@example.com", result);
+    }
+
+    @Test
     public void testBasicRomajiConversion() throws Exception {
         String result = romaji.process("漢字");
         assertNotNull(result);
@@ -133,6 +161,34 @@ public class KanadaTest {
         String tenji = """
                 ⠀⠀⠤⠰⠠⠝⠤⠄⠀⠤⠦⠠⠝⠊⠓⠕⠝⠛⠕⠴⠀⠶⠇⠮⠴⠐⠪⠶⠤⠰⠀
                 ⠤⠦⠠⠝⠑⠺⠴⠀⠶⠁⠕⠑⠳⠃⠶⠤⠔⠀⠁⠑⠄⠳⠵⠹⠲
+                """;
+        assertEquals(text, hiragana.process(tenji));
+    }
+
+    @Test
+    public void testBrailleInput4() throws Exception {
+        String text = """
+                  こんかい さいよー された しんごの うち\s
+                かたかなごが じつに 4わり ちかくを しめた。\s
+                """;
+        String tenji = """
+                ⠀⠀⠪⠴⠡⠃⠀⠱⠃⠜⠒⠀⠱⠛⠕⠀⠳⠴⠐⠪⠎⠀⠉⠗⠀
+                ⠡⠕⠡⠅⠐⠪⠐⠡⠀⠐⠳⠝⠇⠀⠼⠙⠄⠓⠀⠗⠡⠩⠔⠀⠳⠿⠕⠲⠀⠀
+                """;
+        assertEquals(text, hiragana.process(tenji));
+    }
+
+    @Test
+    public void testBrailleInput5() throws Exception {
+        String text = """
+                [※3]せんていの かていでわ、
+                
+                [※3] せんてい   えらぶ こと
+                """;
+        String tenji = """
+                ⠰⠼⠉⠆⠻⠴⠟⠃⠎⠀⠡⠟⠃⠐⠟⠄⠰⠀
+                
+                ⠰⠼⠉⠆⠀⠻⠴⠟⠃⠠⠤⠀⠋⠑⠐⠭⠀⠪⠞
                 """;
         assertEquals(text, hiragana.process(tenji));
     }

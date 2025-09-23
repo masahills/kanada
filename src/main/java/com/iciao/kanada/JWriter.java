@@ -28,7 +28,6 @@ import com.iciao.kanada.maps.*;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Locale;
-import java.util.StringTokenizer;
 
 /**
  * Main string buffer class.<br>
@@ -37,6 +36,14 @@ import java.util.StringTokenizer;
  */
 class JWriter {
     protected Kanada kanada;
+    private final JMapper ascii;
+    private final JMapper braille;
+    private final JMapper halfKatakana;
+    private final JMapper halfSymbol;
+    private final JMapper hiragana;
+    private final JMapper katakana;
+    private final JMapper wideAscii;
+    private final JMapper wideSymbol;
     protected StringBuilder buffer = new StringBuilder();
     protected int tail;
     private boolean isTail;
@@ -44,6 +51,14 @@ class JWriter {
     protected JWriter(Kanada kanada) {
         this.clear();
         this.kanada = kanada;
+        this.ascii = new MapAscii(kanada);
+        this.braille = new MapBraille(kanada);
+        this.halfKatakana = new MapHalfKatakana(kanada);
+        this.halfSymbol = new MapHalfSymbol(kanada);
+        this.hiragana = new MapHiragana(kanada);
+        this.katakana = new MapKatakana(kanada);
+        this.wideAscii = new MapWideAscii(kanada);
+        this.wideSymbol = new MapWideSymbol(kanada);
         tail = ' ';
         isTail = false;
     }
@@ -95,7 +110,6 @@ class JWriter {
 
             if (block == Character.UnicodeBlock.BASIC_LATIN) {
                 if (kanada.optionAscii == JMapper.TO_WIDE_ASCII || kanada.optionAscii == JMapper.TO_KANA_BRAILLE) {
-                    JMapper ascii = new MapAscii(kanada);
                     ascii.process(workStr, kanada.optionAscii);
                     mappedMapper = ascii;
                 } else {
@@ -103,7 +117,6 @@ class JWriter {
                 }
             } else if (block == Character.UnicodeBlock.LATIN_1_SUPPLEMENT) {
                 if (kanada.optionAscii == JMapper.TO_WIDE_ASCII) {
-                    JMapper halfSymbol = new MapHalfSymbol(kanada);
                     halfSymbol.process(workStr, kanada.optionAscii);
                     mappedMapper = halfSymbol;
                 } else {
@@ -112,7 +125,6 @@ class JWriter {
             } else if (block == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS) {
                 if (thisChar < 0xff61 || thisChar > 0xffdf) {
                     if (kanada.optionWideAscii == JMapper.TO_ASCII) {
-                        JMapper wideAscii = new MapWideAscii(kanada);
                         wideAscii.process(workStr, kanada.optionWideAscii);
                         mappedMapper = wideAscii;
                     } else {
@@ -124,7 +136,6 @@ class JWriter {
                         case JMapper.TO_ASCII:
                         case JMapper.TO_KATAKANA:
                         case JMapper.TO_HIRAGANA:
-                            JMapper halfKatakana = new MapHalfKatakana(kanada);
                             halfKatakana.process(workStr, kanada.optionHalfKatakana);
                             mappedMapper = halfKatakana;
                             break;
@@ -138,7 +149,6 @@ class JWriter {
                     case JMapper.TO_ASCII:
                     case JMapper.TO_HALF_SYMBOL:
                     case JMapper.TO_KANA_BRAILLE:
-                        JMapper wideSymbol = new MapWideSymbol(kanada);
                         wideSymbol.process(workStr, kanada.optionWideSymbol);
                         mappedMapper = wideSymbol;
                         break;
@@ -153,7 +163,6 @@ class JWriter {
                     case JMapper.TO_ASCII:
                     case JMapper.TO_WIDE_ASCII:
                     case JMapper.TO_KANA_BRAILLE:
-                        JMapper hiragana = new MapHiragana(kanada);
                         hiragana.process(workStr, kanada.optionHiragana);
                         mappedMapper = hiragana;
                         break;
@@ -169,7 +178,6 @@ class JWriter {
                     case JMapper.TO_ASCII:
                     case JMapper.TO_WIDE_ASCII:
                     case JMapper.TO_KANA_BRAILLE:
-                        JMapper katakana = new MapKatakana(kanada);
                         katakana.process(workStr, kanada.optionKatakana);
                         mappedMapper = katakana;
                         break;
@@ -179,7 +187,6 @@ class JWriter {
                 }
             } else if (block == Character.UnicodeBlock.BRAILLE_PATTERNS) {
                 if (thisChar < 0x2840) {
-                    JMapper braille = new MapBraille(kanada);
                     braille.process(workStr, kanada.optionBraille);
                     mappedMapper = braille;
                 } else {
@@ -190,26 +197,25 @@ class JWriter {
             }
 
             if (mappedMapper != null) {
-                mappedStr.append(mappedMapper.getString());
+                if (kanada.modeUcFirst && !isTail && i == 0) {
+                    mappedStr.append(mappedMapper.getStringCapitalized());
+                } else if (kanada.modeUcAll) {
+                    mappedStr.append(mappedMapper.getStringUppercased());
+                } else {
+                    mappedStr.append(mappedMapper.getString());
+                }
                 i = i + mappedMapper.getProcessedLength() - 1;
+            } else if (!kanada.modeUcRomajiOnly && (kanada.modeUcFirst || kanada.modeUcAll)) {
+                if (kanada.modeUcFirst && !isTail && i == 0) {
+                    mappedStr.setCharAt(0, Character.toUpperCase(mappedStr.charAt(0)));
+                } else if (kanada.modeUcAll) {
+                    String upperCased = mappedStr.toString().toUpperCase(Locale.ENGLISH);
+                    mappedStr.setLength(0);
+                    mappedStr.append(upperCased);
+                }
             }
             outStr.append(mappedStr);
             mappedStr.setLength(0);
-        }
-
-        if (kanada.modeUcAll) {
-            String upperCased = outStr.toString().toUpperCase(Locale.ENGLISH);
-            outStr.setLength(0);
-            outStr.append(upperCased);
-        } else if (kanada.modeUcFirst && !isTail) {
-            StringBuilder sb = new StringBuilder();
-            StringTokenizer token = new StringTokenizer(outStr.toString(), " \t\n\r\f", true);
-            while (token.hasMoreTokens()) {
-                String word = token.nextToken();
-                sb.append(word.substring(0, 1).toUpperCase(Locale.ENGLISH)).append(word.substring(1));
-            }
-            outStr.setLength(0);
-            outStr.append(sb);
         }
 
         isTail = tail != ' ';
