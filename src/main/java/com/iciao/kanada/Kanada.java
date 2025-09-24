@@ -82,16 +82,39 @@ public class Kanada {
     protected char settingSeparatorChar = ' ';
 
     public Kanada() throws IOException {
-        setParam(
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS);
+        setOptionKanji(JMapper.AS_IS);
+        setOptionHiragana(JMapper.AS_IS);
+        setOptionKatakana(JMapper.AS_IS);
+        setOptionWideAscii(JMapper.AS_IS);
+        setOptionWideSymbol(JMapper.AS_IS);
+        setOptionAscii(JMapper.AS_IS);
+        setOptionHalfKatakana(JMapper.AS_IS);
+        setOptionHalfSymbol(JMapper.AS_IS);
+        setOptionBraille(JMapper.AS_IS);
+    }
+
+    public Kanada(Kanada other) {
+        this.optionKanji = other.optionKanji;
+        this.optionHiragana = other.optionHiragana;
+        this.optionKatakana = other.optionKatakana;
+        this.optionWideAscii = other.optionWideAscii;
+        this.optionWideSymbol = other.optionWideSymbol;
+        this.optionAscii = other.optionAscii;
+        this.optionHalfKatakana = other.optionHalfKatakana;
+        this.optionHalfSymbol = other.optionHalfSymbol;
+        this.optionBraille = other.optionBraille;
+
+        this.modeAddSpace = other.modeAddSpace;
+        this.modeUcFirst = other.modeUcFirst;
+        this.modeUcAll = other.modeUcAll;
+        this.modeUcRomajiOnly = other.modeUcRomajiOnly;
+        this.modeMacron = other.modeMacron;
+        this.modeShowAllYomi = other.modeShowAllYomi;
+        this.modeFurigana = other.modeFurigana;
+
+        this.llmClient = other.llmClient;
+        this.conversionSystem = other.conversionSystem;
+        this.settingSeparatorChar = other.settingSeparatorChar;
     }
 
     // Convenience static methods
@@ -358,102 +381,95 @@ public class Kanada {
 
     // Builder pattern methods
     public Kanada toRomaji() {
-        setParam(
-                JMapper.TO_ASCII,
-                JMapper.TO_ASCII,
-                JMapper.TO_ASCII,
-                JMapper.TO_ASCII,
-                JMapper.TO_ASCII,
-                JMapper.AS_IS,
-                JMapper.TO_ASCII,
-                JMapper.TO_ASCII,
-                JMapper.TO_ASCII);
+        setOptionKanji(JMapper.TO_ASCII);
+        setOptionHiragana(JMapper.TO_ASCII);
+        setOptionKatakana(JMapper.TO_ASCII);
+        setOptionWideAscii(JMapper.TO_ASCII);
+        setOptionWideSymbol(JMapper.TO_ASCII);
+        setOptionAscii(JMapper.AS_IS);
+        setOptionHalfKatakana(JMapper.TO_ASCII);
+        setOptionHalfSymbol(JMapper.TO_ASCII);
+        setOptionBraille(JMapper.TO_ASCII);
         // default to Modified Hepburn
         conversionSystem = KanaMapping.ConversionSystem.MODIFIED_HEPBURN;
         return this;
     }
 
     public Kanada toHiragana() {
-        setParam(
-                JMapper.TO_HIRAGANA,
-                JMapper.AS_IS,
-                JMapper.TO_HIRAGANA,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.TO_HIRAGANA,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.TO_HIRAGANA);
+        setOptionKanji(JMapper.TO_HIRAGANA);
+        setOptionHiragana(JMapper.AS_IS);
+        setOptionKatakana(JMapper.TO_HIRAGANA);
+        setOptionWideAscii(JMapper.AS_IS);
+        setOptionWideSymbol(JMapper.AS_IS);
+        setOptionAscii(JMapper.TO_HIRAGANA);
+        setOptionHalfKatakana(JMapper.AS_IS);
+        setOptionHalfSymbol(JMapper.AS_IS);
+        setOptionBraille(JMapper.TO_HIRAGANA);
         return this;
     }
 
     public Kanada toKatakana() {
-        setParam(
-                JMapper.TO_KATAKANA,
-                JMapper.TO_KATAKANA,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.TO_KATAKANA,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.TO_KATAKANA);
+        setOptionKanji(JMapper.TO_KATAKANA);
+        setOptionHiragana(JMapper.TO_KATAKANA);
+        setOptionKatakana(JMapper.AS_IS);
+        setOptionWideAscii(JMapper.AS_IS);
+        setOptionWideSymbol(JMapper.AS_IS);
+        setOptionAscii(JMapper.TO_KATAKANA);
+        setOptionHalfKatakana(JMapper.AS_IS);
+        setOptionHalfSymbol(JMapper.AS_IS);
+        setOptionBraille(JMapper.TO_KATAKANA);
         return this;
     }
 
     public Kanada toHankakuKatakana() {
-        setParam(
-                JMapper.TO_HALF_KATAKANA,
-                JMapper.TO_HALF_KATAKANA,
-                JMapper.TO_HALF_KATAKANA,
-                JMapper.TO_ASCII,
-                JMapper.TO_HALF_SYMBOL,
-                JMapper.TO_HALF_KATAKANA,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.TO_HALF_KATAKANA);
+        setOptionKanji(JMapper.TO_HALF_KATAKANA);
+        setOptionHiragana(JMapper.TO_HALF_KATAKANA);
+        setOptionKatakana(JMapper.TO_HALF_KATAKANA);
+        setOptionWideAscii(JMapper.TO_ASCII);
+        setOptionWideSymbol(JMapper.TO_HALF_SYMBOL);
+        setOptionAscii(JMapper.TO_HALF_KATAKANA);
+        setOptionHalfKatakana(JMapper.AS_IS);
+        setOptionHalfSymbol(JMapper.AS_IS);
+        setOptionBraille(JMapper.TO_HALF_KATAKANA);
         return this;
     }
 
     public Kanada toFullWidthKana() {
-        setParam(
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.TO_HIRAGANA,
-                JMapper.AS_IS,
-                JMapper.TO_KATAKANA,
-                JMapper.TO_WIDE_SYMBOL,
-                JMapper.TO_HIRAGANA);
+        setOptionKanji(JMapper.AS_IS);
+        setOptionHiragana(JMapper.AS_IS);
+        setOptionKatakana(JMapper.AS_IS);
+        setOptionWideAscii(JMapper.AS_IS);
+        setOptionWideSymbol(JMapper.TO_HIRAGANA);
+        setOptionAscii(JMapper.AS_IS);
+        setOptionHalfKatakana(JMapper.TO_KATAKANA);
+        setOptionHalfSymbol(JMapper.TO_WIDE_SYMBOL);
+        setOptionBraille(JMapper.TO_HIRAGANA);
         return this;
     }
 
     public Kanada toFullWidthAll() {
-        setParam(
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.AS_IS,
-                JMapper.TO_HIRAGANA,
-                JMapper.TO_WIDE_ASCII,
-                JMapper.TO_KATAKANA,
-                JMapper.TO_WIDE_SYMBOL,
-                JMapper.TO_HIRAGANA);
+        setOptionKanji(JMapper.AS_IS);
+        setOptionHiragana(JMapper.AS_IS);
+        setOptionKatakana(JMapper.AS_IS);
+        setOptionWideAscii(JMapper.AS_IS);
+        setOptionWideSymbol(JMapper.TO_HIRAGANA);
+        setOptionAscii(JMapper.TO_WIDE_ASCII);
+        setOptionHalfKatakana(JMapper.TO_KATAKANA);
+        setOptionHalfSymbol(JMapper.TO_WIDE_SYMBOL);
+        setOptionBraille(JMapper.TO_HIRAGANA);
         return this;
     }
 
     public Kanada toKanaTenji() {
-        setParam(
-                JMapper.TO_KANA_BRAILLE,
-                JMapper.TO_KANA_BRAILLE,
-                JMapper.TO_KANA_BRAILLE,
-                JMapper.TO_KANA_BRAILLE,
-                JMapper.TO_KANA_BRAILLE,
-                JMapper.TO_KANA_BRAILLE,
-                JMapper.TO_KANA_BRAILLE,
-                JMapper.TO_KANA_BRAILLE,
-                JMapper.AS_IS);
+        setOptionKanji(JMapper.TO_KANA_BRAILLE);
+        setOptionHiragana(JMapper.TO_KANA_BRAILLE);
+        setOptionKatakana(JMapper.TO_KANA_BRAILLE);
+        setOptionWideAscii(JMapper.TO_KANA_BRAILLE);
+        setOptionWideSymbol(JMapper.TO_KANA_BRAILLE);
+        setOptionAscii(JMapper.TO_KANA_BRAILLE);
+        setOptionHalfKatakana(JMapper.TO_KANA_BRAILLE);
+        setOptionHalfSymbol(JMapper.TO_KANA_BRAILLE);
+        setOptionBraille(JMapper.AS_IS);
         conversionSystem = KanaMapping.ConversionSystem.KANA_BRAILLE;
         return this;
     }
@@ -512,23 +528,75 @@ public class Kanada {
         return this;
     }
 
-    private void setParam(int paramKanji,
-                          int paramHiragana,
-                          int paramKatakana,
-                          int paramWideAscii,
-                          int paramWideSymbol,
-                          int paramAscii,
-                          int paramHalfKatakana,
-                          int paramHalfSymbol,
-                          int paramBraille) {
+    public int getOptionKanji() {
+        return optionKanji;
+    }
+
+    public void setOptionKanji(int paramKanji) {
         optionKanji = paramKanji;
+    }
+
+    public int getOptionHiragana() {
+        return optionHiragana;
+    }
+
+    public void setOptionHiragana(int paramHiragana) {
         optionHiragana = paramHiragana;
+    }
+
+    public int getOptionKatakana() {
+        return optionKatakana;
+    }
+
+    public void setOptionKatakana(int paramKatakana) {
         optionKatakana = paramKatakana;
+    }
+
+    public int getOptionWideAscii() {
+        return optionWideAscii;
+    }
+
+    public void setOptionWideAscii(int paramWideAscii) {
         optionWideAscii = paramWideAscii;
+    }
+
+    public int getOptionWideSymbol() {
+        return optionWideSymbol;
+    }
+
+    public void setOptionWideSymbol(int paramWideSymbol) {
         optionWideSymbol = paramWideSymbol;
+    }
+
+    public int getOptionAscii() {
+        return optionAscii;
+    }
+
+    public void setOptionAscii(int paramAscii) {
         optionAscii = paramAscii;
+    }
+
+    public int getOptionHalfKatakana() {
+        return optionHalfKatakana;
+    }
+
+    public void setOptionHalfKatakana(int paramHalfKatakana) {
         optionHalfKatakana = paramHalfKatakana;
+    }
+
+    public int getOptionHalfSymbol() {
+        return optionHalfSymbol;
+    }
+
+    public void setOptionHalfSymbol(int paramHalfSymbol) {
         optionHalfSymbol = paramHalfSymbol;
+    }
+
+    public int getOptionBraille() {
+        return optionBraille;
+    }
+
+    public void setOptionBraille(int paramBraille) {
         optionBraille = paramBraille;
     }
 
