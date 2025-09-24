@@ -212,53 +212,6 @@ public class MapBraille extends JMapper {
         return frameBorder;
     }
 
-    private static String getFrameBorder(FrameBorderType type, int width) {
-        StringBuilder result = new StringBuilder();
-        if (type != null && width > 0) {
-            switch (type) {
-                case LARGE_TOP -> {
-                    result.append("┏");
-                    result.append("━".repeat(width - 1));
-                    result.append("┓");
-                }
-                case LARGE_BOTTOM -> {
-                    result.append("┗");
-                    result.append("━".repeat(width - 1));
-                    result.append("┛");
-                }
-                case BASE_SOLID_TOP -> {
-                    result.append("┌");
-                    result.append("─".repeat(width - 1));
-                    result.append("┐");
-                }
-                case BASE_SOLID_BOTTOM -> {
-                    result.append("└");
-                    result.append("─".repeat(width - 1));
-                    result.append("┘");
-                }
-                case BASE_DOTTED_TOP -> {
-                    result.append("┌");
-                    result.append("┄".repeat(width - 1));
-                    result.append("┐");
-                }
-                case BASE_DOTTED_BOTTOM -> {
-                    result.append("└");
-                    result.append("┄".repeat(width - 1));
-                    result.append("┘");
-                }
-                case DIVIDER_TEXT_LEFT -> {
-                    result.append("├");
-                    result.append("─".repeat(width));
-                }
-                case DIVIDER_TEXT_RIGHT -> {
-                    result.append("─".repeat(width));
-                    result.append("┤");
-                }
-            }
-        }
-        return result.toString();
-    }
-
     private static boolean isBlankSpace(char c) {
         return c == ' ' || c == DOTS_0;
     }
@@ -284,7 +237,10 @@ public class MapBraille extends JMapper {
         }
         // DOTS_25 may be repeated more than twice
         int dashes = 2;
-        while (dashes < text.length() - i && text.charAt(i + dashes) == DOTS_25) {
+        while (i + dashes < text.length()) {
+            if (text.charAt(i + dashes) != DOTS_25) {
+                break;
+            }
             dashes++;
         }
 
@@ -308,7 +264,10 @@ public class MapBraille extends JMapper {
         }
         // DOTS_2 may be repeated more than three times
         int ellipses = 3;
-        while (ellipses < text.length() - i && text.charAt(i + ellipses) == DOTS_2) {
+        while (i + ellipses < text.length()) {
+            if (text.charAt(i + ellipses) != DOTS_2) {
+                break;
+            }
             ellipses++;
         }
         // 原則として、棒線と点線の前後は必ず一マスあけである。
@@ -404,8 +363,16 @@ public class MapBraille extends JMapper {
 
     @Override
     protected void process(String brailleStr, int param) {
+        if (param == JMapper.AS_IS) {
+            matchedLength = brailleStr.length();
+            setString(brailleStr);
+            return;
+        }
         String str = brailleToText(brailleStr);
-        setString(this.kanada.process(str));
+        Kanada newKanada = new Kanada(kanada);
+        // Turn off the Braille option to avoid recursive processing.
+        newKanada.setOptionBraille(JMapper.AS_IS);
+        setString(newKanada.process(str));
     }
 
     private boolean setBrailleMode(char c1, char c2) {
@@ -629,8 +596,7 @@ public class MapBraille extends JMapper {
             if (frameBorderType != null) {
                 int borderWidth = findFrameBorderSize(brailleText, i, frameBorderType);
                 if (borderWidth > 0) {
-                    String border = getFrameBorder(frameBorderType, borderWidth);
-                    result.append(border);
+                    result.append(brailleText, i, i + borderWidth + 1);
                     i += borderWidth;
                     if (thisChar == DOTS_235) {
                         punctuation = 0; // 枠線のため punctuation をリセット
@@ -643,7 +609,7 @@ public class MapBraille extends JMapper {
             if ((i + 2 < brailleText.length() && thisChar == DOTS_123
                     && isBlankSpace(nextChar) && isBlankSpace(brailleText.charAt(i + 2)))
                     || (thisChar == DOTS_456 && isLineBreak(nextChar))) {
-                result.append("│");
+                result.append(thisChar);
                 continue;
             }
 
