@@ -237,10 +237,7 @@ public class MapBraille extends JMapper {
         }
         // DOTS_25 may be repeated more than twice
         int dashes = 2;
-        while (i + dashes < text.length()) {
-            if (text.charAt(i + dashes) != DOTS_25) {
-                break;
-            }
+        while (i + dashes < text.length() && text.charAt(i + dashes) == DOTS_25) {
             dashes++;
         }
 
@@ -264,10 +261,7 @@ public class MapBraille extends JMapper {
         }
         // DOTS_2 may be repeated more than three times
         int ellipses = 3;
-        while (i + ellipses < text.length()) {
-            if (text.charAt(i + ellipses) != DOTS_2) {
-                break;
-            }
+        while (i + ellipses < text.length() && text.charAt(i + ellipses) == DOTS_2) {
             ellipses++;
         }
         // 原則として、棒線と点線の前後は必ず一マスあけである。
