@@ -28,29 +28,43 @@ package com.iciao.kanada.maps;
  */
 public class KanaMapping {
 
-    public enum ConversionSystem {
-        MODIFIED_HEPBURN(2),    // 修正ヘボン式
-        KUNREI(3),              // 訓令式
-        GAIMUSHO_HEPBURN(4),    // 外務省ヘボン式
-        NIHON(5),               // 日本式
-        STATION_HEPBURN(6),     // 駅名標ヘボン式
-        ROAD_SIGN_HEPBURN(7),   // 道路標識ヘボン式
-        KANA_BRAILLE(8);        // かな6点点字
-
-        private final int columnIndex;
-
-        ConversionSystem(int columnIndex) {
-            this.columnIndex = columnIndex;
-        }
-
-        public int getColumnIndex() {
-            return columnIndex;
-        }
-    }
-
+    /*
+    U+30Ax	゠	ァ	ア	ィ	イ	ゥ	ウ	ェ	エ	ォ	オ	カ	ガ	キ	ギ	ク
+    U+30Bx	グ	ケ	ゲ	コ	ゴ	サ	ザ	シ	ジ	ス	ズ	セ	ゼ	ソ	ゾ	タ
+    U+30Cx	ダ	チ	ヂ	ッ	ツ	ヅ	テ	デ	ト	ド	ナ	ニ	ヌ	ネ	ノ	ハ
+    U+30Dx	バ	パ	ヒ	ビ	ピ	フ	ブ	プ	ヘ	ベ	ペ	ホ	ボ	ポ	マ	ミ
+    U+30Ex	ム	メ	モ	ャ	ヤ	ュ	ユ	ョ	ヨ	ラ	リ	ル	レ	ロ	ヮ	ワ
+    U+30Fx	ヰ	ヱ	ヲ	ン	ヴ	ヵ	ヶ	ヷ	ヸ	ヹ	ヺ	・	ー	ヽ	ヾ	ヿ
+    */
+    private static final String[] KATAKANA_FULL_TO_HALF_KATAKANA_ARRAY = {
+            "⹀", "ｧ", "ｱ", "ｨ", "ｲ", "ｩ", "ｳ", "ｪ", "ｴ", "ｫ", "ｵ", "ｶ", "ｶﾞ", "ｷ", "ｷﾞ", "ｸ",
+            "ｸﾞ", "ｹ", "ｹﾞ", "ｺ", "ｺﾞ", "ｻ", "ｻﾞ", "ｼ", "ｼﾞ", "ｽ", "ｽﾞ", "ｾ", "ｾﾞ", "ｿ", "ｿﾞ", "ﾀ",
+            "ﾀﾞ", "ﾁ", "ﾁﾞ", "ｯ", "ﾂ", "ﾂﾞ", "ﾃ", "ﾃﾞ", "ﾄ", "ﾄﾞ", "ﾅ", "ﾆ", "ﾇ", "ﾈ", "ﾉ", "ﾊ", "ﾊﾞ",
+            "ﾊﾟ", "ﾋ", "ﾋﾞ", "ﾋﾟ", "ﾌ", "ﾌﾞ", "ﾌﾟ", "ﾍ", "ﾍﾞ", "ﾍﾟ", "ﾎ", "ﾎﾞ", "ﾎﾟ", "ﾏ", "ﾐ",
+            "ﾑ", "ﾒ", "ﾓ", "ｬ", "ﾔ", "ｭ", "ﾕ", "ｮ", "ﾖ", "ﾗ", "ﾘ", "ﾙ", "ﾚ", "ﾛ", "ヮ", "ﾜ",
+            "ｲ", "ｴ", "ｦ", "ﾝ", "ｳﾞ", "ｶ", "ｹ", "ﾜﾞ", "ｲﾞ", "ｴﾞ", "ｦﾞ", "･", "ｰ", "ヽ", "ヽ", "ｺﾄ"
+    };
+    /*
+    U+304x		ぁ	あ	ぃ	い	ぅ	う	ぇ	え	ぉ	お	か	が	き	ぎ	く
+    U+305x	ぐ	け	げ	こ	ご	さ	ざ	し	じ	す	ず	せ	ぜ	そ	ぞ	た
+    U+306x	だ	ち	ぢ	っ	つ	づ	て	で	と	ど	な	に	ぬ	ね	の	は
+    U+307x	ば	ぱ	ひ	び	ぴ	ふ	ぶ	ぷ	へ	べ	ぺ	ほ	ぼ	ぽ	ま	み
+    U+308x	む	め	も	ゃ	や	ゅ	ゆ	ょ	よ	ら	り	る	れ	ろ	ゎ	わ
+    U+309x	ゐ	ゑ	を	ん	ゔ	ゕ	ゖ			゙	゚	゛	゜	ゝ	ゞ	ゟ
+     */
+    private static final String[] HIRAGANA_FULL_TO_HALF_KATAKANA_ARRAY = {
+            "", "ｧ", "ｱ", "ｨ", "ｲ", "ｩ", "ｳ", "ｪ", "ｴ", "ｫ", "ｵ", "ｶ", "ｶﾞ", "ｷ", "ｷﾞ", "ｸ",
+            "ｸﾞ", "ｹ", "ｹﾞ", "ｺ", "ｺﾞ", "ｻ", "ｻﾞ", "ｼ", "ｼﾞ", "ｽ", "ｽﾞ", "ｾ", "ｾﾞ", "ｿ", "ｿﾞ", "ﾀ",
+            "ﾀﾞ", "ﾁ", "ﾁﾞ", "ｯ", "ﾂ", "ﾂﾞ", "ﾃ", "ﾃﾞ", "ﾄ", "ﾄﾞ", "ﾅ", "ﾆ", "ﾇ", "ﾈ", "ﾉ", "ﾊ",
+            "ﾊﾞ", "ﾊﾟ", "ﾋ", "ﾋﾞ", "ﾋﾟ", "ﾌ", "ﾌﾞ", "ﾌﾟ", "ﾍ", "ﾍﾞ", "ﾍﾟ", "ﾎ", "ﾎﾞ", "ﾎﾟ", "ﾏ", "ﾐ",
+            "ﾑ", "ﾒ", "ﾓ", "ｬ", "ﾔ", "ｭ", "ﾕ", "ｮ", "ﾖ", "ﾗ", "ﾘ", "ﾙ", "ﾚ", "ﾛ", "ﾜ", "ﾜ",
+            "ｲ", "ｴ", "ｦ", "ﾝ", "ｳﾞ", "ｶ", "ｹ", "", "", "ﾞ", "ﾟ", "ﾞ", "ﾟ", "ゝ", "ゞ", "ﾖﾘ"
+    };
+    private static KanaMapping instance;
     private final KanaMappingData mappingData = new KanaMappingData();
 
-    private static KanaMapping instance;
+    private KanaMapping() {
+    }
 
     public static synchronized KanaMapping getInstance() {
         if (instance == null) {
@@ -59,14 +73,7 @@ public class KanaMapping {
         return instance;
     }
 
-    private KanaMapping() {
-    }
-
-    public KanaTrie.MatchResult getTransliterations(String str) {
-        return mappingData.getTransliterations(str);
-    }
-
-    public String removeMacrons(String text) {
+    public static String removeMacrons(String text) {
         return text.replace("ā", "a")
                 .replace("ī", "i")
                 .replace("ū", "u")
@@ -74,7 +81,7 @@ public class KanaMapping {
                 .replace("ō", "o");
     }
 
-    public String processLongVowels(String romaji, ConversionSystem system) {
+    public static String processLongVowels(String romaji, ConversionSystem system) {
         if (romaji == null || romaji.isEmpty()) return romaji;
 
         char lastChar = romaji.charAt(romaji.length() - 1);
@@ -100,16 +107,7 @@ public class KanaMapping {
         return sb.toString();
     }
 
-    public char getRomajiInitial(char c, ConversionSystem system) {
-        KanaTrie.MatchResult result = getTransliterations(String.valueOf(c));
-        String romaji = result != null ? result.values()[system.getColumnIndex() - 2] : null;
-        if (romaji == null || romaji.isEmpty()) {
-            return 0;
-        }
-        return romaji.charAt(0);
-    }
-
-    public String toHalfWidthKana(String text) {
+    public static String toHalfWidthKana(String text) {
         if (text == null || text.isEmpty()) return text;
 
         StringBuilder result = new StringBuilder();
@@ -137,7 +135,7 @@ public class KanaMapping {
         return result.toString();
     }
 
-    private String getHalfWidthKanaSpecial(char c) {
+    private static String getHalfWidthKanaSpecial(char c) {
         return switch (c) {
             case '。' -> "｡";
             case '、' -> "､";
@@ -147,37 +145,36 @@ public class KanaMapping {
         };
     }
 
-    /*
-    U+30Ax	゠	ァ	ア	ィ	イ	ゥ	ウ	ェ	エ	ォ	オ	カ	ガ	キ	ギ	ク
-    U+30Bx	グ	ケ	ゲ	コ	ゴ	サ	ザ	シ	ジ	ス	ズ	セ	ゼ	ソ	ゾ	タ
-    U+30Cx	ダ	チ	ヂ	ッ	ツ	ヅ	テ	デ	ト	ド	ナ	ニ	ヌ	ネ	ノ	ハ
-    U+30Dx	バ	パ	ヒ	ビ	ピ	フ	ブ	プ	ヘ	ベ	ペ	ホ	ボ	ポ	マ	ミ
-    U+30Ex	ム	メ	モ	ャ	ヤ	ュ	ユ	ョ	ヨ	ラ	リ	ル	レ	ロ	ヮ	ワ
-    U+30Fx	ヰ	ヱ	ヲ	ン	ヴ	ヵ	ヶ	ヷ	ヸ	ヹ	ヺ	・	ー	ヽ	ヾ	ヿ
-    */
-    private final String[] KATAKANA_FULL_TO_HALF_KATAKANA_ARRAY = {
-            "⹀", "ｧ", "ｱ", "ｨ", "ｲ", "ｩ", "ｳ", "ｪ", "ｴ", "ｫ", "ｵ", "ｶ", "ｶﾞ", "ｷ", "ｷﾞ", "ｸ",
-            "ｸﾞ", "ｹ", "ｹﾞ", "ｺ", "ｺﾞ", "ｻ", "ｻﾞ", "ｼ", "ｼﾞ", "ｽ", "ｽﾞ", "ｾ", "ｾﾞ", "ｿ", "ｿﾞ", "ﾀ",
-            "ﾀﾞ", "ﾁ", "ﾁﾞ", "ｯ", "ﾂ", "ﾂﾞ", "ﾃ", "ﾃﾞ", "ﾄ", "ﾄﾞ", "ﾅ", "ﾆ", "ﾇ", "ﾈ", "ﾉ", "ﾊ", "ﾊﾞ",
-            "ﾊﾟ", "ﾋ", "ﾋﾞ", "ﾋﾟ", "ﾌ", "ﾌﾞ", "ﾌﾟ", "ﾍ", "ﾍﾞ", "ﾍﾟ", "ﾎ", "ﾎﾞ", "ﾎﾟ", "ﾏ", "ﾐ",
-            "ﾑ", "ﾒ", "ﾓ", "ｬ", "ﾔ", "ｭ", "ﾕ", "ｮ", "ﾖ", "ﾗ", "ﾘ", "ﾙ", "ﾚ", "ﾛ", "ヮ", "ﾜ",
-            "ｲ", "ｴ", "ｦ", "ﾝ", "ｳﾞ", "ｶ", "ｹ", "ﾜﾞ", "ｲﾞ", "ｴﾞ", "ｦﾞ", "･", "ｰ", "ヽ", "ヽ", "ｺﾄ"
-    };
+    public KanaTrie.MatchResult getTransliterations(String str) {
+        return mappingData.getTransliterations(str);
+    }
 
-    /*
-    U+304x		ぁ	あ	ぃ	い	ぅ	う	ぇ	え	ぉ	お	か	が	き	ぎ	く
-    U+305x	ぐ	け	げ	こ	ご	さ	ざ	し	じ	す	ず	せ	ぜ	そ	ぞ	た
-    U+306x	だ	ち	ぢ	っ	つ	づ	て	で	と	ど	な	に	ぬ	ね	の	は
-    U+307x	ば	ぱ	ひ	び	ぴ	ふ	ぶ	ぷ	へ	べ	ぺ	ほ	ぼ	ぽ	ま	み
-    U+308x	む	め	も	ゃ	や	ゅ	ゆ	ょ	よ	ら	り	る	れ	ろ	ゎ	わ
-    U+309x	ゐ	ゑ	を	ん	ゔ	ゕ	ゖ			゙	゚	゛	゜	ゝ	ゞ	ゟ
-     */
-    private final String[] HIRAGANA_FULL_TO_HALF_KATAKANA_ARRAY = {
-            "", "ｧ", "ｱ", "ｨ", "ｲ", "ｩ", "ｳ", "ｪ", "ｴ", "ｫ", "ｵ", "ｶ", "ｶﾞ", "ｷ", "ｷﾞ", "ｸ",
-            "ｸﾞ", "ｹ", "ｹﾞ", "ｺ", "ｺﾞ", "ｻ", "ｻﾞ", "ｼ", "ｼﾞ", "ｽ", "ｽﾞ", "ｾ", "ｾﾞ", "ｿ", "ｿﾞ", "ﾀ",
-            "ﾀﾞ", "ﾁ", "ﾁﾞ", "ｯ", "ﾂ", "ﾂﾞ", "ﾃ", "ﾃﾞ", "ﾄ", "ﾄﾞ", "ﾅ", "ﾆ", "ﾇ", "ﾈ", "ﾉ", "ﾊ",
-            "ﾊﾞ", "ﾊﾟ", "ﾋ", "ﾋﾞ", "ﾋﾟ", "ﾌ", "ﾌﾞ", "ﾌﾟ", "ﾍ", "ﾍﾞ", "ﾍﾟ", "ﾎ", "ﾎﾞ", "ﾎﾟ", "ﾏ", "ﾐ",
-            "ﾑ", "ﾒ", "ﾓ", "ｬ", "ﾔ", "ｭ", "ﾕ", "ｮ", "ﾖ", "ﾗ", "ﾘ", "ﾙ", "ﾚ", "ﾛ", "ﾜ", "ﾜ",
-            "ｲ", "ｴ", "ｦ", "ﾝ", "ｳﾞ", "ｶ", "ｹ", "", "", "ﾞ", "ﾟ", "ﾞ", "ﾟ", "ゝ", "ゞ", "ﾖﾘ"
-    };
+    public char getRomajiInitial(char c, ConversionSystem system) {
+        KanaTrie.MatchResult result = getTransliterations(String.valueOf(c));
+        String romaji = result != null ? result.values()[system.getColumnIndex() - 2] : null;
+        if (romaji == null || romaji.isEmpty()) {
+            return 0;
+        }
+        return romaji.charAt(0);
+    }
+
+    public enum ConversionSystem {
+        MODIFIED_HEPBURN(2),    // 修正ヘボン式
+        KUNREI(3),              // 訓令式
+        GAIMUSHO_HEPBURN(4),    // 外務省ヘボン式
+        NIHON(5),               // 日本式
+        STATION_HEPBURN(6),     // 駅名標ヘボン式
+        ROAD_SIGN_HEPBURN(7),   // 道路標識ヘボン式
+        KANA_BRAILLE(8);        // かな6点点字
+
+        private final int columnIndex;
+
+        ConversionSystem(int columnIndex) {
+            this.columnIndex = columnIndex;
+        }
+
+        public int getColumnIndex() {
+            return columnIndex;
+        }
+    }
 }
