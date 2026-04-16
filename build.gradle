@@ -7,6 +7,8 @@ plugins {
 group = 'com.iciao'
 version = '1.0.0'
 
+def copyrightYear = '2025'
+
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -81,7 +83,9 @@ license {
     exclude "**/generated/**"
     exclude "**/KanaMappingData.java"  // Exclude auto-generated files
 
-    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    // Keep the expected header stable so license checks do not start failing
+    // automatically when the calendar year changes.
+    ext.year = copyrightYear
     ext.name = "Masahiko Sato"
 
     // Enable verbose output to detect files without license headers

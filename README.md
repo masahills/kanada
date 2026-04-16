@@ -103,14 +103,22 @@ Kanada converter = Kanada.create()
 Kanada provides a CLI for quick text conversion from the command line:
 
 ```bash
+# Build the jar first
+./gradlew build
+
+# The jar is generated under build/libs/
+java -jar build/libs/kanada-<version>.jar help
+```
+
+```bash
 # Convert Japanese text to hiragana from standard input
-echo "日本語" | java -jar kanada-<version>.jar hiragana
+echo "日本語" | java -jar build/libs/kanada-<version>.jar hiragana
 ```
 
 For usage details and available options, run:
 
 ```bash
-java -jar kanada-<version>.jar help
+java -jar build/libs/kanada-<version>.jar help
 ```
 
 ## Implementation Details
