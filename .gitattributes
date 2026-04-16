@@ -1,0 +1,6 @@
+* text=auto
+
+# Keep wrapper launchers stable across platforms.
+gradlew text eol=lf
+gradlew.bat text eol=crlf
+
